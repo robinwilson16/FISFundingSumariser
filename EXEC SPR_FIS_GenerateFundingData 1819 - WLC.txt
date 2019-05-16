@@ -1,49 +1,96 @@
-DECLARE @FISDatabase VARCHAR(100) = 'Hegel.FIS_CY'
-DECLARE @AcademicYear VARCHAR(5) = '18/19'
-DECLARE @ILRReturn int = 7
-DECLARE @IsFinalReturn bit = 0
+DECLARE @FISDatabase NVARCHAR(100) = 'Hegel.FIS_CY'
+DECLARE @AcademicYear NVARCHAR(5) = '18/19'
+DECLARE @ILRReturn int = 9
+DECLARE @IsFinalReturn bit = 1
 DECLARE @Split1619Funding bit = 1
 DECLARE @FutureAchieveWeighting DECIMAL(3,2) = 0.8
-DECLARE @Mode CHAR(1) = 'R'
-DECLARE @FISOutputTable VARCHAR(200) = 'wlc.dbo.'
-DECLARE @ProSolutionDatabaseLocation VARCHAR(200) = 'fifi1.ProSolution.dbo.'
-DECLARE @ProAchieveDatabaseLocation VARCHAR(200) = 'Hegel.ProGeneral.dbo.'
-DECLARE @ProviderFieldCourseLocation CHAR(1) = 'A'
-DECLARE @ProviderFieldCourseFormat VARCHAR(50) = 'CRS.Code'
-DECLARE @OverrideEngFac VARCHAR(50) = '14'
-DECLARE @OverrideMatFac VARCHAR(50) = '14'
-DECLARE @OverrideEngTeam VARCHAR(50) = '1410'
-DECLARE @OverrideMatTeam VARCHAR(50) = '1420'
-DECLARE @OverrideEngCostCentre VARCHAR(50) = 'NULL'
-DECLARE @OverrideMatCostCentre VARCHAR(50) = 'NULL'
-DECLARE @OverridePartnerFac VARCHAR(50) = 'NULL'
-DECLARE @OverridePartnerTeam VARCHAR(50) = 'NULL'
-DECLARE @OverridePartnerCostCentre VARCHAR(50) = 'NULL'
+DECLARE @Mode NCHAR(1) = 'R'
+DECLARE @FISOutputTable NVARCHAR(200) = 'wlc.dbo.'
+DECLARE @ProSolutionDatabaseLocation NVARCHAR(200) = 'fifi1.ProSolution.dbo.'
+DECLARE @ProAchieveDatabaseLocation NVARCHAR(200) = 'Hegel.ProGeneral.dbo.'
+DECLARE @ProviderFieldCourseLocation NCHAR(1) = 'A'
+DECLARE @ProviderFieldCourseFormat NVARCHAR(50) = 'CRS.Code'
+DECLARE @OverrideEngFac NVARCHAR(50) = '14'
+DECLARE @OverrideMatFac NVARCHAR(50) = '14'
+DECLARE @OverrideEngTeam NVARCHAR(50) = '1410'
+DECLARE @OverrideMatTeam NVARCHAR(50) = '1420'
+DECLARE @OverrideEngCostCentre NVARCHAR(50) = NULL
+DECLARE @OverrideMatCostCentre NVARCHAR(50) = NULL
+DECLARE @OverridePartnerFac NVARCHAR(50) = NULL
+DECLARE @OverridePartnerTeam NVARCHAR(50) = NULL
+DECLARE @OverridePartnerCostCentre NVARCHAR(50) = NULL
 
-DECLARE @SQL VARCHAR(MAX);
+DECLARE @SQLString NVARCHAR(MAX);
+DECLARE @SQLParams NVARCHAR(MAX);
 
-SET @SQL = '
+SET @SQLString = N'
 	EXEC SPR_FIS_GenerateFundingData
-		''' + @FISDatabase + ''', 
-		''' + @AcademicYear + ''', 
-		''' + CAST ( @ILRReturn AS VARCHAR(2) ) + ''', 
-		''' + CAST ( @IsFinalReturn AS CHAR(1) ) + ''', 
-		''' + CAST ( @Split1619Funding AS CHAR(1) ) + ''', 
-		''' + CAST ( @FutureAchieveWeighting AS VARCHAR(5) ) + ''', 
-		''' + @Mode + ''', 
-		''' + @FISOutputTable + ''', 
-		''' + @ProSolutionDatabaseLocation + ''', 
-		''' + @ProAchieveDatabaseLocation + ''',
-		''' + @ProviderFieldCourseLocation + ''',
-		''' + @ProviderFieldCourseFormat + ''',
-		''' + @OverrideEngFac + ''',
-		''' + @OverrideMatFac + ''',
-		''' + @OverrideEngTeam + ''',
-		''' + @OverrideMatTeam + ''',
-		''' + @OverrideEngCostCentre + ''',
-		''' + @OverrideMatCostCentre + ''',
-		''' + @OverridePartnerFac + ''',
-		''' + @OverridePartnerTeam + ''',
-		''' + @OverridePartnerCostCentre + ''''
+		@FISDatabase,
+        @AcademicYear,
+		@ILRReturn,
+		@IsFinalReturn,
+		@Split1619Funding,
+		@FutureAchieveWeighting,
+		@Mode,
+		@FISOutputTable,
+		@ProSolutionDatabaseLocation,
+		@ProAchieveDatabaseLocation,
+		@ProviderFieldCourseLocation,
+		@ProviderFieldCourseFormat,
+		@OverrideEngFac,
+		@OverrideMatFac,
+		@OverrideEngTeam,
+		@OverrideMatTeam,
+		@OverrideEngCostCentre,
+		@OverrideMatCostCentre,
+		@OverridePartnerFac,
+		@OverridePartnerTeam,
+		@OverridePartnerCostCentre';
 
-EXEC(@SQL)
+SET @SQLParams = 
+        N'@FISDatabase NVARCHAR(100),
+        @AcademicYear NVARCHAR(5),
+        @ILRReturn int,
+        @IsFinalReturn bit,
+        @Split1619Funding bit,
+        @FutureAchieveWeighting DECIMAL(3,2),
+        @Mode NCHAR(1),
+        @FISOutputTable NVARCHAR(200),
+        @ProSolutionDatabaseLocation NVARCHAR(200),
+        @ProAchieveDatabaseLocation NVARCHAR(200),
+        @ProviderFieldCourseLocation NCHAR(1),
+        @ProviderFieldCourseFormat NVARCHAR(50),
+        @OverrideEngFac NVARCHAR(50),
+        @OverrideMatFac NVARCHAR(50),
+        @OverrideEngTeam NVARCHAR(50),
+        @OverrideMatTeam NVARCHAR(50),
+        @OverrideEngCostCentre NVARCHAR(50),
+        @OverrideMatCostCentre NVARCHAR(50),
+        @OverridePartnerFac NVARCHAR(50),
+        @OverridePartnerTeam NVARCHAR(50),
+        @OverridePartnerCostCentre NVARCHAR(50)';
+    
+EXECUTE sp_executesql 
+    @SQLString, 
+    @SQLParams, 
+    @FISDatabase = @FISDatabase,
+    @AcademicYear = @AcademicYear,
+    @ILRReturn = @ILRReturn,
+    @IsFinalReturn = @IsFinalReturn,
+    @Split1619Funding = @Split1619Funding,
+    @FutureAchieveWeighting = @FutureAchieveWeighting,
+    @Mode = @Mode,
+    @FISOutputTable = @FISOutputTable,
+    @ProSolutionDatabaseLocation = @ProSolutionDatabaseLocation,
+    @ProAchieveDatabaseLocation = @ProAchieveDatabaseLocation,
+    @ProviderFieldCourseLocation = @ProviderFieldCourseLocation,
+    @ProviderFieldCourseFormat = @ProviderFieldCourseFormat,
+    @OverrideEngFac = @OverrideEngFac,
+    @OverrideMatFac = @OverrideMatFac,
+    @OverrideEngTeam = @OverrideEngTeam,
+    @OverrideMatTeam = @OverrideMatTeam,
+    @OverrideEngCostCentre = @OverrideEngCostCentre,
+    @OverrideMatCostCentre = @OverrideMatCostCentre,
+    @OverridePartnerFac = @OverridePartnerFac,
+    @OverridePartnerTeam = @OverridePartnerTeam,
+    @OverridePartnerCostCentre = @OverridePartnerCostCentre;

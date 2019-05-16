@@ -1,39 +1,67 @@
 ALTER PROCEDURE SPR_FIS_GenerateFundingData
-	@FISDatabase VARCHAR(50),
-	@AcademicYear VARCHAR(5),
-	@ILRReturn VARCHAR(2),
-	@IsFinalReturn bit,
-	@Split1619Funding bit,
+	@FISDatabase NVARCHAR(50),
+	@AcademicYear NVARCHAR(5),
+	@ILRReturn NVARCHAR(2),
+	@IsFinalReturn BIT,
+	@Split1619Funding BIT,
 	@FutureAchieveWeighting DECIMAL(3,2),
-	@Mode CHAR(1),
-	@FISOutputTable VARCHAR(200),
-	@ProSolutionDatabaseLocation VARCHAR(200),
-	@ProAchieveDatabaseLocation VARCHAR(200),
-	@ProviderFieldCourseLocation CHAR(1),
-	@ProviderFieldCourseFormat VARCHAR(50),
-	@OverrideEngFac VARCHAR(50),
-	@OverrideMatFac VARCHAR(50),
-	@OverrideEngTeam VARCHAR(50),
-	@OverrideMatTeam VARCHAR(50),
-	@OverrideEngCostCentre VARCHAR(50),
-	@OverrideMatCostCentre VARCHAR(50),
-	@OverridePartnerFac VARCHAR(50),
-	@OverridePartnerTeam VARCHAR(50),
-	@OverridePartnerCostCentre VARCHAR(50)
+	@Mode NCHAR(1),
+	@FISOutputTable NVARCHAR(200),
+	@ProSolutionDatabaseLocation NVARCHAR(200),
+	@ProAchieveDatabaseLocation NVARCHAR(200),
+	@ProviderFieldCourseLocation NCHAR(1),
+	@ProviderFieldCourseFormat NVARCHAR(50),
+	@OverrideEngFac NVARCHAR(50),
+	@OverrideMatFac NVARCHAR(50),
+	@OverrideEngTeam NVARCHAR(50),
+	@OverrideMatTeam NVARCHAR(50),
+	@OverrideEngCostCentre NVARCHAR(50),
+	@OverrideMatCostCentre NVARCHAR(50),
+	@OverridePartnerFac NVARCHAR(50),
+	@OverridePartnerTeam NVARCHAR(50),
+	@OverridePartnerCostCentre NVARCHAR(50)
 AS
 BEGIN
 	SET NOCOUNT ON;
-	DECLARE @TableExists bit = 1;
-	DECLARE @NumExistingRecords int = 0;
-	DECLARE @SQL NVARCHAR(MAX);
+	DECLARE @TableExists BIT = 1;
+	DECLARE @NumExistingRecords INT = 0;
+	
+    DECLARE @SQLString NVARCHAR(MAX);
+    DECLARE @SQLParams NVARCHAR(MAX);
+
+    -- DECLARE @FISDatabase NVARCHAR(100) = 'FIS_1819_R09_F'
+    -- DECLARE @AcademicYear NVARCHAR(5) = '18/19'
+    -- DECLARE @ILRReturn int = 9
+    -- DECLARE @IsFinalReturn bit = 1
+    -- DECLARE @Split1619Funding bit = 1
+    -- DECLARE @FutureAchieveWeighting DECIMAL(3,2) = 0.75
+    -- DECLARE @Mode NCHAR(1) = 'R'
+    -- DECLARE @FISOutputTable NVARCHAR(200) = 'ProSolutionReports.dbo.'
+    -- DECLARE @ProSolutionDatabaseLocation NVARCHAR(200) = 'ProSolution.dbo.'
+    -- DECLARE @ProAchieveDatabaseLocation NVARCHAR(200) = 'ussql01.ProGeneral.dbo.'
+    -- DECLARE @ProviderFieldCourseLocation NCHAR(1) = 'A'
+    -- DECLARE @ProviderFieldCourseFormat NVARCHAR(50) = 'CRS.Code + "-" + GRP.Code'
+    -- DECLARE @OverrideEngFac NVARCHAR(50) = 'F05'
+    -- DECLARE @OverrideMatFac NVARCHAR(50) = 'F05'
+    -- DECLARE @OverrideEngTeam NVARCHAR(50) = 'T01'
+    -- DECLARE @OverrideMatTeam NVARCHAR(50) = 'T02'
+    -- DECLARE @OverrideEngCostCentre NVARCHAR(50) = '4461'
+    -- DECLARE @OverrideMatCostCentre NVARCHAR(50) = '4462'
+    -- DECLARE @OverridePartnerFac NVARCHAR(50) = 'F00'
+    -- DECLARE @OverridePartnerTeam NVARCHAR(50) = 'T00'
+    -- DECLARE @OverridePartnerCostCentre NVARCHAR(50) = NULL
 
 	IF @Mode = 'R'
 		IF OBJECT_ID('dbo.FIS_FundingData', 'U') IS NOT NULL 
 			BEGIN
-				SET @SQL = 
-					'DROP TABLE dbo.FIS_FundingData'
+				SET @SQLString = N'
+					DROP TABLE dbo.FIS_FundingData'
 
-				EXEC(@SQL)
+                SET @SQLParams = N'';
+
+				EXECUTE sp_executesql 
+                    @SQLString, 
+                    @SQLParams;
 			END
 	ELSE
 		IF OBJECT_ID('dbo.FIS_FundingData', 'U') IS NULL 
@@ -41,306 +69,373 @@ BEGIN
 
 	IF @Mode = 'R' OR @TableExists = 0
 		BEGIN
-			SET @SQL = 
-				'CREATE TABLE ' + @FISOutputTable + 'FIS_FundingData (
-					AcademicYear varchar(5) NULL,
-					ILRReturn varchar(3) NULL,
-					IsFinalReturn int NULL,
-					ILRReturnDate datetime2 NULL,
-					SQLDatabase varchar(50) NULL,
-					Is1619FundingSplit int NULL,
-					InvalidLearners int NULL,
+			SET @SQLString = N'
+				CREATE TABLE ' + @FISOutputTable + 'FIS_FundingData (
+					AcademicYear NVARCHAR(5) NULL,
+					ILRReturn NVARCHAR(3) NULL,
+					IsFinalReturn INT NULL,
+					ILRReturnDate DATETIME2 NULL,
+					SQLDatabase NVARCHAR(50) NULL,
+					Is1619FundingSplit INT NULL,
+					InvalidLearners INT NULL,
 
-					LearnerRef nvarchar(12) NULL,
-					Surname nvarchar(100) NULL,
-					Forename nvarchar(100) NULL,
-					DOB datetime2 NULL,
-					AgeSept float NULL,
-					Address1 varchar(150) NULL,
-					Address2 varchar(150) NULL,
-					Address3 varchar(150) NULL,
-					Address4 varchar(150) NULL,
-					PostCode varchar(10) NULL,
-					Tel varchar(50) NULL,
-					Email varchar(150) NULL,
-					PostCodeWardCode varchar(50) NULL,
-					PostCodeWardName varchar(50) NULL,
-					PostCodeDistrictCode varchar(50) NULL,
-					PostCodeDistrictName varchar(50) NULL,
-					PostCodeLEACode varchar(50) NULL,
-					PostCodeLEAName varchar(50) NULL,
-					PostCode1619Uplift float NULL,
-					PostCodeAdultUplift float NULL,
-					PostCodeAppUplift float NULL,
-					PostCodeUpliftApplied float NULL,
-					EmpStatusCode int NULL,
-					EmpStatusName varchar(20) NULL,
-					EmpStatusAppliesDate datetime2 NULL,
-					EmpStatusEmployerID int NULL,
-					LengthOfEmploy int NULL,
-					LengthOfUnemploy int NULL,
-					BenefitStatusInd int NULL,
-					SmallEmployer int NULL,
-					SelfEmployInd int NULL,
-					EmployIntensityInd int NULL,
-					IsFirstFullLevel2 int NULL,
-					IsFirstFullLevel3 int NULL,
+					LearnerRef NVARCHAR(12) NULL,
+					Surname NVARCHAR(100) NULL,
+					Forename NVARCHAR(100) NULL,
+					DOB DATETIME2 NULL,
+					AgeSept FLOAT NULL,
+					Address1 NVARCHAR(150) NULL,
+					Address2 NVARCHAR(150) NULL,
+					Address3 NVARCHAR(150) NULL,
+					Address4 NVARCHAR(150) NULL,
+					PostCode NVARCHAR(10) NULL,
+					Tel NVARCHAR(50) NULL,
+					Email NVARCHAR(150) NULL,
+					PostCodeWardCode NVARCHAR(50) NULL,
+					PostCodeWardName NVARCHAR(50) NULL,
+					PostCodeDistrictCode NVARCHAR(50) NULL,
+					PostCodeDistrictName NVARCHAR(50) NULL,
+					PostCodeLEACode NVARCHAR(50) NULL,
+					PostCodeLEAName NVARCHAR(50) NULL,
+					PostCode1619Uplift FLOAT NULL,
+					PostCodeAdultUplift FLOAT NULL,
+					PostCodeAppUplift FLOAT NULL,
+					PostCodeUpliftApplied FLOAT NULL,
+					EmpStatusCode INT NULL,
+					EmpStatusName NVARCHAR(20) NULL,
+					EmpStatusAppliesDate DATETIME2 NULL,
+					EmpStatusEmployerID INT NULL,
+					LengthOfEmploy INT NULL,
+					LengthOfUnemploy INT NULL,
+					BenefitStatusInd INT NULL,
+					SmallEmployer INT NULL,
+					SelfEmployInd INT NULL,
+					EmployIntensityInd INT NULL,
+					IsFirstFullLevel2 INT NULL,
+					IsFirstFullLevel3 INT NULL,
 
-					FundLine nvarchar(100) NULL,
-					FundLineSummary nvarchar(100) NULL,
-					FundModel float NULL,
-					SortOrder int NULL,
-					IsFunded int NULL,
-					IsAdvLearnLoan int NULL,
-					RateBand nvarchar(50) NULL,
-					CofEnglish varchar(100) NULL,
-					CofMaths varchar(100) NULL,
-					CofEnglishMet int NULL,
-					CofMathsMet int NULL,
-					CofMet int NULL,
+					FundLine NVARCHAR(100) NULL,
+					FundLineSummary NVARCHAR(100) NULL,
+					FundModel FLOAT NULL,
+					SortOrder INT NULL,
+					IsFunded INT NULL,
+					IsAdvLearnLoan INT NULL,
+					RateBand NVARCHAR(50) NULL,
+					CofEnglish NVARCHAR(100) NULL,
+					CofMaths NVARCHAR(100) NULL,
+					CofEnglishMet INT NULL,
+					CofMathsMet INT NULL,
+					CofMet INT NULL,
 
-					CampusID varchar(20) NULL,
-					SiteCode varchar(20) NULL,
-					SiteName varchar(100) NULL,
-					FacCode varchar(20) NULL,
-					FacName varchar(150) NULL,
-					MainFacCode varchar(20) NULL,
-					MainFacName varchar(150) NULL,
-					TeamCode varchar(20) NULL,
-					TeamName varchar(150) NULL,
-					CostCentre varchar(20) NULL,
-					FacCodeOrig varchar(20) NULL,
-					FacNameOrig varchar(150) NULL,
-					TeamCodeOrig varchar(20) NULL,
-					TeamNameOrig varchar(150) NULL,
-					CostCentreOrig varchar(20) NULL,
-					SSA1Code varchar(5) NULL,
-					SSA1Title varchar(255) NULL,
-					SSA2Code varchar(5) NULL,
-					SSA2Title varchar(255) NULL,
-					CourseCode varchar(20) NULL,
-					CourseTitle varchar(255) NULL,
-					GroupCode varchar(20) NULL,
+					CampusID NVARCHAR(20) NULL,
+					SiteCode NVARCHAR(20) NULL,
+					SiteName NVARCHAR(100) NULL,
+					FacCode NVARCHAR(20) NULL,
+					FacName NVARCHAR(150) NULL,
+					MainFacCode NVARCHAR(20) NULL,
+					MainFacName NVARCHAR(150) NULL,
+					TeamCode NVARCHAR(20) NULL,
+					TeamName NVARCHAR(150) NULL,
+					CostCentre NVARCHAR(20) NULL,
+					FacCodeOrig NVARCHAR(20) NULL,
+					FacNameOrig NVARCHAR(150) NULL,
+					TeamCodeOrig NVARCHAR(20) NULL,
+					TeamNameOrig NVARCHAR(150) NULL,
+					CostCentreOrig NVARCHAR(20) NULL,
+					SSA1Code NVARCHAR(5) NULL,
+					SSA1Title NVARCHAR(255) NULL,
+					SSA2Code NVARCHAR(5) NULL,
+					SSA2Title NVARCHAR(255) NULL,
+					CourseCode NVARCHAR(20) NULL,
+					CourseTitle NVARCHAR(255) NULL,
+					GroupCode NVARCHAR(20) NULL,
 
-					AimSequence int NULL,
-					AimType float NULL,
-					AimCode varchar(8) NULL,
-					AimTitle varchar(150) NULL,
-					StartDate datetime2 NULL,
-					ExpEndDate datetime2 NULL,
-					ActEndDate datetime2 NULL,
-					LearnerPLH float NULL,
-					LearnerEEP float NULL,
-					FM25PLHAim float NULL,
-					FM25EEPAim float NULL,
-					FM25PLHAllAims float NULL,
-					FM25EEPAllAims float NULL,
+					AimSequence INT NULL,
+					AimType FLOAT NULL,
+					AimCode NVARCHAR(8) NULL,
+					AimTitle NVARCHAR(150) NULL,
+					StartDate DATETIME2 NULL,
+					ExpEndDate DATETIME2 NULL,
+					ActEndDate DATETIME2 NULL,
+					LearnerPLH FLOAT NULL,
+					LearnerEEP FLOAT NULL,
+					FM25PLHAim FLOAT NULL,
+					FM25EEPAim FLOAT NULL,
+					FM25PLHAllAims FLOAT NULL,
+					FM25EEPAllAims FLOAT NULL,
 
-					CompletionCode float NULL,
-					CompletionDesc varchar(20) NULL,
-					OutcomeCode float NULL,
-					OutcomeDesc varchar(20) NULL,
-					WithdrawReason varchar(2) NULL,
-					Grade nvarchar(6) NULL,
-					AwardBody varchar(20) NULL,
+					CompletionCode FLOAT NULL,
+					CompletionDesc NVARCHAR(20) NULL,
+					OutcomeCode FLOAT NULL,
+					OutcomeDesc NVARCHAR(20) NULL,
+					WithdrawReason NVARCHAR(2) NULL,
+					Grade NVARCHAR(6) NULL,
+					AwardBody NVARCHAR(20) NULL,
 
-					FrameworkCode float NULL,
-					FrameworkName varchar(150) NULL,
-					EmployerID int NULL,
-					EmployerName varchar(100) NULL,
-					PartnerCode float NULL,
-					PartnerName varchar(100) NULL,
+					FrameworkCode FLOAT NULL,
+					FrameworkName NVARCHAR(150) NULL,
+					EmployerID INT NULL,
+					EmployerName NVARCHAR(100) NULL,
+					PartnerCode FLOAT NULL,
+					PartnerName NVARCHAR(100) NULL,
 					
-					ProgWeightFactor char(1) NULL,
-					UnweightFundRate float NULL,
-					WeightFundRate float NULL,
-					NVQLevel char(1) NULL,
-					CoFundingIndicator varchar(10) NULL,
-					IsCarryIn int NULL,
-					EnrolmentID varchar(20) NULL,
-					FM25TotFund float NULL,
+					ProgWeightFactor NCHAR(1) NULL,
+					UnweightFundRate FLOAT NULL,
+					WeightFundRate FLOAT NULL,
+					NVQLevel NCHAR(1) NULL,
+					CoFundingIndicator NVARCHAR(10) NULL,
+					IsCarryIn INT NULL,
+					EnrolmentID NVARCHAR(20) NULL,
+					FM25TotFund FLOAT NULL,
+    '
+    
+    SET @SQLString += 
+        N'
+					OnProgPaymentToPeriod FLOAT NULL,
+					LearnSuppPaymentToPeriod FLOAT NULL,
+					AchCompPaymentToPeriod FLOAT NULL,
+					BalancePaymentToPeriod FLOAT NULL,
+					EmpOutcomePayToPeriod FLOAT NULL,
+					OtherPaymentToPeriod FLOAT NULL,
+					TotFundToPeriod FLOAT NULL,
 
-					OnProgPaymentToPeriod float NULL,
-					LearnSuppPaymentToPeriod float NULL,
-					AchCompPaymentToPeriod float NULL,
-					BalancePaymentToPeriod float NULL,
-					EmpOutcomePayToPeriod float NULL,
-					OtherPaymentToPeriod float NULL,
-					TotFundToPeriod float NULL,
+					OnProgPayment6Mon FLOAT NULL,
+					LearnSuppPayment6Mon FLOAT NULL,
+					AchCompPayment6Mon FLOAT NULL,
+					BalancePayment6Mon FLOAT NULL,
+					EmpOutcomePay6Mon FLOAT NULL,
+					OtherPayment6Mon FLOAT NULL,
+					TotFund6Mon FLOAT NULL,
 
-					OnProgPayment6Mon float NULL,
-					LearnSuppPayment6Mon float NULL,
-					AchCompPayment6Mon float NULL,
-					BalancePayment6Mon float NULL,
-					EmpOutcomePay6Mon float NULL,
-					OtherPayment6Mon float NULL,
-					TotFund6Mon float NULL,
+					OnProgPaymentYrEnd FLOAT NULL,
+					LearnSuppPaymentYrEnd FLOAT NULL,
+					AchCompPaymentYrEnd FLOAT NULL,
+					BalancePaymentYrEnd FLOAT NULL,
+					EmpOutcomePayYrEnd FLOAT NULL,
+					OtherPaymentYrEnd FLOAT NULL,
+					TotFundYrEnd FLOAT NULL,
 
-					OnProgPaymentYrEnd float NULL,
-					LearnSuppPaymentYrEnd float NULL,
-					AchCompPaymentYrEnd float NULL,
-					BalancePaymentYrEnd float NULL,
-					EmpOutcomePayYrEnd float NULL,
-					OtherPaymentYrEnd float NULL,
-					TotFundYrEnd float NULL,
+					FutureAchievePayment FLOAT NULL,
+					FutureAchieveWeighting DECIMAL(3, 2) NULL,
+					FutureAchievePaymentWeighted FLOAT NULL,
 
-					FutureAchievePayment float NULL,
-					FutureAchieveWeighting decimal(3, 2) NULL,
-					FutureAchievePaymentWeighted float NULL,
+					EmployerContibutionPMRTot FLOAT NULL,
+					EmployerContibutionPMRCum FLOAT NULL,
 
-					EmployerContibutionPMRTot float NULL,
-					EmployerContibutionPMRCum float NULL,
+					OnProgPaymentP01 FLOAT NULL,
+					LearnSuppPaymentP01 FLOAT NULL,
+					AchCompPaymentP01 FLOAT NULL,
+					BalancePaymentP01 FLOAT NULL,
+					EmpOutcomePayP01 FLOAT NULL,
+					OtherPaymentP01 FLOAT NULL,
+					TotFundP01 FLOAT NULL,
 
-					OnProgPaymentP01 float NULL,
-					LearnSuppPaymentP01 float NULL,
-					AchCompPaymentP01 float NULL,
-					BalancePaymentP01 float NULL,
-					EmpOutcomePayP01 float NULL,
-					OtherPaymentP01 float NULL,
-					TotFundP01 float NULL,
+					OnProgPaymentP02 FLOAT NULL,
+					LearnSuppPaymentP02 FLOAT NULL,
+					AchCompPaymentP02 FLOAT NULL,
+					BalancePaymentP02 FLOAT NULL,
+					EmpOutcomePayP02 FLOAT NULL,
+					OtherPaymentP02 FLOAT NULL,
+					TotFundP02 FLOAT NULL,
 
-					OnProgPaymentP02 float NULL,
-					LearnSuppPaymentP02 float NULL,
-					AchCompPaymentP02 float NULL,
-					BalancePaymentP02 float NULL,
-					EmpOutcomePayP02 float NULL,
-					OtherPaymentP02 float NULL,
-					TotFundP02 float NULL,
+					OnProgPaymentP03 FLOAT NULL,
+					LearnSuppPaymentP03 FLOAT NULL,
+					AchCompPaymentP03 FLOAT NULL,
+					BalancePaymentP03 FLOAT NULL,
+					EmpOutcomePayP03 FLOAT NULL,
+					OtherPaymentP03 FLOAT NULL,
+					TotFundP03 FLOAT NULL,
 
-					OnProgPaymentP03 float NULL,
-					LearnSuppPaymentP03 float NULL,
-					AchCompPaymentP03 float NULL,
-					BalancePaymentP03 float NULL,
-					EmpOutcomePayP03 float NULL,
-					OtherPaymentP03 float NULL,
-					TotFundP03 float NULL,
+					OnProgPaymentP04 FLOAT NULL,
+					LearnSuppPaymentP04 FLOAT NULL,
+					AchCompPaymentP04 FLOAT NULL,
+					BalancePaymentP04 FLOAT NULL,
+					EmpOutcomePayP04 FLOAT NULL,
+					OtherPaymentP04 FLOAT NULL,
+					TotFundP04 FLOAT NULL,
 
-					OnProgPaymentP04 float NULL,
-					LearnSuppPaymentP04 float NULL,
-					AchCompPaymentP04 float NULL,
-					BalancePaymentP04 float NULL,
-					EmpOutcomePayP04 float NULL,
-					OtherPaymentP04 float NULL,
-					TotFundP04 float NULL,
+					OnProgPaymentP05 FLOAT NULL,
+					LearnSuppPaymentP05 FLOAT NULL,
+					AchCompPaymentP05 FLOAT NULL,
+					BalancePaymentP05 FLOAT NULL,
+					EmpOutcomePayP05 FLOAT NULL,
+					OtherPaymentP05 FLOAT NULL,
+					TotFundP05 FLOAT NULL,
 
-					OnProgPaymentP05 float NULL,
-					LearnSuppPaymentP05 float NULL,
-					AchCompPaymentP05 float NULL,
-					BalancePaymentP05 float NULL,
-					EmpOutcomePayP05 float NULL,
-					OtherPaymentP05 float NULL,
-					TotFundP05 float NULL,
+					OnProgPaymentP06 FLOAT NULL,
+					LearnSuppPaymentP06 FLOAT NULL,
+					AchCompPaymentP06 FLOAT NULL,
+					BalancePaymentP06 FLOAT NULL,
+					EmpOutcomePayP06 FLOAT NULL,
+					OtherPaymentP06 FLOAT NULL,
+					TotFundP06 FLOAT NULL,
 
-					OnProgPaymentP06 float NULL,
-					LearnSuppPaymentP06 float NULL,
-					AchCompPaymentP06 float NULL,
-					BalancePaymentP06 float NULL,
-					EmpOutcomePayP06 float NULL,
-					OtherPaymentP06 float NULL,
-					TotFundP06 float NULL,
+					OnProgPaymentP07 FLOAT NULL,
+					LearnSuppPaymentP07 FLOAT NULL,
+					AchCompPaymentP07 FLOAT NULL,
+					BalancePaymentP07 FLOAT NULL,
+					EmpOutcomePayP07 FLOAT NULL,
+					OtherPaymentP07 FLOAT NULL,
+					TotFundP07 FLOAT NULL,
 
-					OnProgPaymentP07 float NULL,
-					LearnSuppPaymentP07 float NULL,
-					AchCompPaymentP07 float NULL,
-					BalancePaymentP07 float NULL,
-					EmpOutcomePayP07 float NULL,
-					OtherPaymentP07 float NULL,
-					TotFundP07 float NULL,
+					OnProgPaymentP08 FLOAT NULL,
+					LearnSuppPaymentP08 FLOAT NULL,
+					AchCompPaymentP08 FLOAT NULL,
+					BalancePaymentP08 FLOAT NULL,
+					EmpOutcomePayP08 FLOAT NULL,
+					OtherPaymentP08 FLOAT NULL,
+					TotFundP08 FLOAT NULL,
 
-					OnProgPaymentP08 float NULL,
-					LearnSuppPaymentP08 float NULL,
-					AchCompPaymentP08 float NULL,
-					BalancePaymentP08 float NULL,
-					EmpOutcomePayP08 float NULL,
-					OtherPaymentP08 float NULL,
-					TotFundP08 float NULL,
+					OnProgPaymentP09 FLOAT NULL,
+					LearnSuppPaymentP09 FLOAT NULL,
+					AchCompPaymentP09 FLOAT NULL,
+					BalancePaymentP09 FLOAT NULL,
+					EmpOutcomePayP09 FLOAT NULL,
+					OtherPaymentP09 FLOAT NULL,
+					TotFundP09 FLOAT NULL,
 
-					OnProgPaymentP09 float NULL,
-					LearnSuppPaymentP09 float NULL,
-					AchCompPaymentP09 float NULL,
-					BalancePaymentP09 float NULL,
-					EmpOutcomePayP09 float NULL,
-					OtherPaymentP09 float NULL,
-					TotFundP09 float NULL,
+					OnProgPaymentP10 FLOAT NULL,
+					LearnSuppPaymentP10 FLOAT NULL,
+					AchCompPaymentP10 FLOAT NULL,
+					BalancePaymentP10 FLOAT NULL,
+					EmpOutcomePayP10 FLOAT NULL,
+					OtherPaymentP10 FLOAT NULL,
+					TotFundP10 FLOAT NULL,
 
-					OnProgPaymentP10 float NULL,
-					LearnSuppPaymentP10 float NULL,
-					AchCompPaymentP10 float NULL,
-					BalancePaymentP10 float NULL,
-					EmpOutcomePayP10 float NULL,
-					OtherPaymentP10 float NULL,
-					TotFundP10 float NULL,
+					OnProgPaymentP11 FLOAT NULL,
+					LearnSuppPaymentP11 FLOAT NULL,
+					AchCompPaymentP11 FLOAT NULL,
+					BalancePaymentP11 FLOAT NULL,
+					EmpOutcomePayP11 FLOAT NULL,
+					OtherPaymentP11 FLOAT NULL,
+					TotFundP11 FLOAT NULL,
 
-					OnProgPaymentP11 float NULL,
-					LearnSuppPaymentP11 float NULL,
-					AchCompPaymentP11 float NULL,
-					BalancePaymentP11 float NULL,
-					EmpOutcomePayP11 float NULL,
-					OtherPaymentP11 float NULL,
-					TotFundP11 float NULL,
+					OnProgPaymentP12 FLOAT NULL,
+					LearnSuppPaymentP12 FLOAT NULL,
+					AchCompPaymentP12 FLOAT NULL,
+					BalancePaymentP12 FLOAT NULL,
+					EmpOutcomePayP12 FLOAT NULL,
+					OtherPaymentP12 FLOAT NULL,
+					TotFundP12 FLOAT NULL
+				)';
 
-					OnProgPaymentP12 float NULL,
-					LearnSuppPaymentP12 float NULL,
-					AchCompPaymentP12 float NULL,
-					BalancePaymentP12 float NULL,
-					EmpOutcomePayP12 float NULL,
-					OtherPaymentP12 float NULL,
-					TotFundP12 float NULL
-				)'
+			SET @SQLParams = N'';
 
-			EXEC(@SQL)
+            EXECUTE sp_executesql 
+                @SQLString, 
+                @SQLParams;
 
-			SET @SQL = 
-				'CREATE CLUSTERED INDEX CX_FIS_FundingData ON ' + @FISOutputTable + 'FIS_FundingData ( AcademicYear, ILRReturn, ILRReturnDate )'
+			SET @SQLString = N'
+				CREATE CLUSTERED INDEX CX_FIS_FundingData ON ' + @FISOutputTable + 'FIS_FundingData ( AcademicYear, ILRReturn, ILRReturnDate )';
 
-			EXEC(@SQL)
+			SET @SQLParams = N'';
+
+            EXECUTE sp_executesql 
+                @SQLString, 
+                @SQLParams;
 		END
 	ELSE
 		BEGIN
-			SET @SQL = '
+			SET @SQLString = N'
 				SELECT
-					@NumExistingRecords = SUM ( 1 )
+					@NumExistingRecordsOUT = SUM ( 1 )
 				FROM ' + @FISOutputTable + 'FIS_FundingData FD
 				WHERE
-					FD.AcademicYear = ''' + @AcademicYear + '''
-					AND FD.SQLDatabase = ''' + @FISDatabase + ''''
+					FD.AcademicYear = @AcademicYear
+					AND FD.SQLDatabase = @FISDatabase';
 
-			EXEC sp_executesql @SQL, N'@NumExistingRecords int out', @NumExistingRecords out
-			
+            SET @SQLParams = 
+                N'@AcademicYear NVARCHAR(5),
+                @FISDatabase NVARCHAR(50),
+                @NumExistingRecordsOUT INT OUTPUT';
+
+            EXECUTE sp_executesql 
+                @SQLString, 
+                @SQLParams, 
+                @AcademicYear = @AcademicYear, 
+                @FISDatabase = @FISDatabase,
+                @NumExistingRecordsOUT = @NumExistingRecords OUTPUT;
+
 			IF @NumExistingRecords > 0
 				BEGIN
-					SET @SQL = '
-						DELETE FROM ' + @FISOutputTable + 'FIS_FundingData
+                    SET @SQLString = N'
+                        DELETE FROM ' + @FISOutputTable + 'FIS_FundingData
 						WHERE
-							FD.AcademicYear = ''' + @AcademicYear + '''
-							AND FD.SQLDatabase = ''' + @FISDatabase + ''''
+							FD.AcademicYear = @AcademicYear
+							AND FD.SQLDatabase = @FISDatabase';
 
-					EXEC(@SQL)
+                    SET @SQLParams = N'';
+
+                    EXECUTE sp_executesql 
+                        @SQLString, 
+                        @SQLParams;
 				END
 		END
 
-	SET @SQL = '
+	SET @SQLString = N'
 		INSERT INTO ' + @FISOutputTable + 'FIS_FundingData
 		EXEC SPR_FIS_FundingData_' + REPLACE ( @AcademicYear, '/', '' ) + '
-			''' + @FISDatabase + ''', 
-			''' + @AcademicYear + ''', 
-			''' + CAST ( @ILRReturn AS VARCHAR(2) ) + ''', 
-			''' + CAST ( @IsFinalReturn AS CHAR(1) ) + ''', 
-			''' + CAST ( @Split1619Funding AS CHAR(1) ) + ''', 
-			''' + CAST ( @FutureAchieveWeighting AS VARCHAR(5) ) + ''', 
-			''' + @ProSolutionDatabaseLocation + ''', 
-			''' + @ProAchieveDatabaseLocation + ''',
-			''' + @ProviderFieldCourseLocation + ''',
-			''' + @ProviderFieldCourseFormat + ''',
-			''' + @OverrideEngFac + ''',
-			''' + @OverrideMatFac + ''',
-			''' + @OverrideEngTeam + ''',
-			''' + @OverrideMatTeam + ''',
-			''' + @OverrideEngCostCentre + ''',
-			''' + @OverrideMatCostCentre + ''',
-			''' + @OverridePartnerFac + ''',
-			''' + @OverridePartnerTeam + ''',
-			''' + @OverridePartnerCostCentre + ''''
+			@FISDatabase,
+			@AcademicYear,
+			@ILRReturn,
+			@IsFinalReturn,
+			@Split1619Funding,
+			@FutureAchieveWeighting,
+			@ProSolutionDatabaseLocation,
+			@ProAchieveDatabaseLocation,
+			@ProviderFieldCourseLocation,
+			@ProviderFieldCourseFormat,
+			@OverrideEngFac,
+			@OverrideMatFac,
+			@OverrideEngTeam,
+			@OverrideMatTeam,
+			@OverrideEngCostCentre,
+			@OverrideMatCostCentre,
+			@OverridePartnerFac,
+			@OverridePartnerTeam,
+			@OverridePartnerCostCentre';
 
-	EXEC(@SQL)
+    SET @SQLParams = 
+        N'@FISDatabase NVARCHAR(50),
+        @AcademicYear NVARCHAR(5),
+    	@ILRReturn NVARCHAR(2),
+    	@IsFinalReturn bit,
+    	@Split1619Funding bit,
+    	@FutureAchieveWeighting DECIMAL(3,2),
+        @ProSolutionDatabaseLocation NVARCHAR(200),
+	    @ProAchieveDatabaseLocation NVARCHAR(200),
+    	@ProviderFieldCourseLocation CHAR(1),
+    	@ProviderFieldCourseFormat NVARCHAR(50),
+    	@OverrideEngFac NVARCHAR(50),
+    	@OverrideMatFac NVARCHAR(50),
+    	@OverrideEngTeam NVARCHAR(50),
+    	@OverrideMatTeam NVARCHAR(50),
+    	@OverrideEngCostCentre NVARCHAR(50),
+    	@OverrideMatCostCentre NVARCHAR(50),
+    	@OverridePartnerFac NVARCHAR(50),
+    	@OverridePartnerTeam NVARCHAR(50),
+    	@OverridePartnerCostCentre NVARCHAR(50)';
+    
+    EXECUTE sp_executesql 
+        @SQLString, 
+        @SQLParams, 
+        @FISDatabase = @FISDatabase,
+        @AcademicYear = @AcademicYear,
+    	@ILRReturn = @ILRReturn,
+    	@IsFinalReturn = @IsFinalReturn,
+    	@Split1619Funding = @Split1619Funding,
+    	@FutureAchieveWeighting = @FutureAchieveWeighting,
+        @ProSolutionDatabaseLocation = @ProSolutionDatabaseLocation,
+        @ProAchieveDatabaseLocation = @ProAchieveDatabaseLocation,
+    	@ProviderFieldCourseLocation = @ProviderFieldCourseLocation,
+    	@ProviderFieldCourseFormat = @ProviderFieldCourseFormat,
+    	@OverrideEngFac = @OverrideEngFac,
+    	@OverrideMatFac = @OverrideMatFac,
+    	@OverrideEngTeam = @OverrideEngTeam,
+    	@OverrideMatTeam = @OverrideMatTeam,
+    	@OverrideEngCostCentre = @OverrideEngCostCentre,
+    	@OverrideMatCostCentre = @OverrideMatCostCentre,
+    	@OverridePartnerFac = @OverridePartnerFac,
+    	@OverridePartnerTeam = @OverridePartnerTeam,
+    	@OverridePartnerCostCentre = @OverridePartnerCostCentre;
 END

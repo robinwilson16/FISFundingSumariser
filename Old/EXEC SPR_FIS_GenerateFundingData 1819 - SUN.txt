@@ -1,0 +1,49 @@
+DECLARE @FISDatabase VARCHAR(100) = 'FIS_1819_R06_F'
+DECLARE @AcademicYear VARCHAR(5) = '18/19'
+DECLARE @ILRReturn int = 6
+DECLARE @IsFinalReturn bit = 1
+DECLARE @Split1619Funding bit = 1
+DECLARE @FutureAchieveWeighting DECIMAL(3,2) = 0.75
+DECLARE @Mode CHAR(1) = 'R'
+DECLARE @FISOutputTable VARCHAR(200) = 'ProSolutionReports.dbo.'
+DECLARE @ProSolutionDatabaseLocation VARCHAR(200) = 'ProSolution.dbo.'
+DECLARE @ProAchieveDatabaseLocation VARCHAR(200) = 'ussql01.ProGeneral.dbo.'
+DECLARE @ProviderFieldCourseLocation CHAR(1) = 'A'
+DECLARE @ProviderFieldCourseFormat VARCHAR(50) = 'CRS.Code + "-" + GRP.Code'
+DECLARE @OverrideEngFac VARCHAR(50) = 'F05'
+DECLARE @OverrideMatFac VARCHAR(50) = 'F05'
+DECLARE @OverrideEngTeam VARCHAR(50) = 'T01'
+DECLARE @OverrideMatTeam VARCHAR(50) = 'T02'
+DECLARE @OverrideEngCostCentre VARCHAR(50) = '4461'
+DECLARE @OverrideMatCostCentre VARCHAR(50) = '4462'
+DECLARE @OverridePartnerFac VARCHAR(50) = 'F00'
+DECLARE @OverridePartnerTeam VARCHAR(50) = 'T00'
+DECLARE @OverridePartnerCostCentre VARCHAR(50) = 'NULL'
+
+DECLARE @SQL VARCHAR(MAX);
+
+SET @SQL = '
+	EXEC SPR_FIS_GenerateFundingData
+		''' + @FISDatabase + ''', 
+		''' + @AcademicYear + ''', 
+		''' + CAST ( @ILRReturn AS VARCHAR(2) ) + ''', 
+		''' + CAST ( @IsFinalReturn AS CHAR(1) ) + ''', 
+		''' + CAST ( @Split1619Funding AS CHAR(1) ) + ''', 
+		''' + CAST ( @FutureAchieveWeighting AS VARCHAR(5) ) + ''', 
+		''' + @Mode + ''', 
+		''' + @FISOutputTable + ''', 
+		''' + @ProSolutionDatabaseLocation + ''', 
+		''' + @ProAchieveDatabaseLocation + ''',
+		''' + @ProviderFieldCourseLocation + ''',
+		''' + @ProviderFieldCourseFormat + ''',
+		''' + @OverrideEngFac + ''',
+		''' + @OverrideMatFac + ''',
+		''' + @OverrideEngTeam + ''',
+		''' + @OverrideMatTeam + ''',
+		''' + @OverrideEngCostCentre + ''',
+		''' + @OverrideMatCostCentre + ''',
+		''' + @OverridePartnerFac + ''',
+		''' + @OverridePartnerTeam + ''',
+		''' + @OverridePartnerCostCentre + ''''
+
+EXEC(@SQL)

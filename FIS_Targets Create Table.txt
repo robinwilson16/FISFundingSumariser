@@ -1,0 +1,7 @@
+DROP TABLE FIS_TeamTargets
+CREATE TABLE FIS_TeamTargets (
+	AcademicYear VARCHAR(5),
+	TeamCode VARCHAR(20),
+	Measure VARCHAR(20),
+	Target INT
+)

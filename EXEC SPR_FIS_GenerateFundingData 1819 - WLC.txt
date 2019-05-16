@@ -1,0 +1,49 @@
+DECLARE @FISDatabase VARCHAR(100) = 'Hegel.FIS_CY'
+DECLARE @AcademicYear VARCHAR(5) = '18/19'
+DECLARE @ILRReturn int = 7
+DECLARE @IsFinalReturn bit = 0
+DECLARE @Split1619Funding bit = 1
+DECLARE @FutureAchieveWeighting DECIMAL(3,2) = 0.8
+DECLARE @Mode CHAR(1) = 'R'
+DECLARE @FISOutputTable VARCHAR(200) = 'wlc.dbo.'
+DECLARE @ProSolutionDatabaseLocation VARCHAR(200) = 'fifi1.ProSolution.dbo.'
+DECLARE @ProAchieveDatabaseLocation VARCHAR(200) = 'Hegel.ProGeneral.dbo.'
+DECLARE @ProviderFieldCourseLocation CHAR(1) = 'A'
+DECLARE @ProviderFieldCourseFormat VARCHAR(50) = 'CRS.Code'
+DECLARE @OverrideEngFac VARCHAR(50) = '14'
+DECLARE @OverrideMatFac VARCHAR(50) = '14'
+DECLARE @OverrideEngTeam VARCHAR(50) = '1410'
+DECLARE @OverrideMatTeam VARCHAR(50) = '1420'
+DECLARE @OverrideEngCostCentre VARCHAR(50) = 'NULL'
+DECLARE @OverrideMatCostCentre VARCHAR(50) = 'NULL'
+DECLARE @OverridePartnerFac VARCHAR(50) = 'NULL'
+DECLARE @OverridePartnerTeam VARCHAR(50) = 'NULL'
+DECLARE @OverridePartnerCostCentre VARCHAR(50) = 'NULL'
+
+DECLARE @SQL VARCHAR(MAX);
+
+SET @SQL = '
+	EXEC SPR_FIS_GenerateFundingData
+		''' + @FISDatabase + ''', 
+		''' + @AcademicYear + ''', 
+		''' + CAST ( @ILRReturn AS VARCHAR(2) ) + ''', 
+		''' + CAST ( @IsFinalReturn AS CHAR(1) ) + ''', 
+		''' + CAST ( @Split1619Funding AS CHAR(1) ) + ''', 
+		''' + CAST ( @FutureAchieveWeighting AS VARCHAR(5) ) + ''', 
+		''' + @Mode + ''', 
+		''' + @FISOutputTable + ''', 
+		''' + @ProSolutionDatabaseLocation + ''', 
+		''' + @ProAchieveDatabaseLocation + ''',
+		''' + @ProviderFieldCourseLocation + ''',
+		''' + @ProviderFieldCourseFormat + ''',
+		''' + @OverrideEngFac + ''',
+		''' + @OverrideMatFac + ''',
+		''' + @OverrideEngTeam + ''',
+		''' + @OverrideMatTeam + ''',
+		''' + @OverrideEngCostCentre + ''',
+		''' + @OverrideMatCostCentre + ''',
+		''' + @OverridePartnerFac + ''',
+		''' + @OverridePartnerTeam + ''',
+		''' + @OverridePartnerCostCentre + ''''
+
+EXEC(@SQL)

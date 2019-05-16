@@ -1,0 +1,6 @@
+CREATE TABLE FIS_Allocations (
+	AcademicYear VARCHAR(5),
+	AllocationID VARCHAR(50),
+	Amount DECIMAL(12, 2 ),
+	CONSTRAINT PK_FIS_Allocations PRIMARY KEY (AcademicYear, AllocationID)
+)

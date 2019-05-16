@@ -1,0 +1,340 @@
+
+DECLARE @AcademicYear VARCHAR(5) = '18/19'
+DECLARE @ILRReturn DATETIME2 = '2019-01-04 10:36:56'
+
+SELECT
+	FD.AcademicYear,
+	FD.ILRReturn,
+	FD.ILRReturnDate,
+	FD.SQLDatabase,
+	FD.FundLine,
+	FD.Faculty,
+	FD.SortFaculty,
+	SortOrder = MIN ( FD.SortOrder ),
+	Target = SUM ( FD.Target ),
+	Learners = SUM ( FD.Learners ),
+	Enrols = SUM ( FD.Enrols ),
+	OnProgPaymentYrEnd = SUM ( FD.OnProgPaymentYrEnd ),
+	LearnSuppPaymentYrEnd = SUM ( FD.LearnSuppPaymentYrEnd ),
+	AchCompPaymentYrEnd = SUM ( FD.AchCompPaymentYrEnd ),
+	BalancePaymentYrEnd = SUM ( FD.BalancePaymentYrEnd ),
+	EmpOutcomePayYrEnd = SUM ( FD.EmpOutcomePayYrEnd ),
+	TotFundYrEnd = SUM ( FD.TotFundYrEnd ),
+	TotFundToTarget = SUM ( FD.TotFundToTarget ),
+	TotFundToTargetPer = SUM ( FD.TotFundToTargetPer ),
+	FutureAchievePaymentWeighted = SUM ( FD.FutureAchievePaymentWeighted ),
+	FutureAchieveWeighting = SUM ( FD.FutureAchieveWeighting )
+FROM (
+
+	--Ensure targets come through for teams not in FIS
+	SELECT
+		FD.AcademicYear,
+		FD.ILRReturn,
+		FD.ILRReturnDate,
+		FD.SQLDatabase,
+		FundLine = 
+			CASE
+				WHEN FD.FundLineSummary LIKE '%Apprenticeship%' THEN 'Apprenticeship'
+				ELSE FD.FundLineSummary
+			END,
+		Faculty = '-- College Total --',
+		Team = RTRIM ( FD.TeamCode ) + ' - ' + FD.TeamName,
+		SortFaculty = 0,
+		SortOrder = 1,
+		Target = MAX ( TAR.Target ),
+		Learners = 0,
+		Enrols = 0,
+		OnProgPaymentYrEnd = 0,
+		LearnSuppPaymentYrEnd = 0,
+		AchCompPaymentYrEnd = 0,
+		BalancePaymentYrEnd = 0,
+		EmpOutcomePayYrEnd = 0,
+		TotFundYrEnd = 0,
+		TotFundToTarget = 0,
+		TotFundToTargetPer = 0,
+		FutureAchievePaymentWeighted = 0,
+		FutureAchieveWeighting = FD.FutureAchieveWeighting
+	FROM FIS_FundingData FD
+	INNER JOIN FIS_TeamTargets TAR
+		ON TAR.AcademicYear = FD.AcademicYear
+		AND TAR.Measure = 
+			CASE
+				WHEN FD.FundLineSummary = '16-19 Students (inc. High Needs)' THEN 'EFA_INCOME'
+				WHEN FD.FundLineSummary = 'Advanced Learner Loan (ALL)' THEN 'ADVLOAN_INCOME'
+				WHEN FD.FundLineSummary = 'AEB - Other Learning (non-procured)' THEN 'AEB_INCOME'
+				WHEN FD.FundLineSummary = 'Higher Education' THEN 'HE_INCOME'
+				WHEN FD.FundLineSummary = 'Apprenticeship' THEN 'APPS_INCOME'
+				ELSE NULL
+			END
+	LEFT JOIN (
+		SELECT DISTINCT
+			FD.FundLineSummary,
+			FD.TeamCode
+		FROM FIS_FundingData FD
+		WHERE
+			--FD.AcademicYear = @AcademicYear
+			--AND FD.ILRReturnDate = @ILRReturn
+			(
+				FD.IsFunded = 1
+				OR FD.IsAdvLearnLoan = 1
+			)
+			--AND FD.FundLine IN ( @FundLine )
+			--AND FD.TeamCode IN ( @Team )
+	) NE
+		ON NE.FundLineSummary = FD.FundLineSummary
+		AND NE.TeamCode = TAR.TeamCode
+	WHERE
+		--FD.AcademicYear = @AcademicYear
+		--AND FD.ILRReturnDate = @ILRReturn
+		(
+			FD.IsFunded = 1
+			OR FD.IsAdvLearnLoan = 1
+		)
+		--AND FD.FundLine IN ( @FundLine )
+		--AND FD.TeamCode IN ( @Team )
+		AND NE.TeamCode IS NULL
+		AND TAR.Target > 0
+	GROUP BY
+		FD.AcademicYear,
+		FD.ILRReturn,
+		FD.ILRReturnDate,
+		FD.SQLDatabase,
+		CASE
+			WHEN FD.FundLineSummary LIKE '%Apprenticeship%' THEN 'Apprenticeship'
+			ELSE FD.FundLineSummary
+		END,
+		RTRIM ( FD.TeamCode ) + ' - ' + FD.TeamName,
+		FD.FutureAchieveWeighting
+
+	--UNION ALL
+
+	----Ensure targets come through for teams not in FIS
+	--SELECT DISTINCT
+	--	FD.AcademicYear,
+	--	FD.ILRReturn,
+	--	FD.ILRReturnDate,
+	--	FD.SQLDatabase,
+	--	FundLine = 
+	--		CASE
+	--			WHEN FD.FundLineSummary LIKE '%Apprenticeship%' THEN 'Apprenticeship'
+	--			ELSE FD.FundLineSummary
+	--		END,
+	--	Faculty = '--UNK-- -- Unknown --',
+	--  Team = RTRIM ( FD.TeamCode ) + ' - ' + FD.TeamName,
+	--	SortFaculty = 1,
+	--	SortOrder = 100,
+	--	Target = TAR.Target,
+	--	Learners = 0,
+	--	Enrols = 0,
+	--	OnProgPaymentYrEnd = 0,
+	--	LearnSuppPaymentYrEnd = 0,
+	--	AchCompPaymentYrEnd = 0,
+	--	BalancePaymentYrEnd = 0,
+	--	EmpOutcomePayYrEnd = 0,
+	--	TotFundYrEnd = 0,
+	--	TotFundToTarget = 0,
+	--	TotFundToTargetPer = 0,
+	--	FutureAchievePaymentWeighted = 0,
+	--	FutureAchieveWeighting = FD.FutureAchieveWeighting
+	--FROM FIS_FundingData FD
+	--INNER JOIN FIS_TeamTargets TAR
+	--	ON TAR.AcademicYear = FD.AcademicYear
+	--	AND TAR.Measure = 
+	--		CASE
+	--			WHEN FD.FundLineSummary = '16-19 Students (inc. High Needs)' THEN 'EFA_INCOME'
+	--			WHEN FD.FundLineSummary = 'Advanced Learner Loan (ALL)' THEN 'ADVLOAN_INCOME'
+	--			WHEN FD.FundLineSummary = 'AEB - Other Learning (non-procured)' THEN 'AEB_INCOME'
+	--			WHEN FD.FundLineSummary = 'Higher Education' THEN 'HE_INCOME'
+	--			WHEN FD.FundLineSummary = 'Apprenticeship' THEN 'APPS_INCOME'
+	--			ELSE NULL
+	--		END
+	--LEFT JOIN (
+	--	SELECT DISTINCT
+	--		FD.FundLineSummary,
+	--		FD.TeamCode
+	--	FROM FIS_FundingData FD
+	--	WHERE
+	--		FD.AcademicYear = @AcademicYear
+	--		AND FD.ILRReturnDate = @ILRReturn
+	--		AND (
+	--			FD.IsFunded = 1
+	--			OR FD.IsAdvLearnLoan = 1
+	--		)
+	--		--AND FD.FundLine IN ( @FundLine )
+	--		--AND FD.TeamCode IN ( @Team )
+	--) NE
+	--	ON NE.FundLineSummary = FD.FundLineSummary
+	--	AND NE.TeamCode = TAR.TeamCode
+	--WHERE
+	--	FD.AcademicYear = @AcademicYear
+	--	AND FD.ILRReturnDate = @ILRReturn
+	--	AND (
+	--		FD.IsFunded = 1
+	--		OR FD.IsAdvLearnLoan = 1
+	--	)
+	--	--AND FD.FundLine IN ( @FundLine )
+	--	--AND FD.TeamCode IN ( @Team )
+	--	AND NE.TeamCode IS NULL
+	--	AND TAR.Target > 0
+
+	UNION ALL
+
+	SELECT
+		FD.AcademicYear,
+		FD.ILRReturn,
+		FD.ILRReturnDate,
+		FD.SQLDatabase,
+		FundLine = 
+			CASE
+				WHEN FD.FundLineSummary LIKE '%Apprenticeship%' THEN 'Apprenticeship'
+				ELSE FD.FundLineSummary
+			END,
+		Faculty = '-- College Total --',
+		Team = RTRIM ( FD.TeamCode ) + ' - ' + FD.TeamName,
+		SortFaculty = 0,
+		SortOrder = MIN ( FD.SortOrder ),
+		Target = MAX ( TAR.Target ),
+		Learners = COUNT ( DISTINCT FD.LearnerRef ),
+		Enrols = COUNT ( FD.LearnerRef ),
+		OnProgPaymentYrEnd = SUM ( FD.OnProgPaymentYrEnd ),
+		LearnSuppPaymentYrEnd = SUM ( FD.LearnSuppPaymentYrEnd ),
+		AchCompPaymentYrEnd = SUM ( FD.AchCompPaymentYrEnd ),
+		BalancePaymentYrEnd = SUM ( FD.BalancePaymentYrEnd ),
+		EmpOutcomePayYrEnd = SUM ( FD.EmpOutcomePayYrEnd ),
+		TotFundYrEnd = SUM ( FD.TotFundYrEnd ),
+		TotFundToTarget =
+			CASE
+				WHEN COALESCE ( SUM ( TAR.Target ), 0 ) = 0 THEN NULL
+				ELSE SUM ( COALESCE ( FD.TotFundYrEnd, 0 ) ) - SUM ( TAR.Target )
+			END,
+		TotFundToTargetPer = 
+			CASE
+				WHEN COALESCE ( SUM ( TAR.Target ), 0 ) = 0 THEN NULL
+				ELSE ROUND ( ( ( 100 / SUM ( TAR.Target ) ) * SUM ( COALESCE ( FD.TotFundYrEnd, 0 ) ) ) / 100, 4 )
+			END,
+		FutureAchievePaymentWeighted = SUM ( COALESCE ( FD.FutureAchievePaymentWeighted, 0 ) ),
+		FutureAchieveWeighting = FD.FutureAchieveWeighting
+	FROM FIS_FundingData FD
+	LEFT JOIN FIS_TeamTargets TAR
+		ON TAR.TeamCode = FD.TeamCode
+		AND TAR.AcademicYear = FD.AcademicYear
+		AND TAR.Measure = 
+			CASE
+				WHEN FD.FundLineSummary = '16-19 Students (inc. High Needs)' THEN 'EFA_INCOME'
+				WHEN FD.FundLineSummary = 'Advanced Learner Loan (ALL)' THEN 'ADVLOAN_INCOME'
+				WHEN FD.FundLineSummary = 'AEB - Other Learning (non-procured)' THEN 'AEB_INCOME'
+				WHEN FD.FundLineSummary = 'Higher Education' THEN 'HE_INCOME'
+				WHEN FD.FundLineSummary = 'Apprenticeship' THEN 'APPS_INCOME'
+				ELSE NULL
+			END
+	WHERE
+		FD.AcademicYear = @AcademicYear
+		AND FD.ILRReturnDate = @ILRReturn
+		AND (
+			FD.IsFunded = 1
+			OR FD.IsAdvLearnLoan = 1
+		)
+		--AND FD.FundLine IN ( @FundLine )
+		--AND FD.TeamCode IN ( @Team )
+	GROUP BY
+		FD.AcademicYear,
+		FD.ILRReturn,
+		FD.ILRReturnDate,
+		FD.SQLDatabase,
+		CASE
+			WHEN FD.FundLineSummary LIKE '%Apprenticeship%' THEN 'Apprenticeship'
+			ELSE FD.FundLineSummary
+		END,
+		FD.FutureAchieveWeighting,
+		RTRIM ( FD.TeamCode ) + ' - ' + FD.TeamName
+	HAVING
+		SUM ( FD.TotFundYrEnd ) > 0
+
+	--UNION ALL
+
+	--SELECT
+	--	FD.AcademicYear,
+	--	FD.ILRReturn,
+	--	FD.ILRReturnDate,
+	--	FD.SQLDatabase,
+	--	FundLine = 
+	--		CASE
+	--			WHEN FD.FundLineSummary LIKE '%Apprenticeship%' THEN 'Apprenticeship'
+	--			ELSE FD.FundLineSummary
+	--		END,
+	--	Faculty = RTRIM ( FD.FacCode ) + ' - ' + FD.FacName,
+	--  Team = RTRIM ( FD.TeamCode ) + ' - ' + FD.TeamName,
+	--	SortFaculty = 1,
+	--	SortOrder = MIN ( FD.SortOrder ) + 100,
+	--	Target = MAX ( TAR.Target ),
+	--	Learners = COUNT ( DISTINCT FD.LearnerRef ),
+	--	Enrols = COUNT ( FD.LearnerRef ),
+	--	OnProgPaymentYrEnd = SUM ( FD.OnProgPaymentYrEnd ),
+	--	LearnSuppPaymentYrEnd = SUM ( FD.LearnSuppPaymentYrEnd ),
+	--	AchCompPaymentYrEnd = SUM ( FD.AchCompPaymentYrEnd ),
+	--	BalancePaymentYrEnd = SUM ( FD.BalancePaymentYrEnd ),
+	--	EmpOutcomePayYrEnd = SUM ( FD.EmpOutcomePayYrEnd ),
+	--	TotFundYrEnd = SUM ( FD.TotFundYrEnd ),
+	--	TotFundToTarget =
+	--		CASE
+	--			WHEN COALESCE ( SUM ( TAR.Target ), 0 ) = 0 THEN NULL
+	--			ELSE SUM ( COALESCE ( FD.TotFundYrEnd, 0 ) ) - SUM ( TAR.Target )
+	--		END,
+	--	TotFundToTargetPer = 
+	--		CASE
+	--			WHEN COALESCE ( SUM ( TAR.Target ), 0 ) = 0 THEN NULL
+	--			ELSE ROUND ( ( ( 100 / SUM ( TAR.Target ) ) * SUM ( COALESCE ( FD.TotFundYrEnd, 0 ) ) ) / 100, 4 )
+	--		END,
+	--	FutureAchievePaymentWeighted = SUM ( COALESCE ( FD.FutureAchievePaymentWeighted, 0 ) ),
+	--	FutureAchieveWeighting = FD.FutureAchieveWeighting
+	--FROM FIS_FundingData FD
+	--LEFT JOIN FIS_TeamTargets TAR
+	--	ON TAR.TeamCode = FD.TeamCode
+	--	AND TAR.AcademicYear = FD.AcademicYear
+	--	AND TAR.Measure = 
+	--		CASE
+	--			WHEN FD.FundLineSummary = '16-19 Students (inc. High Needs)' THEN 'EFA_INCOME'
+	--			WHEN FD.FundLineSummary = 'Advanced Learner Loan (ALL)' THEN 'ADVLOAN_INCOME'
+	--			WHEN FD.FundLineSummary = 'AEB - Other Learning (non-procured)' THEN 'AEB_INCOME'
+	--			WHEN FD.FundLineSummary = 'Higher Education' THEN 'HE_INCOME'
+	--			WHEN FD.FundLineSummary = 'Apprenticeship' THEN 'APPS_INCOME'
+	--			ELSE NULL
+	--		END
+	--WHERE
+	--	FD.AcademicYear = @AcademicYear
+	--	AND FD.ILRReturnDate = @ILRReturn
+	--	AND (
+	--		FD.IsFunded = 1
+	--		OR FD.IsAdvLearnLoan = 1
+	--	)
+	--	--AND FD.FundLine IN ( @FundLine )
+	--	--AND FD.TeamCode IN ( @Team )
+	--GROUP BY
+	--	FD.AcademicYear,
+	--	FD.ILRReturn,
+	--	FD.ILRReturnDate,
+	--	FD.SQLDatabase,
+	--	CASE
+	--		WHEN FD.FundLineSummary LIKE '%Apprenticeship%' THEN 'Apprenticeship'
+	--		ELSE FD.FundLineSummary
+	--	END,
+	--	FD.FutureAchieveWeighting,
+	--	RTRIM ( FD.FacCode ) + ' - ' + FD.FacName
+	--  RTRIM ( FD.TeamCode ) + ' - ' + FD.TeamName,
+	--HAVING
+	--	SUM ( FD.TotFundYrEnd ) > 0
+) FD
+GROUP BY
+	FD.AcademicYear,
+	FD.ILRReturn,
+	FD.ILRReturnDate,
+	FD.SQLDatabase,
+	FD.FundLine,
+	FD.Faculty,
+	FD.SortFaculty
+
+ORDER BY
+	FD.SortFaculty,
+	FD.Faculty,
+	MIN ( FD.SortOrder ),
+	FD.FundLine

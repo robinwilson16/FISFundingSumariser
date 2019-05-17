@@ -139,6 +139,246 @@ BEGIN
 							 ''19-24 Students with an EHCP'',
 							 ''19+ Continuing Students (excluding EHCP)''
 						)
+							 THEN ''16-19 Funding''
+					
+					WHEN 
+						COALESCE ( 
+							CASE WHEN LD.FundModel = ''25'' THEN HRS.FundLine END,
+							FM25.FundLine, 
+							CASE WHEN ALB.AdvLoan = 1 AND ALB.FundLine = ''None'' THEN ''Advanced Learner Loan (ALL)'' END,
+							AEC.LearnDelInitialFundLineType,
+							FM35.FundLine,
+							CASE WHEN HE.LearnRefNumber IS NOT NULL THEN ''Higher Education'' END,
+							CASE WHEN LD.FundModel = ''99'' THEN ''Full Cost'' END 
+						) LIKE ''16-18 Apprenticeship%''
+						AND COALESCE ( 
+							CASE WHEN LD.FundModel = ''25'' THEN HRS.FundLine END,
+							FM25.FundLine, 
+							CASE WHEN ALB.AdvLoan = 1 AND ALB.FundLine = ''None'' THEN ''Advanced Learner Loan (ALL)'' END,
+							AEC.LearnDelInitialFundLineType,
+							FM35.FundLine,
+							CASE WHEN HE.LearnRefNumber IS NOT NULL THEN ''Higher Education'' END,
+							CASE WHEN LD.FundModel = ''99'' THEN ''Full Cost'' END 
+						) NOT LIKE ''%Levy%''
+							 THEN ''Apprenticeships (Legacy)''
+
+					WHEN 
+						COALESCE ( 
+							CASE WHEN LD.FundModel = ''25'' THEN HRS.FundLine END,
+							FM25.FundLine, 
+							CASE WHEN ALB.AdvLoan = 1 AND ALB.FundLine = ''None'' THEN ''Advanced Learner Loan (ALL)'' END,
+							AEC.LearnDelInitialFundLineType,
+							FM35.FundLine,
+							CASE WHEN HE.LearnRefNumber IS NOT NULL THEN ''Higher Education'' END,
+							CASE WHEN LD.FundModel = ''99'' THEN ''Full Cost'' END 
+						) LIKE ''16-18 Apprenticeship%''
+						AND COALESCE ( 
+							CASE WHEN LD.FundModel = ''25'' THEN HRS.FundLine END,
+							FM25.FundLine, 
+							CASE WHEN ALB.AdvLoan = 1 AND ALB.FundLine = ''None'' THEN ''Advanced Learner Loan (ALL)'' END,
+							AEC.LearnDelInitialFundLineType,
+							FM35.FundLine,
+							CASE WHEN HE.LearnRefNumber IS NOT NULL THEN ''Higher Education'' END,
+							CASE WHEN LD.FundModel = ''99'' THEN ''Full Cost'' END 
+						) LIKE ''%Non-Levy%''
+							 THEN ''Apprenticeships (Reformed)''
+					
+					WHEN 
+						COALESCE ( 
+							CASE WHEN LD.FundModel = ''25'' THEN HRS.FundLine END,
+							FM25.FundLine, 
+							CASE WHEN ALB.AdvLoan = 1 AND ALB.FundLine = ''None'' THEN ''Advanced Learner Loan (ALL)'' END,
+							AEC.LearnDelInitialFundLineType,
+							FM35.FundLine,
+							CASE WHEN HE.LearnRefNumber IS NOT NULL THEN ''Higher Education'' END,
+							CASE WHEN LD.FundModel = ''99'' THEN ''Full Cost'' END 
+						) LIKE ''16-18 Apprenticeship%''
+						AND COALESCE ( 
+							CASE WHEN LD.FundModel = ''25'' THEN HRS.FundLine END,
+							FM25.FundLine, 
+							CASE WHEN ALB.AdvLoan = 1 AND ALB.FundLine = ''None'' THEN ''Advanced Learner Loan (ALL)'' END,
+							AEC.LearnDelInitialFundLineType,
+							FM35.FundLine,
+							CASE WHEN HE.LearnRefNumber IS NOT NULL THEN ''Higher Education'' END,
+							CASE WHEN LD.FundModel = ''99'' THEN ''Full Cost'' END 
+						) NOT LIKE ''%Non-Levy%''
+						AND COALESCE ( 
+							CASE WHEN LD.FundModel = ''25'' THEN HRS.FundLine END,
+							FM25.FundLine, 
+							CASE WHEN ALB.AdvLoan = 1 AND ALB.FundLine = ''None'' THEN ''Advanced Learner Loan (ALL)'' END,
+							AEC.LearnDelInitialFundLineType,
+							FM35.FundLine,
+							CASE WHEN HE.LearnRefNumber IS NOT NULL THEN ''Higher Education'' END,
+							CASE WHEN LD.FundModel = ''99'' THEN ''Full Cost'' END 
+						) LIKE ''%Levy%''
+							 THEN ''Apprenticeships (Reformed)''
+	'
+
+    SET @SQLString += 
+        N'
+					WHEN 
+						COALESCE ( 
+							CASE WHEN LD.FundModel = ''25'' THEN HRS.FundLine END,
+							FM25.FundLine, 
+							CASE WHEN ALB.AdvLoan = 1 AND ALB.FundLine = ''None'' THEN ''Advanced Learner Loan (ALL)'' END,
+							AEC.LearnDelInitialFundLineType,
+							FM35.FundLine,
+							CASE WHEN HE.LearnRefNumber IS NOT NULL THEN ''Higher Education'' END,
+							CASE WHEN LD.FundModel = ''99'' THEN ''Full Cost'' END 
+						) LIKE ''19% Apprenticeship%''
+						AND COALESCE ( 
+							CASE WHEN LD.FundModel = ''25'' THEN HRS.FundLine END,
+							FM25.FundLine, 
+							CASE WHEN ALB.AdvLoan = 1 AND ALB.FundLine = ''None'' THEN ''Advanced Learner Loan (ALL)'' END,
+							AEC.LearnDelInitialFundLineType,
+							FM35.FundLine,
+							CASE WHEN HE.LearnRefNumber IS NOT NULL THEN ''Higher Education'' END,
+							CASE WHEN LD.FundModel = ''99'' THEN ''Full Cost'' END 
+						) NOT LIKE ''%Levy%''
+							 THEN ''Apprenticeships (Legacy)''
+
+					WHEN 
+						COALESCE ( 
+							CASE WHEN LD.FundModel = ''25'' THEN HRS.FundLine END,
+							FM25.FundLine, 
+							CASE WHEN ALB.AdvLoan = 1 AND ALB.FundLine = ''None'' THEN ''Advanced Learner Loan (ALL)'' END,
+							AEC.LearnDelInitialFundLineType,
+							FM35.FundLine,
+							CASE WHEN HE.LearnRefNumber IS NOT NULL THEN ''Higher Education'' END,
+							CASE WHEN LD.FundModel = ''99'' THEN ''Full Cost'' END 
+						) LIKE ''19% Apprenticeship%''
+						AND COALESCE ( 
+							CASE WHEN LD.FundModel = ''25'' THEN HRS.FundLine END,
+							FM25.FundLine, 
+							CASE WHEN ALB.AdvLoan = 1 AND ALB.FundLine = ''None'' THEN ''Advanced Learner Loan (ALL)'' END,
+							AEC.LearnDelInitialFundLineType,
+							FM35.FundLine,
+							CASE WHEN HE.LearnRefNumber IS NOT NULL THEN ''Higher Education'' END,
+							CASE WHEN LD.FundModel = ''99'' THEN ''Full Cost'' END 
+						) LIKE ''%Non-Levy%''
+							 THEN ''Apprenticeships (Reformed)''
+	'
+
+    SET @SQLString += 
+        N'
+					WHEN 
+						COALESCE ( 
+							CASE WHEN LD.FundModel = ''25'' THEN HRS.FundLine END,
+							FM25.FundLine, 
+							CASE WHEN ALB.AdvLoan = 1 AND ALB.FundLine = ''None'' THEN ''Advanced Learner Loan (ALL)'' END,
+							AEC.LearnDelInitialFundLineType,
+							FM35.FundLine,
+							CASE WHEN HE.LearnRefNumber IS NOT NULL THEN ''Higher Education'' END,
+							CASE WHEN LD.FundModel = ''99'' THEN ''Full Cost'' END 
+						) LIKE ''19% Apprenticeship%''
+						AND COALESCE ( 
+							CASE WHEN LD.FundModel = ''25'' THEN HRS.FundLine END,
+							FM25.FundLine, 
+							CASE WHEN ALB.AdvLoan = 1 AND ALB.FundLine = ''None'' THEN ''Advanced Learner Loan (ALL)'' END,
+							AEC.LearnDelInitialFundLineType,
+							FM35.FundLine,
+							CASE WHEN HE.LearnRefNumber IS NOT NULL THEN ''Higher Education'' END,
+							CASE WHEN LD.FundModel = ''99'' THEN ''Full Cost'' END 
+						) NOT LIKE ''%Non-Levy%''
+						AND COALESCE ( 
+							CASE WHEN LD.FundModel = ''25'' THEN HRS.FundLine END,
+							FM25.FundLine, 
+							CASE WHEN ALB.AdvLoan = 1 AND ALB.FundLine = ''None'' THEN ''Advanced Learner Loan (ALL)'' END,
+							AEC.LearnDelInitialFundLineType,
+							FM35.FundLine,
+							CASE WHEN HE.LearnRefNumber IS NOT NULL THEN ''Higher Education'' END,
+							CASE WHEN LD.FundModel = ''99'' THEN ''Full Cost'' END 
+						) LIKE ''%Levy%''
+							 THEN ''Apprenticeships (Reformed)''
+                    WHEN 
+						COALESCE ( 
+							CASE WHEN LD.FundModel = ''25'' THEN HRS.FundLine END,
+							FM25.FundLine, 
+							CASE WHEN ALB.AdvLoan = 1 AND ALB.FundLine = ''None'' THEN ''Advanced Learner Loan (ALL)'' END,
+							AEC.LearnDelInitialFundLineType,
+							FM35.FundLine,
+							CASE WHEN HE.LearnRefNumber IS NOT NULL THEN ''Higher Education'' END,
+							CASE WHEN LD.FundModel = ''99'' THEN ''Full Cost'' END 
+						) LIKE ''Loan%''
+                            THEN ''Loans''
+
+                    WHEN 
+						COALESCE ( 
+							CASE WHEN LD.FundModel = ''25'' THEN HRS.FundLine END,
+							FM25.FundLine, 
+							CASE WHEN ALB.AdvLoan = 1 AND ALB.FundLine = ''None'' THEN ''Advanced Learner Loan (ALL)'' END,
+							AEC.LearnDelInitialFundLineType,
+							FM35.FundLine,
+							CASE WHEN HE.LearnRefNumber IS NOT NULL THEN ''Higher Education'' END,
+							CASE WHEN LD.FundModel = ''99'' THEN ''Full Cost'' END 
+						) LIKE ''Higher Education%''
+                            THEN ''HE''
+
+                    WHEN 
+						COALESCE ( 
+							CASE WHEN LD.FundModel = ''25'' THEN HRS.FundLine END,
+							FM25.FundLine, 
+							CASE WHEN ALB.AdvLoan = 1 AND ALB.FundLine = ''None'' THEN ''Advanced Learner Loan (ALL)'' END,
+							AEC.LearnDelInitialFundLineType,
+							FM35.FundLine,
+							CASE WHEN HE.LearnRefNumber IS NOT NULL THEN ''Higher Education'' END,
+							CASE WHEN LD.FundModel = ''99'' THEN ''Full Cost'' END 
+						) LIKE ''%AEB%''
+                            THEN ''Adult''
+
+                    WHEN 
+						COALESCE ( 
+							CASE WHEN LD.FundModel = ''25'' THEN HRS.FundLine END,
+							FM25.FundLine, 
+							CASE WHEN ALB.AdvLoan = 1 AND ALB.FundLine = ''None'' THEN ''Advanced Learner Loan (ALL)'' END,
+							AEC.LearnDelInitialFundLineType,
+							FM35.FundLine,
+							CASE WHEN HE.LearnRefNumber IS NOT NULL THEN ''Higher Education'' END,
+							CASE WHEN LD.FundModel = ''99'' THEN ''Full Cost'' END 
+						) LIKE ''24% Apprenticeship%''
+						AND COALESCE ( 
+							CASE WHEN LD.FundModel = ''25'' THEN HRS.FundLine END,
+							FM25.FundLine, 
+							CASE WHEN ALB.AdvLoan = 1 AND ALB.FundLine = ''None'' THEN ''Advanced Learner Loan (ALL)'' END,
+							AEC.LearnDelInitialFundLineType,
+							FM35.FundLine,
+							CASE WHEN HE.LearnRefNumber IS NOT NULL THEN ''Higher Education'' END,
+							CASE WHEN LD.FundModel = ''99'' THEN ''Full Cost'' END 
+						) NOT LIKE ''%Levy%''
+							 THEN ''Apprenticeships (Legacy)''
+
+					ELSE 
+						COALESCE ( 
+							CASE WHEN LD.FundModel = ''25'' THEN HRS.FundLine END,
+							FM25.FundLine, 
+							CASE WHEN ALB.AdvLoan = 1 AND ALB.FundLine = ''None'' THEN ''Advanced Learner Loan (ALL)'' END,
+							AEC.LearnDelInitialFundLineType,
+							FM35.FundLine,
+							CASE WHEN HE.LearnRefNumber IS NOT NULL THEN ''Higher Education'' END,
+							CASE WHEN LD.FundModel = ''99'' THEN ''Full Cost'' END 
+						)
+				END,
+     '
+
+    SET @SQLString += 
+        N'
+			FundLineDetail =
+				CASE
+					WHEN 
+						COALESCE ( 
+							CASE WHEN LD.FundModel = ''25'' THEN HRS.FundLine END,
+							FM25.FundLine, 
+							CASE WHEN ALB.AdvLoan = 1 AND ALB.FundLine = ''None'' THEN ''Advanced Learner Loan (ALL)'' END,
+							AEC.LearnDelInitialFundLineType,
+							FM35.FundLine,
+							CASE WHEN HE.LearnRefNumber IS NOT NULL THEN ''Higher Education'' END,
+							CASE WHEN LD.FundModel = ''99'' THEN ''Full Cost'' END 
+						) IN (
+							''16-19 Students (excluding High Needs Students)'',
+							 ''16-19 High Needs Students'',
+							 ''19-24 Students with an EHCP'',
+							 ''19+ Continuing Students (excluding EHCP)''
+						)
 							 THEN ''16-19 Students (inc. High Needs)''
 					
 					WHEN 
@@ -290,6 +530,26 @@ BEGIN
 							CASE WHEN LD.FundModel = ''99'' THEN ''Full Cost'' END 
 						) LIKE ''%Levy%''
 							 THEN ''19+ Apprenticeship (Reformed) Levy''
+                    WHEN 
+						COALESCE ( 
+							CASE WHEN LD.FundModel = ''25'' THEN HRS.FundLine END,
+							FM25.FundLine, 
+							CASE WHEN ALB.AdvLoan = 1 AND ALB.FundLine = ''None'' THEN ''Advanced Learner Loan (ALL)'' END,
+							AEC.LearnDelInitialFundLineType,
+							FM35.FundLine,
+							CASE WHEN HE.LearnRefNumber IS NOT NULL THEN ''Higher Education'' END,
+							CASE WHEN LD.FundModel = ''99'' THEN ''Full Cost'' END 
+						) LIKE ''24% Apprenticeship%''
+						AND COALESCE ( 
+							CASE WHEN LD.FundModel = ''25'' THEN HRS.FundLine END,
+							FM25.FundLine, 
+							CASE WHEN ALB.AdvLoan = 1 AND ALB.FundLine = ''None'' THEN ''Advanced Learner Loan (ALL)'' END,
+							AEC.LearnDelInitialFundLineType,
+							FM35.FundLine,
+							CASE WHEN HE.LearnRefNumber IS NOT NULL THEN ''Higher Education'' END,
+							CASE WHEN LD.FundModel = ''99'' THEN ''Full Cost'' END 
+						) NOT LIKE ''%Levy%''
+							 THEN ''19+ Apprenticeship (Legacy)''
 
 					ELSE 
 						COALESCE ( 
@@ -302,6 +562,10 @@ BEGIN
 							CASE WHEN LD.FundModel = ''99'' THEN ''Full Cost'' END 
 						)
 				END,
+    '
+
+    SET @SQLString += 
+        N'
 			FundModel = LD.FundModel,
 			SortOrder =
 				CASE

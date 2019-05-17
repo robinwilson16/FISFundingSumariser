@@ -120,6 +120,7 @@ BEGIN
 
 					FundLine NVARCHAR(100) NULL,
 					FundLineSummary NVARCHAR(100) NULL,
+                    FundLineDetail NVARCHAR(100) NULL,
 					FundModel FLOAT NULL,
 					SortOrder INT NULL,
 					IsFunded INT NULL,

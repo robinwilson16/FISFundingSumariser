@@ -8,6 +8,9 @@ DECLARE @Mode NCHAR(1) = 'R'
 DECLARE @FISOutputTable NVARCHAR(200) = 'ProSolutionReports.dbo.'
 DECLARE @ProSolutionDatabaseLocation NVARCHAR(200) = 'ProSolution.dbo.'
 DECLARE @ProAchieveDatabaseLocation NVARCHAR(200) = 'ussql01.ProGeneral.dbo.'
+DECLARE @ProviderFieldFacLocation NCHAR(1) = 'D'
+DECLARE @ProviderFieldTeamLocation NCHAR(1) = 'C'
+DECLARE @ProviderFieldCostCentreLocation NCHAR(1) = 'B'
 DECLARE @ProviderFieldCourseLocation NCHAR(1) = 'A'
 DECLARE @ProviderFieldCourseFormat NVARCHAR(50) = 'CRS.Code'
 DECLARE @OverrideEngFac NVARCHAR(50) = NULL
@@ -35,6 +38,9 @@ SET @SQLString = N'
 		@FISOutputTable,
 		@ProSolutionDatabaseLocation,
 		@ProAchieveDatabaseLocation,
+		@ProviderFieldFacLocation,
+		@ProviderFieldTeamLocation,
+		@ProviderFieldCostCentreLocation,
 		@ProviderFieldCourseLocation,
 		@ProviderFieldCourseFormat,
 		@OverrideEngFac,
@@ -58,7 +64,10 @@ SET @SQLParams =
         @FISOutputTable NVARCHAR(200),
         @ProSolutionDatabaseLocation NVARCHAR(200),
         @ProAchieveDatabaseLocation NVARCHAR(200),
-        @ProviderFieldCourseLocation NCHAR(1),
+		@ProviderFieldFacLocation NCHAR(1),
+		@ProviderFieldTeamLocation NCHAR(1),
+		@ProviderFieldCostCentreLocation NCHAR(1),
+		@ProviderFieldCourseLocation NCHAR(1),
         @ProviderFieldCourseFormat NVARCHAR(50),
         @OverrideEngFac NVARCHAR(50),
         @OverrideMatFac NVARCHAR(50),
@@ -83,7 +92,10 @@ EXECUTE sp_executesql
     @FISOutputTable = @FISOutputTable,
     @ProSolutionDatabaseLocation = @ProSolutionDatabaseLocation,
     @ProAchieveDatabaseLocation = @ProAchieveDatabaseLocation,
-    @ProviderFieldCourseLocation = @ProviderFieldCourseLocation,
+    @ProviderFieldFacLocation = @ProviderFieldFacLocation,
+	@ProviderFieldTeamLocation = @ProviderFieldTeamLocation,
+	@ProviderFieldCostCentreLocation = @ProviderFieldCostCentreLocation,
+	@ProviderFieldCourseLocation = @ProviderFieldCourseLocation,
     @ProviderFieldCourseFormat = @ProviderFieldCourseFormat,
     @OverrideEngFac = @OverrideEngFac,
     @OverrideMatFac = @OverrideMatFac,

@@ -7,6 +7,9 @@ ALTER PROCEDURE SPR_FIS_FundingData_1819
 	@FutureAchieveWeighting DECIMAL(3,2),
 	@ProSolutionDatabaseLocation NVARCHAR(200),
 	@ProAchieveDatabaseLocation NVARCHAR(200),
+	@ProviderFieldFacLocation CHAR(1),
+	@ProviderFieldTeamLocation CHAR(1),
+	@ProviderFieldCostCentreLocation CHAR(1),
 	@ProviderFieldCourseLocation CHAR(1),
 	@ProviderFieldCourseFormat NVARCHAR(50),
 	@OverrideEngFac NVARCHAR(50),
@@ -22,25 +25,25 @@ AS
 BEGIN
 	SET NOCOUNT ON;
 
-	-- DECLARE @FISDatabase NVARCHAR(50) = 'FIS_1819_R05_F'
-	-- DECLARE @AcademicYear NVARCHAR(5) = '18/19'
-	-- DECLARE @ILRReturn NVARCHAR(2) = '5'
-	-- DECLARE @IsFinalReturn BIT = 1
-	-- DECLARE @Split1619Funding BIT = 1
-	-- DECLARE @FutureAchieveWeighting DECIMAL(3,2) = 0.75
-	-- DECLARE @ProSolutionDatabaseLocation NVARCHAR(200) = 'ProSolution.dbo.'
-	-- DECLARE @ProAchieveDatabaseLocation NVARCHAR(200) = 'ussql01.ProGeneral.dbo.'
-	-- DECLARE @ProviderFieldCourseLocation CHAR(1) = 'A'
-	-- DECLARE @ProviderFieldCourseFormat NVARCHAR(50) = 'CRS.Code + "-" + GRP.Code'
-	-- DECLARE @OverrideEngFac NVARCHAR(50) = 'F05'
-	-- DECLARE @OverrideMatFac NVARCHAR(50) = 'F05'
-	-- DECLARE @OverrideEngTeam NVARCHAR(50) = 'T01'
-	-- DECLARE @OverrideMatTeam NVARCHAR(50) = 'T02'
-	-- DECLARE @OverrideEngCostCentre NVARCHAR(50) = '4461'
-	-- DECLARE @OverrideMatCostCentre NVARCHAR(50) = '4462'
-	-- DECLARE @OverridePartnerFac NVARCHAR(50) = 'F00'
-	-- DECLARE @OverridePartnerTeam NVARCHAR(50) = 'T00'
-	-- DECLARE @OverridePartnerCostCentre NVARCHAR(50) = ''
+	--DECLARE @FISDatabase NVARCHAR(50) = 'FIS_1819_R05_F'
+	--DECLARE @AcademicYear NVARCHAR(5) = '18/19'
+	--DECLARE @ILRReturn NVARCHAR(2) = '5'
+	--DECLARE @IsFinalReturn BIT = 1
+	--DECLARE @Split1619Funding BIT = 1
+	--DECLARE @FutureAchieveWeighting DECIMAL(3,2) = 0.75
+	--DECLARE @ProSolutionDatabaseLocation NVARCHAR(200) = 'ProSolution.dbo.'
+	--DECLARE @ProAchieveDatabaseLocation NVARCHAR(200) = 'ussql01.ProGeneral.dbo.'
+	--DECLARE @ProviderFieldCourseLocation CHAR(1) = 'A'
+	--DECLARE @ProviderFieldCourseFormat NVARCHAR(50) = 'CRS.Code + "-" + GRP.Code'
+	--DECLARE @OverrideEngFac NVARCHAR(50) = 'F05'
+	--DECLARE @OverrideMatFac NVARCHAR(50) = 'F05'
+	--DECLARE @OverrideEngTeam NVARCHAR(50) = 'T01'
+	--DECLARE @OverrideMatTeam NVARCHAR(50) = 'T02'
+	--DECLARE @OverrideEngCostCentre NVARCHAR(50) = '4461'
+	--DECLARE @OverrideMatCostCentre NVARCHAR(50) = '4462'
+	--DECLARE @OverridePartnerFac NVARCHAR(50) = 'F00'
+	--DECLARE @OverridePartnerTeam NVARCHAR(50) = 'T00'
+	--DECLARE @OverridePartnerCostCentre NVARCHAR(50) = ''
 
 	DECLARE @SQLString NVARCHAR(MAX);
     DECLARE @SQLParams NVARCHAR(MAX);
@@ -51,6 +54,7 @@ BEGIN
         N'
 		SELECT
 			AcademicYear = @AcademicYear,
+            ProviderNumber = SRC.UKPRN,
 			ILRReturn = 
 				CASE
 					WHEN LEN ( @ILRReturn ) = 1 THEN ''R0'' + @ILRReturn
@@ -357,43 +361,168 @@ BEGIN
 			SiteName = COALESCE ( PROS.SiteName, ''-- Unknown --'' ),
 			FacCode = 
 				CASE
-					WHEN LD.PartnerUKPRN IS NOT NULL AND LD.FundModel IN ( ''25'', ''35'' ) THEN COALESCE ( PROS.FacCodePartner, ''-'' )
-					ELSE COALESCE ( PROS.FacCode, ''-'' )
+					WHEN LD.PartnerUKPRN IS NOT NULL AND LD.FundModel IN ( ''25'', ''35'' ) THEN COALESCE ( 
+						PROS.FacCodePartner,
+						CASE
+							WHEN @ProviderFieldFacLocation = ''A'' THEN
+								PSDMA.ProvSpecDelMon
+							WHEN @ProviderFieldFacLocation = ''B'' THEN
+								PSDMB.ProvSpecDelMon
+							WHEN @ProviderFieldFacLocation = ''C'' THEN
+								PSDMC.ProvSpecDelMon
+							WHEN @ProviderFieldFacLocation = ''D'' THEN
+								PSDMD.ProvSpecDelMon
+						END,
+						''-'' 
+					)
+					ELSE COALESCE ( 
+						PROS.FacCode, 
+						CASE
+							WHEN @ProviderFieldFacLocation = ''A'' THEN
+								PSDMA.ProvSpecDelMon
+							WHEN @ProviderFieldFacLocation = ''B'' THEN
+								PSDMB.ProvSpecDelMon
+							WHEN @ProviderFieldFacLocation = ''C'' THEN
+								PSDMC.ProvSpecDelMon
+							WHEN @ProviderFieldFacLocation = ''D'' THEN
+								PSDMD.ProvSpecDelMon
+						END,
+						''-''
+				)
 				END,
 			FacName = 
 				CASE
 					WHEN LD.PartnerUKPRN IS NOT NULL AND LD.FundModel IN ( ''25'', ''35'' ) THEN COALESCE ( PROS.FacNamePartner, ''-- Unknown --'' )
 					ELSE COALESCE ( PROS.FacName, ''-- Unknown --'' )
 				END,
-			MainFacCode = COALESCE ( PROSM.FacCode, ''-'' ),
+			MainFacCode = COALESCE ( PROSM.FacCode, MA.FacCode, ''-'' ),
 			MainFacName = COALESCE ( PROSM.FacName, ''-- Unknown --'' ),
 			TeamCode = 
 				CASE
-					WHEN LD.PartnerUKPRN IS NOT NULL AND LD.FundModel IN ( ''25'', ''35'' ) THEN COALESCE ( PROS.TeamCodePartner, ''-'' )
-					ELSE COALESCE ( PROS.TeamCode, ''-'' )
+					WHEN LD.PartnerUKPRN IS NOT NULL AND LD.FundModel IN ( ''25'', ''35'' ) THEN COALESCE ( 
+						PROS.TeamCodePartner,
+						CASE
+							WHEN @ProviderFieldTeamLocation = ''A'' THEN
+								PSDMA.ProvSpecDelMon
+							WHEN @ProviderFieldTeamLocation = ''B'' THEN
+								PSDMB.ProvSpecDelMon
+							WHEN @ProviderFieldTeamLocation = ''C'' THEN
+								PSDMC.ProvSpecDelMon
+							WHEN @ProviderFieldTeamLocation = ''D'' THEN
+								PSDMD.ProvSpecDelMon
+						END,
+						''-'' 
+					)
+					ELSE COALESCE ( 
+						PROS.TeamCode, 
+						CASE
+							WHEN @ProviderFieldTeamLocation = ''A'' THEN
+								PSDMA.ProvSpecDelMon
+							WHEN @ProviderFieldTeamLocation = ''B'' THEN
+								PSDMB.ProvSpecDelMon
+							WHEN @ProviderFieldTeamLocation = ''C'' THEN
+								PSDMC.ProvSpecDelMon
+							WHEN @ProviderFieldTeamLocation = ''D'' THEN
+								PSDMD.ProvSpecDelMon
+						END,
+						''-''
+				)
 				END,
 			TeamName = 
 				CASE
 					WHEN LD.PartnerUKPRN IS NOT NULL AND LD.FundModel IN ( ''25'', ''35'' ) THEN COALESCE ( PROS.TeamNamePartner, ''-- Unknown --'' )
 					ELSE COALESCE ( PROS.TeamName, ''-- Unknown --'' )
 				END,
+	'
+
+    SET @SQLString += 
+        N'
 			CostCentre = 
 				CASE
-					WHEN LD.PartnerUKPRN IS NOT NULL AND LD.FundModel IN ( ''25'', ''35'' ) THEN PROS.CostCentrePartner
-					ELSE PROS.CostCentre
+					WHEN LD.PartnerUKPRN IS NOT NULL AND LD.FundModel IN ( ''25'', ''35'' ) THEN COALESCE ( 
+						PROS.CostCentrePartner,
+						CASE
+							WHEN @ProviderFieldCostCentreLocation = ''A'' THEN
+								PSDMA.ProvSpecDelMon
+							WHEN @ProviderFieldCostCentreLocation = ''B'' THEN
+								PSDMB.ProvSpecDelMon
+							WHEN @ProviderFieldCostCentreLocation = ''C'' THEN
+								PSDMC.ProvSpecDelMon
+							WHEN @ProviderFieldCostCentreLocation = ''D'' THEN
+								PSDMD.ProvSpecDelMon
+						END,
+						''-'' 
+					)
+					ELSE COALESCE ( 
+						PROS.CostCentre, 
+						CASE
+							WHEN @ProviderFieldCostCentreLocation = ''A'' THEN
+								PSDMA.ProvSpecDelMon
+							WHEN @ProviderFieldCostCentreLocation = ''B'' THEN
+								PSDMB.ProvSpecDelMon
+							WHEN @ProviderFieldCostCentreLocation = ''C'' THEN
+								PSDMC.ProvSpecDelMon
+							WHEN @ProviderFieldCostCentreLocation = ''D'' THEN
+								PSDMD.ProvSpecDelMon
+						END,
+						''-''
+				)
 				END,
-			FacCodeOrig = PROS.FacCodeOrig,
+			FacCodeOrig = 
+				CASE
+					WHEN @ProviderFieldFacLocation = ''A'' THEN
+						PSDMA.ProvSpecDelMon
+					WHEN @ProviderFieldFacLocation = ''B'' THEN
+						PSDMB.ProvSpecDelMon
+					WHEN @ProviderFieldFacLocation = ''C'' THEN
+						PSDMC.ProvSpecDelMon
+					WHEN @ProviderFieldFacLocation = ''D'' THEN
+						PSDMD.ProvSpecDelMon
+					ELSE ''-''
+				END,
 			FacNameOrig = PROS.FacNameOrig,
-			TeamCodeOrig = PROS.TeamCodeOrig,
+			TeamCodeOrig = 
+				CASE
+					WHEN @ProviderFieldTeamLocation = ''A'' THEN
+						PSDMA.ProvSpecDelMon
+					WHEN @ProviderFieldTeamLocation = ''B'' THEN
+						PSDMB.ProvSpecDelMon
+					WHEN @ProviderFieldTeamLocation = ''C'' THEN
+						PSDMC.ProvSpecDelMon
+					WHEN @ProviderFieldTeamLocation = ''D'' THEN
+						PSDMD.ProvSpecDelMon
+					ELSE ''-''
+				END,
 			TeamNameOrig = PROS.TeamNameOrig,
-			CostCentreOrig = PROS.CostCentreOrig,
+			CostCentreOrig = 
+				CASE
+					WHEN @ProviderFieldCostCentreLocation = ''A'' THEN
+						PSDMA.ProvSpecDelMon
+					WHEN @ProviderFieldCostCentreLocation = ''B'' THEN
+						PSDMB.ProvSpecDelMon
+					WHEN @ProviderFieldCostCentreLocation = ''C'' THEN
+						PSDMC.ProvSpecDelMon
+					WHEN @ProviderFieldCostCentreLocation = ''D'' THEN
+						PSDMD.ProvSpecDelMon
+					ELSE ''-''
+				END,
 			SSA1Code = AIM.SSA1ID,
 			SSA1Title = SSA1.SSA_Tier1_Desc,
 			SSA2Code = AIM.SSA2ID,
 			SSA2Title = SSA2.SSA_Tier2_Desc,
-			CourseCode = PSDMA.ProvSpecDelMon,
+			CourseCode = 
+				CASE
+					WHEN @ProviderFieldCourseLocation = ''A'' THEN
+						PSDMA.ProvSpecDelMon
+					WHEN @ProviderFieldCourseLocation = ''B'' THEN
+						PSDMB.ProvSpecDelMon
+					WHEN @ProviderFieldCourseLocation = ''C'' THEN
+						PSDMC.ProvSpecDelMon
+					WHEN @ProviderFieldCourseLocation = ''D'' THEN
+						PSDMD.ProvSpecDelMon
+					ELSE ''-'' 
+				END,
 			CourseTitle = PROS.CourseTitle,
-			GroupCode = PSDMB.ProvSpecDelMon,
 
 			AimSequence = LD.AimSeqNumber,
 			AimType = LD.AimType,
@@ -858,9 +987,54 @@ BEGIN
 		INNER JOIN ( --Find main dept
 			SELECT
 				LD.LearnRefNumber,
-				FacCode = PSDMD.ProvSpecDelMon,
-				CourseCode = PSDMA.ProvSpecDelMon,
-				GroupCode = PSDMB.ProvSpecDelMon,
+				FacCode = 
+					CASE
+						WHEN @ProviderFieldFacLocation = ''A'' THEN
+							PSDMA.ProvSpecDelMon
+						WHEN @ProviderFieldFacLocation = ''B'' THEN
+							PSDMB.ProvSpecDelMon
+						WHEN @ProviderFieldFacLocation = ''C'' THEN
+							PSDMC.ProvSpecDelMon
+						WHEN @ProviderFieldFacLocation = ''D'' THEN
+							PSDMD.ProvSpecDelMon
+						ELSE ''-''
+					END,
+				TeamCode = 
+					CASE
+						WHEN @ProviderFieldTeamLocation = ''A'' THEN
+							PSDMA.ProvSpecDelMon
+						WHEN @ProviderFieldTeamLocation = ''B'' THEN
+							PSDMB.ProvSpecDelMon
+						WHEN @ProviderFieldTeamLocation = ''C'' THEN
+							PSDMC.ProvSpecDelMon
+						WHEN @ProviderFieldTeamLocation = ''D'' THEN
+							PSDMD.ProvSpecDelMon
+						ELSE ''-''
+					END,
+				CostCentreCode = 
+					CASE
+						WHEN @ProviderFieldCostCentreLocation = ''A'' THEN
+							PSDMA.ProvSpecDelMon
+						WHEN @ProviderFieldCostCentreLocation = ''B'' THEN
+							PSDMB.ProvSpecDelMon
+						WHEN @ProviderFieldCostCentreLocation = ''C'' THEN
+							PSDMC.ProvSpecDelMon
+						WHEN @ProviderFieldCostCentreLocation = ''D'' THEN
+							PSDMD.ProvSpecDelMon
+						ELSE ''-''
+					END,
+				CourseCode = 
+					CASE
+						WHEN @ProviderFieldCourseLocation = ''A'' THEN
+							PSDMA.ProvSpecDelMon
+						WHEN @ProviderFieldCourseLocation = ''B'' THEN
+							PSDMB.ProvSpecDelMon
+						WHEN @ProviderFieldCourseLocation = ''C'' THEN
+							PSDMC.ProvSpecDelMon
+						WHEN @ProviderFieldCourseLocation = ''D'' THEN
+							PSDMD.ProvSpecDelMon
+						ELSE ''-''
+					END,
 				EnrolmentID = PSDMC.ProvSpecDelMon,
 				RowNum =
 					ROW_NUMBER () OVER (
@@ -892,7 +1066,10 @@ BEGIN
 		) MA
 			On MA.LearnRefNumber = L.LearnRefNumber
 			AND MA.RowNum = 1
-
+	'
+    
+    SET @SQLString += 
+        N'
 		LEFT JOIN ' + @FISDatabase + '.dbo.Valid_LearningDeliveryFAM FFI
 			ON FFI.LearnRefNumber = LD.LearnRefNumber
 			AND FFI.AimSeqNumber = LD.AimSeqNumber
@@ -2033,7 +2210,10 @@ BEGIN
     	@IsFinalReturn bit,
     	@Split1619Funding bit,
     	@FutureAchieveWeighting DECIMAL(3,2),
-    	@ProviderFieldCourseLocation CHAR(1),
+    	@ProviderFieldFacLocation CHAR(1),
+		@ProviderFieldTeamLocation CHAR(1),
+		@ProviderFieldCostCentreLocation CHAR(1),
+		@ProviderFieldCourseLocation CHAR(1),
     	@ProviderFieldCourseFormat NVARCHAR(50),
     	@OverrideEngFac NVARCHAR(50),
     	@OverrideMatFac NVARCHAR(50),
@@ -2053,7 +2233,10 @@ BEGIN
     	@IsFinalReturn = @IsFinalReturn,
     	@Split1619Funding = @Split1619Funding,
     	@FutureAchieveWeighting = @FutureAchieveWeighting,
-    	@ProviderFieldCourseLocation = @ProviderFieldCourseLocation,
+    	@ProviderFieldFacLocation = @ProviderFieldFacLocation,
+		@ProviderFieldTeamLocation = @ProviderFieldTeamLocation,
+		@ProviderFieldCostCentreLocation = @ProviderFieldCostCentreLocation,
+		@ProviderFieldCourseLocation = @ProviderFieldCourseLocation,
     	@ProviderFieldCourseFormat = @ProviderFieldCourseFormat,
     	@OverrideEngFac = @OverrideEngFac,
     	@OverrideMatFac = @OverrideMatFac,

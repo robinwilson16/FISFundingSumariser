@@ -3,9 +3,10 @@ DECLARE @AcademicYear NVARCHAR(5) = '17/18'
 DECLARE @ILRReturn int = 14
 DECLARE @IsFinalReturn bit = 1
 DECLARE @Split1619Funding bit = 1
-DECLARE @FutureAchieveWeighting DECIMAL(3,2) = 0.75
-DECLARE @Mode NCHAR(1) = 'R'
-DECLARE @FISOutputTable NVARCHAR(200) = 'ProSolutionReports.dbo.'
+DECLARE @1619ALSFundingPercent DECIMAL(3,2) = 0.07
+DECLARE @FutureAchieveWeighting DECIMAL(3,2) = 1
+DECLARE @Mode NCHAR(1) = 'I'
+DECLARE @FISOutputTableLocation NVARCHAR(200) = 'ProSolutionReports.dbo.'
 DECLARE @ProSolutionDatabaseLocation NVARCHAR(200) = 'ProSolution.dbo.'
 DECLARE @ProAchieveDatabaseLocation NVARCHAR(200) = 'ussql01.ProGeneral.dbo.'
 DECLARE @ProviderFieldFacLocation NCHAR(1) = 'B'
@@ -33,9 +34,10 @@ SET @SQLString = N'
 		@ILRReturn,
 		@IsFinalReturn,
 		@Split1619Funding,
+        @1619ALSFundingPercent,
 		@FutureAchieveWeighting,
 		@Mode,
-		@FISOutputTable,
+		@FISOutputTableLocation,
 		@ProSolutionDatabaseLocation,
 		@ProAchieveDatabaseLocation,
 		@ProviderFieldFacLocation,
@@ -59,9 +61,10 @@ SET @SQLParams =
         @ILRReturn int,
         @IsFinalReturn bit,
         @Split1619Funding bit,
+        @1619ALSFundingPercent DECIMAL(3,2),
         @FutureAchieveWeighting DECIMAL(3,2),
         @Mode NCHAR(1),
-        @FISOutputTable NVARCHAR(200),
+        @FISOutputTableLocation NVARCHAR(200),
         @ProSolutionDatabaseLocation NVARCHAR(200),
         @ProAchieveDatabaseLocation NVARCHAR(200),
         @ProviderFieldFacLocation NCHAR(1),
@@ -87,9 +90,10 @@ EXECUTE sp_executesql
     @ILRReturn = @ILRReturn,
     @IsFinalReturn = @IsFinalReturn,
     @Split1619Funding = @Split1619Funding,
+    @1619ALSFundingPercent = @1619ALSFundingPercent,
     @FutureAchieveWeighting = @FutureAchieveWeighting,
     @Mode = @Mode,
-    @FISOutputTable = @FISOutputTable,
+    @FISOutputTableLocation = @FISOutputTableLocation,
     @ProSolutionDatabaseLocation = @ProSolutionDatabaseLocation,
     @ProAchieveDatabaseLocation = @ProAchieveDatabaseLocation,
     @ProviderFieldFacLocation = @ProviderFieldFacLocation,

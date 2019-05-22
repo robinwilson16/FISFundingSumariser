@@ -1,12 +1,13 @@
-ALTER PROCEDURE SPR_FIS_GenerateFundingData
+CREATE PROCEDURE SPR_FIS_GenerateFundingData
 	@FISDatabase NVARCHAR(50),
 	@AcademicYear NVARCHAR(5),
 	@ILRReturn NVARCHAR(2),
 	@IsFinalReturn BIT,
 	@Split1619Funding BIT,
+    @1619ALSFundingPercent DECIMAL(3,2),
 	@FutureAchieveWeighting DECIMAL(3,2),
 	@Mode NCHAR(1),
-	@FISOutputTable NVARCHAR(200),
+	@FISOutputTableLocation NVARCHAR(200),
 	@ProSolutionDatabaseLocation NVARCHAR(200),
 	@ProAchieveDatabaseLocation NVARCHAR(200),
 	@ProviderFieldFacLocation NCHAR(1),
@@ -39,7 +40,7 @@ BEGIN
     -- DECLARE @Split1619Funding bit = 1
     -- DECLARE @FutureAchieveWeighting DECIMAL(3,2) = 0.75
     -- DECLARE @Mode NCHAR(1) = 'R'
-    -- DECLARE @FISOutputTable NVARCHAR(200) = 'ProSolutionReports.dbo.'
+    -- DECLARE @FISOutputTableLocation NVARCHAR(200) = 'ProSolutionReports.dbo.'
     -- DECLARE @ProSolutionDatabaseLocation NVARCHAR(200) = 'ProSolution.dbo.'
     -- DECLARE @ProAchieveDatabaseLocation NVARCHAR(200) = 'ussql01.ProGeneral.dbo.'
     -- DECLARE @ProviderFieldCourseLocation NCHAR(1) = 'A'
@@ -73,7 +74,7 @@ BEGIN
 	IF @Mode = 'R' OR @TableExists = 0
 		BEGIN
 			SET @SQLString = N'
-				CREATE TABLE ' + @FISOutputTable + 'FIS_FundingData (
+				CREATE TABLE ' + @FISOutputTableLocation + 'FIS_FundingData (
 					AcademicYear NVARCHAR(5) NULL,
                     ProviderNumber INT NULL,
 					ILRReturn NVARCHAR(3) NULL,
@@ -81,6 +82,7 @@ BEGIN
 					ILRReturnDate DATETIME2 NULL,
 					SQLDatabase NVARCHAR(50) NULL,
 					Is1619FundingSplit INT NULL,
+					ALS1619FundingPercent DECIMAL(3, 2) NULL,
 					InvalidLearners INT NULL,
 
 					LearnerRef NVARCHAR(12) NULL,
@@ -124,6 +126,7 @@ BEGIN
 					FundModel FLOAT NULL,
 					SortOrder INT NULL,
 					IsFunded INT NULL,
+					IsMainAim INT NULL,
 					IsAdvLearnLoan INT NULL,
 					RateBand NVARCHAR(50) NULL,
 					CofEnglish NVARCHAR(100) NULL,
@@ -330,7 +333,7 @@ BEGIN
                 @SQLParams;
 
 			SET @SQLString = N'
-				CREATE CLUSTERED INDEX CX_FIS_FundingData ON ' + @FISOutputTable + 'FIS_FundingData ( AcademicYear, ILRReturn, ILRReturnDate )';
+				CREATE CLUSTERED INDEX CX_FIS_FundingData ON ' + @FISOutputTableLocation + 'FIS_FundingData ( AcademicYear, ILRReturn, ILRReturnDate )';
 
 			SET @SQLParams = N'';
 
@@ -343,7 +346,7 @@ BEGIN
 			SET @SQLString = N'
 				SELECT
 					@NumExistingRecordsOUT = SUM ( 1 )
-				FROM ' + @FISOutputTable + 'FIS_FundingData FD
+				FROM ' + @FISOutputTableLocation + 'FIS_FundingData FD
 				WHERE
 					FD.AcademicYear = @AcademicYear
 					AND FD.SQLDatabase = @FISDatabase';
@@ -363,28 +366,32 @@ BEGIN
 			IF @NumExistingRecords > 0
 				BEGIN
                     SET @SQLString = N'
-                        DELETE FROM ' + @FISOutputTable + 'FIS_FundingData
+                        DELETE FROM ' + @FISOutputTableLocation + 'FIS_FundingData
 						WHERE
 							FD.AcademicYear = @AcademicYear
 							AND FD.SQLDatabase = @FISDatabase';
 
-                    SET @SQLParams = N'';
+                    SET @SQLParams = 
+						N'@AcademicYear NVARCHAR(5)';
 
                     EXECUTE sp_executesql 
                         @SQLString, 
-                        @SQLParams;
+                        @SQLParams,
+						@AcademicYear = @AcademicYear;
 				END
 		END
 
 	SET @SQLString = N'
-		INSERT INTO ' + @FISOutputTable + 'FIS_FundingData
+		INSERT INTO ' + @FISOutputTableLocation + 'FIS_FundingData
 		EXEC SPR_FIS_FundingData_' + REPLACE ( @AcademicYear, '/', '' ) + '
 			@FISDatabase,
 			@AcademicYear,
 			@ILRReturn,
 			@IsFinalReturn,
 			@Split1619Funding,
+            @1619ALSFundingPercent,
 			@FutureAchieveWeighting,
+            @FISOutputTableLocation,
 			@ProSolutionDatabaseLocation,
 			@ProAchieveDatabaseLocation,
 			@ProviderFieldFacLocation,
@@ -408,7 +415,9 @@ BEGIN
     	@ILRReturn NVARCHAR(2),
     	@IsFinalReturn bit,
     	@Split1619Funding bit,
+        @1619ALSFundingPercent DECIMAL(3,2),
     	@FutureAchieveWeighting DECIMAL(3,2),
+        @FISOutputTableLocation NVARCHAR(200),
         @ProSolutionDatabaseLocation NVARCHAR(200),
 	    @ProAchieveDatabaseLocation NVARCHAR(200),
     	@ProviderFieldFacLocation CHAR(1),
@@ -434,7 +443,9 @@ BEGIN
     	@ILRReturn = @ILRReturn,
     	@IsFinalReturn = @IsFinalReturn,
     	@Split1619Funding = @Split1619Funding,
+        @1619ALSFundingPercent = @1619ALSFundingPercent,
     	@FutureAchieveWeighting = @FutureAchieveWeighting,
+        @FISOutputTableLocation = @FISOutputTableLocation,
         @ProSolutionDatabaseLocation = @ProSolutionDatabaseLocation,
         @ProAchieveDatabaseLocation = @ProAchieveDatabaseLocation,
     	@ProviderFieldFacLocation = @ProviderFieldFacLocation,

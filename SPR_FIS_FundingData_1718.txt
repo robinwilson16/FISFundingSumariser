@@ -1,10 +1,11 @@
-ALTER PROCEDURE SPR_FIS_FundingData_1718
+CREATE PROCEDURE SPR_FIS_FundingData_1718
 	@FISDatabase NVARCHAR(50),
 	@AcademicYear NVARCHAR(5),
 	@ILRReturn NVARCHAR(2),
 	@IsFinalReturn bit,
 	@Split1619Funding bit,
 	@FutureAchieveWeighting DECIMAL(3,2),
+    @FISOutputTableLocation NVARCHAR(200),
 	@ProSolutionDatabaseLocation NVARCHAR(200),
 	@ProAchieveDatabaseLocation NVARCHAR(200),
 	@ProviderFieldFacLocation CHAR(1),
@@ -64,6 +65,7 @@ BEGIN
 			ILRReturnDate = SRC.DateTime,
 			SQLDatabase = ''' + @FISDatabase + ''',
 			Is1619FundingSplit = CASE WHEN LD.FundModel = ''25'' AND @Split1619Funding = 1 AND COALESCE ( HRS.PLH, 0 ) > 0 THEN 1 ELSE 0 END,
+			ALS1619FundingPercent = @1619ALSFundingPercent,
 			InvalidLearners = INV.InvalidLearners,
 
 			LearnerRef = L.LearnRefNumber,
@@ -400,7 +402,7 @@ BEGIN
 							CASE WHEN HE.LearnRefNumber IS NOT NULL THEN ''Higher Education'' END,
 							CASE WHEN LD.FundModel = ''99'' THEN ''Full Cost'' END 
 						) NOT LIKE ''%Levy%''
-							 THEN ''16-18 Apprenticeship (Legacy)''
+							 THEN ''16-18 Apprenticeship''
 
 					WHEN 
 						COALESCE ( 
@@ -421,7 +423,7 @@ BEGIN
 							CASE WHEN HE.LearnRefNumber IS NOT NULL THEN ''Higher Education'' END,
 							CASE WHEN LD.FundModel = ''99'' THEN ''Full Cost'' END 
 						) LIKE ''%Non-Levy%''
-							 THEN ''16-18 Apprenticeship (Reformed) Non-Levy''
+							 THEN ''16-18 Apprenticeship Non-Levy''
 					
 					WHEN 
 						COALESCE ( 
@@ -451,7 +453,7 @@ BEGIN
 							CASE WHEN HE.LearnRefNumber IS NOT NULL THEN ''Higher Education'' END,
 							CASE WHEN LD.FundModel = ''99'' THEN ''Full Cost'' END 
 						) LIKE ''%Levy%''
-							 THEN ''16-18 Apprenticeship (Reformed) Levy''
+							 THEN ''16-18 Apprenticeship Levy''
 	'
 
     SET @SQLString += 
@@ -475,7 +477,7 @@ BEGIN
 							CASE WHEN HE.LearnRefNumber IS NOT NULL THEN ''Higher Education'' END,
 							CASE WHEN LD.FundModel = ''99'' THEN ''Full Cost'' END 
 						) NOT LIKE ''%Levy%''
-							 THEN ''19+ Apprenticeship (Legacy)''
+							 THEN ''19+ Apprenticeship''
 
 					WHEN 
 						COALESCE ( 
@@ -496,7 +498,7 @@ BEGIN
 							CASE WHEN HE.LearnRefNumber IS NOT NULL THEN ''Higher Education'' END,
 							CASE WHEN LD.FundModel = ''99'' THEN ''Full Cost'' END 
 						) LIKE ''%Non-Levy%''
-							 THEN ''19+ Apprenticeship (Reformed) Non-Levy''
+							 THEN ''19+ Apprenticeship Non-Levy''
 	'
 
     SET @SQLString += 
@@ -529,7 +531,7 @@ BEGIN
 							CASE WHEN HE.LearnRefNumber IS NOT NULL THEN ''Higher Education'' END,
 							CASE WHEN LD.FundModel = ''99'' THEN ''Full Cost'' END 
 						) LIKE ''%Levy%''
-							 THEN ''19+ Apprenticeship (Reformed) Levy''
+							 THEN ''19+ Apprenticeship Levy''
                     WHEN 
 						COALESCE ( 
 							CASE WHEN LD.FundModel = ''25'' THEN HRS.FundLine END,
@@ -549,7 +551,7 @@ BEGIN
 							CASE WHEN HE.LearnRefNumber IS NOT NULL THEN ''Higher Education'' END,
 							CASE WHEN LD.FundModel = ''99'' THEN ''Full Cost'' END 
 						) NOT LIKE ''%Levy%''
-							 THEN ''19+ Apprenticeship (Legacy)''
+							 THEN ''19+ Apprenticeship''
 
 					ELSE 
 						COALESCE ( 
@@ -594,6 +596,11 @@ BEGIN
     SET @SQLString += 
         N'
 			IsFunded = COALESCE ( CASE WHEN LD.FundModel = ''25'' THEN HRS.IsFunded END, FM25.StartFund, ALB.FundStart, FM35.FundStart, FM36.FundStart, 0 ),
+			IsMainAim = 
+				CASE
+					WHEN LD.AimSeqNumber = MA.AimSeqNumber THEN 1
+					ELSE 0
+				END,
 			IsAdvLearnLoan = ALB.AdvLoan,
 			RateBand = HRS.RateBand,
 			CofEnglish = FM25.ConditionOfFundingEnglish,
@@ -602,12 +609,14 @@ BEGIN
 				CASE
 					WHEN FM25.LearnRefNumber IS NULL THEN NULL
 					WHEN FM25.ConditionOfFundingEnglish = ''Doesn''''t have English, Not Studying English'' THEN 0
+                    WHEN FM25.ConditionOfFundingEnglish = ''Has English GCSE Grade D or Grade 3, Not studying GCSE English'' THEN 0
 					ELSE 1
 				END,
 			CofMathsMet = 
 				CASE
 					WHEN FM25.LearnRefNumber IS NULL THEN NULL
 					WHEN FM25.ConditionOfFundingMaths = ''Doesn''''t have Maths, Not Studying Maths'' THEN 0
+                    WHEN FM25.ConditionOfFundingMaths = ''Has Maths GCSE Grade D or Grade 3, Not studying GCSE Maths'' THEN 0
 					ELSE 1
 				END,
 			CofMet = 
@@ -615,7 +624,9 @@ BEGIN
 					WHEN FM25.LearnRefNumber IS NULL THEN NULL
 					WHEN 
 						FM25.ConditionOfFundingEnglish = ''Doesn''''t have English, Not Studying English'' 
+                        OR FM25.ConditionOfFundingEnglish = ''Has English GCSE Grade D or Grade 3, Not studying GCSE English'' 
 						OR FM25.ConditionOfFundingMaths = ''Doesn''''t have Maths, Not Studying Maths''
+                        OR FM25.ConditionOfFundingMaths = ''Has Maths GCSE Grade D or Grade 3, Not studying GCSE Maths''
 						THEN 0
 					ELSE 1
 				END,
@@ -657,7 +668,7 @@ BEGIN
 			FacName = 
 				CASE
 					WHEN LD.PartnerUKPRN IS NOT NULL AND LD.FundModel IN ( ''25'', ''35'' ) THEN COALESCE ( PROS.FacNamePartner, ''-- Unknown --'' )
-					ELSE COALESCE ( PROS.FacName, ''-- Unknown --'' )
+					ELSE COALESCE ( PROS.FacName, FAC2.FacName, ''-- Unknown --'' )
 				END,
 			MainFacCode = COALESCE ( PROSM.FacCode, MA.FacCode, ''-'' ),
 			MainFacName = COALESCE ( PROSM.FacName, ''-- Unknown --'' ),
@@ -695,7 +706,7 @@ BEGIN
 			TeamName = 
 				CASE
 					WHEN LD.PartnerUKPRN IS NOT NULL AND LD.FundModel IN ( ''25'', ''35'' ) THEN COALESCE ( PROS.TeamNamePartner, ''-- Unknown --'' )
-					ELSE COALESCE ( PROS.TeamName, ''-- Unknown --'' )
+					ELSE COALESCE ( PROS.TeamName, TEAM2.TeamName, ''-- Unknown --'' )
 				END,
 	'
 
@@ -834,7 +845,7 @@ BEGIN
 					ELSE 0
 				END,
 			EnrolmentID = PSDMC.ProvSpecDelMon,
-			FM25TotFund = COALESCE ( HRS.Funding, 0 ),
+			FM25TotFund = COALESCE ( HRS.OnProgPayment, 0 ),
 	'
 
     SET @SQLString += 
@@ -842,12 +853,34 @@ BEGIN
 			OnProgPaymentToPeriod = COALESCE ( CASE WHEN LD.FundModel = ''25'' THEN ( CASE WHEN @Split1619Funding = 1 
 				THEN
 					CASE
-						WHEN COALESCE ( HRS.PLH, 0 ) = 0 THEN CASE WHEN LD.AimSeqNumber = FM25.CoreAimSeqNumber THEN COALESCE ( HRS.Funding, 0 ) ELSE 0 END
+						WHEN COALESCE ( HRS.PLH, 0 ) = 0 THEN CASE WHEN LD.AimSeqNumber = FM25.CoreAimSeqNumber THEN COALESCE ( HRS.OnProgPayment, 0 ) ELSE 0 END
 						ELSE
-							( COALESCE ( HRS.Funding, 0 ) / COALESCE ( HRS.PLH, 0 ) ) * COALESCE ( CASE WHEN COALESCE ( LD.WithdrawReason, ''0'' ) <> ''40'' OR HRS.TFerOnly = 1 THEN PROS.PLH END, 0 )
+							( COALESCE ( HRS.OnProgPayment, 0 ) / COALESCE ( HRS.PLH, 0 ) ) * COALESCE ( CASE WHEN COALESCE ( LD.WithdrawReason, ''0'' ) <> ''40'' OR HRS.TFerOnly = 1 THEN PROS.PLH END, 0 )
 					END
-				ELSE FM25.OnProgPayment END / 12 ) * @ILRReturn END, FM35P.OnProgPaymentToPeriod, FM36P.OnProgPaymentToPeriod, ( HE.GROSSFEE / 12 ) * @ILRReturn, 0 ),
-			LearnSuppPaymentToPeriod = COALESCE ( FM35P.LearnSuppPaymentToPeriod, FM36P.LearnSuppPaymentToPeriod, 0 ),
+				ELSE 
+					FM25.OnProgPayment
+					- CASE 
+						WHEN @1619ALSFundingPercent > 0 THEN
+							( FM25.OnProgPayment / 100 ) * ( 0.07 * 100 )
+						ELSE
+							0
+					END
+				END / 12 ) * @ILRReturn END, FM35P.OnProgPaymentToPeriod, FM36P.OnProgPaymentToPeriod, ( HE.GROSSFEE / 12 ) * @ILRReturn, 0 ),
+			LearnSuppPaymentToPeriod = COALESCE ( CASE WHEN LD.FundModel = ''25'' THEN ( CASE WHEN @Split1619Funding = 1 
+				THEN
+					CASE
+						WHEN COALESCE ( HRS.PLH, 0 ) = 0 THEN CASE WHEN LD.AimSeqNumber = FM25.CoreAimSeqNumber THEN COALESCE ( HRS.LearnSuppPayment, 0 ) ELSE 0 END
+						ELSE
+							( COALESCE ( HRS.LearnSuppPayment, 0 ) / COALESCE ( HRS.PLH, 0 ) ) * COALESCE ( CASE WHEN COALESCE ( LD.WithdrawReason, ''0'' ) <> ''40'' OR HRS.TFerOnly = 1 THEN PROS.PLH END, 0 )
+					END
+				ELSE 
+					CASE 
+						WHEN @1619ALSFundingPercent > 0 THEN
+							( FM25.OnProgPayment / 100 ) * ( 0.07 * 100 )
+						ELSE
+							0
+					END
+				END / 12 ) * @ILRReturn END, FM35P.LearnSuppPaymentToPeriod, FM36P.LearnSuppPaymentToPeriod, 0 ),
 			AchCompPaymentToPeriod = COALESCE ( FM35P.AchievePaymentToPeriod, FM36P.CompletionPaymentToPeriod, 0 ),
 			BalancePaymentToPeriod = COALESCE ( FM35P.BalancePaymentToPeriod, FM36P.BalancePaymentToPeriod, 0 ),
 			EmpOutcomePayToPeriod = COALESCE ( FM35P.EmpOutcomePayToPeriod, 0 ),
@@ -855,21 +888,43 @@ BEGIN
 			TotFundToPeriod = COALESCE ( CASE WHEN LD.FundModel = ''25'' THEN ( CASE WHEN @Split1619Funding = 1 
 				THEN
 					CASE
-						WHEN COALESCE ( HRS.PLH, 0 ) = 0 THEN CASE WHEN LD.AimSeqNumber = FM25.CoreAimSeqNumber THEN COALESCE ( HRS.Funding, 0 ) ELSE 0 END
+						WHEN COALESCE ( HRS.PLH, 0 ) = 0 THEN CASE WHEN LD.AimSeqNumber = FM25.CoreAimSeqNumber THEN COALESCE ( HRS.TotFund, 0 ) ELSE 0 END
 						ELSE
-							( COALESCE ( HRS.Funding, 0 ) / COALESCE ( HRS.PLH, 0 ) ) * COALESCE ( CASE WHEN COALESCE ( LD.WithdrawReason, ''0'' ) <> ''40'' OR HRS.TFerOnly = 1 THEN PROS.PLH END, 0 )
+							( COALESCE ( HRS.TotFund, 0 ) / COALESCE ( HRS.PLH, 0 ) ) * COALESCE ( CASE WHEN COALESCE ( LD.WithdrawReason, ''0'' ) <> ''40'' OR HRS.TFerOnly = 1 THEN PROS.PLH END, 0 )
 					END
 				ELSE FM25.OnProgPayment END / 12 ) * @ILRReturn END, FM35P.TotFundToPeriod, FM36P.TotFundToPeriod, ( HE.GROSSFEE / 12 ) * @ILRReturn, 0 ),
 
 			OnProgPayment6Mon = COALESCE ( CASE WHEN LD.FundModel = ''25'' THEN ( CASE WHEN @Split1619Funding = 1 
 				THEN
 					CASE
-						WHEN COALESCE ( HRS.PLH, 0 ) = 0 THEN CASE WHEN LD.AimSeqNumber = FM25.CoreAimSeqNumber THEN COALESCE ( HRS.Funding, 0 ) ELSE 0 END
+						WHEN COALESCE ( HRS.PLH, 0 ) = 0 THEN CASE WHEN LD.AimSeqNumber = FM25.CoreAimSeqNumber THEN COALESCE ( HRS.OnProgPayment, 0 ) ELSE 0 END
 						ELSE
-							( COALESCE ( HRS.Funding, 0 ) / COALESCE ( HRS.PLH, 0 ) ) * COALESCE ( CASE WHEN COALESCE ( LD.WithdrawReason, ''0'' ) <> ''40'' OR HRS.TFerOnly = 1 THEN PROS.PLH END, 0 )
+							( COALESCE ( HRS.OnProgPayment, 0 ) / COALESCE ( HRS.PLH, 0 ) ) * COALESCE ( CASE WHEN COALESCE ( LD.WithdrawReason, ''0'' ) <> ''40'' OR HRS.TFerOnly = 1 THEN PROS.PLH END, 0 )
 					END
-				ELSE FM25.OnProgPayment END / 12 ) * 6 END, FM35P.OnProgPayment6Mon, FM36P.OnProgPayment6Mon, ( HE.GROSSFEE / 12 ) * 6, 0 ),
-			LearnSuppPayment6Mon = COALESCE ( FM35P.LearnSuppPayment6Mon, FM36P.LearnSuppPayment6Mon, 0 ),
+				ELSE 
+					FM25.OnProgPayment
+					- CASE 
+						WHEN @1619ALSFundingPercent > 0 THEN
+							( FM25.OnProgPayment / 100 ) * ( 0.07 * 100 )
+						ELSE
+							0
+					END
+				END / 12 ) * 6 END, FM35P.OnProgPayment6Mon, FM36P.OnProgPayment6Mon, ( HE.GROSSFEE / 12 ) * 6, 0 ),
+			LearnSuppPayment6Mon = COALESCE ( CASE WHEN LD.FundModel = ''25'' THEN ( CASE WHEN @Split1619Funding = 1 
+				THEN
+					CASE
+						WHEN COALESCE ( HRS.PLH, 0 ) = 0 THEN CASE WHEN LD.AimSeqNumber = FM25.CoreAimSeqNumber THEN COALESCE ( HRS.LearnSuppPayment, 0 ) ELSE 0 END
+						ELSE
+							( COALESCE ( HRS.LearnSuppPayment, 0 ) / COALESCE ( HRS.PLH, 0 ) ) * COALESCE ( CASE WHEN COALESCE ( LD.WithdrawReason, ''0'' ) <> ''40'' OR HRS.TFerOnly = 1 THEN PROS.PLH END, 0 )
+					END
+				ELSE 
+					CASE 
+						WHEN @1619ALSFundingPercent > 0 THEN
+							( FM25.OnProgPayment / 100 ) * ( 0.07 * 100 )
+						ELSE
+							0
+					END
+				END / 12 ) * 6 END, FM35P.LearnSuppPayment6Mon, FM36P.LearnSuppPayment6Mon, 0 ),
 			AchCompPayment6Mon = COALESCE ( FM35P.AchievePayment6Mon, FM36P.CompletionPayment6Mon, 0 ),
 			BalancePayment6Mon = COALESCE ( FM35P.BalancePayment6Mon, FM36P.BalancePayment6Mon, 0 ),
 			EmpOutcomePay6Mon = COALESCE ( FM35P.EmpOutcomePay6Mon, 0 ),
@@ -877,9 +932,9 @@ BEGIN
 			TotFund6Mon = COALESCE ( CASE WHEN LD.FundModel = ''25'' THEN ( CASE WHEN @Split1619Funding = 1 
 				THEN
 					CASE
-						WHEN COALESCE ( HRS.PLH, 0 ) = 0 THEN CASE WHEN LD.AimSeqNumber = FM25.CoreAimSeqNumber THEN COALESCE ( HRS.Funding, 0 ) ELSE 0 END
+						WHEN COALESCE ( HRS.PLH, 0 ) = 0 THEN CASE WHEN LD.AimSeqNumber = FM25.CoreAimSeqNumber THEN COALESCE ( HRS.TotFund, 0 ) ELSE 0 END
 						ELSE
-							( COALESCE ( HRS.Funding, 0 ) / COALESCE ( HRS.PLH, 0 ) ) * COALESCE ( CASE WHEN COALESCE ( LD.WithdrawReason, ''0'' ) <> ''40'' OR HRS.TFerOnly = 1 THEN PROS.PLH END, 0 )
+							( COALESCE ( HRS.TotFund, 0 ) / COALESCE ( HRS.PLH, 0 ) ) * COALESCE ( CASE WHEN COALESCE ( LD.WithdrawReason, ''0'' ) <> ''40'' OR HRS.TFerOnly = 1 THEN PROS.PLH END, 0 )
 					END
 				ELSE FM25.OnProgPayment END / 12 ) * 6 END, FM35P.TotFund6Mon, FM36P.TotFund6Mon, ( HE.GROSSFEE / 12 ) * 6, 0 ),
     '
@@ -889,12 +944,34 @@ BEGIN
 			OnProgPaymentYrEnd = COALESCE ( CASE WHEN LD.FundModel = ''25'' THEN CASE WHEN @Split1619Funding = 1 
 				THEN
 					CASE
-						WHEN COALESCE ( HRS.PLH, 0 ) = 0 THEN CASE WHEN LD.AimSeqNumber = FM25.CoreAimSeqNumber THEN COALESCE ( HRS.Funding, 0 ) ELSE 0 END
+						WHEN COALESCE ( HRS.PLH, 0 ) = 0 THEN CASE WHEN LD.AimSeqNumber = FM25.CoreAimSeqNumber THEN COALESCE ( HRS.OnProgPayment, 0 ) ELSE 0 END
 						ELSE
-							( COALESCE ( HRS.Funding, 0 ) / COALESCE ( HRS.PLH, 0 ) ) * COALESCE ( CASE WHEN COALESCE ( LD.WithdrawReason, ''0'' ) <> ''40'' OR HRS.TFerOnly = 1 THEN PROS.PLH END, 0 )
+							( COALESCE ( HRS.OnProgPayment, 0 ) / COALESCE ( HRS.PLH, 0 ) ) * COALESCE ( CASE WHEN COALESCE ( LD.WithdrawReason, ''0'' ) <> ''40'' OR HRS.TFerOnly = 1 THEN PROS.PLH END, 0 )
 					END
-				ELSE FM25.OnProgPayment END END, FM35P.OnProgPaymentYrEnd, FM36P.OnProgPaymentYrEnd, HE.GROSSFEE, 0 ),
-			LearnSuppPaymentYrEnd = COALESCE ( FM35P.LearnSuppPaymentYrEnd, FM36P.LearnSuppPaymentYrEnd, 0 ),
+				ELSE 
+					FM25.OnProgPayment
+					- CASE 
+						WHEN @1619ALSFundingPercent > 0 THEN
+							( FM25.OnProgPayment / 100 ) * ( 0.07 * 100 )
+						ELSE
+							0
+					END
+				END END, FM35P.OnProgPaymentYrEnd, FM36P.OnProgPaymentYrEnd, HE.GROSSFEE, 0 ),
+			LearnSuppPaymentYrEnd = COALESCE ( CASE WHEN LD.FundModel = ''25'' THEN CASE WHEN @Split1619Funding = 1 
+				THEN
+					CASE
+						WHEN COALESCE ( HRS.PLH, 0 ) = 0 THEN CASE WHEN LD.AimSeqNumber = FM25.CoreAimSeqNumber THEN COALESCE ( HRS.LearnSuppPayment, 0 ) ELSE 0 END
+						ELSE
+							( COALESCE ( HRS.LearnSuppPayment, 0 ) / COALESCE ( HRS.PLH, 0 ) ) * COALESCE ( CASE WHEN COALESCE ( LD.WithdrawReason, ''0'' ) <> ''40'' OR HRS.TFerOnly = 1 THEN PROS.PLH END, 0 )
+					END
+				ELSE 
+					CASE 
+						WHEN @1619ALSFundingPercent > 0 THEN
+							( FM25.OnProgPayment / 100 ) * ( 0.07 * 100 )
+						ELSE
+							0
+					END
+				END END, FM35P.LearnSuppPaymentYrEnd, FM36P.LearnSuppPaymentYrEnd, 0 ),
 			AchCompPaymentYrEnd = COALESCE ( FM35P.AchievePaymentYrEnd, FM36P.CompletionPaymentYrEnd, 0 ),
 			BalancePaymentYrEnd = COALESCE ( FM35P.BalancePaymentYrEnd, FM36P.BalancePaymentYrEnd, 0 ),
 			EmpOutcomePayYrEnd = COALESCE ( FM35P.EmpOutcomePayYrEnd, 0 ),
@@ -902,9 +979,9 @@ BEGIN
 			TotFundYrEnd = COALESCE ( CASE WHEN LD.FundModel = ''25'' THEN CASE WHEN @Split1619Funding = 1 
 				THEN
 					CASE
-						WHEN COALESCE ( HRS.PLH, 0 ) = 0 THEN CASE WHEN LD.AimSeqNumber = FM25.CoreAimSeqNumber THEN COALESCE ( HRS.Funding, 0 ) ELSE 0 END
+						WHEN COALESCE ( HRS.PLH, 0 ) = 0 THEN CASE WHEN LD.AimSeqNumber = FM25.CoreAimSeqNumber THEN COALESCE ( HRS.TotFund, 0 ) ELSE 0 END
 						ELSE
-							( COALESCE ( HRS.Funding, 0 ) / COALESCE ( HRS.PLH, 0 ) ) * COALESCE ( CASE WHEN COALESCE ( LD.WithdrawReason, ''0'' ) <> ''40'' OR HRS.TFerOnly = 1 THEN PROS.PLH END, 0 )
+							( COALESCE ( HRS.TotFund, 0 ) / COALESCE ( HRS.PLH, 0 ) ) * COALESCE ( CASE WHEN COALESCE ( LD.WithdrawReason, ''0'' ) <> ''40'' OR HRS.TFerOnly = 1 THEN PROS.PLH END, 0 )
 					END
 				ELSE FM25.OnProgPayment END END, FM35P.TotFundYrEnd, FM36P.TotFundYrEnd, HE.GROSSFEE, 0 ),
 
@@ -931,12 +1008,34 @@ BEGIN
 			OnProgPaymentP01 = COALESCE ( CASE WHEN LD.FundModel = ''25'' THEN ( CASE WHEN @Split1619Funding = 1 
 				THEN
 					CASE
-						WHEN COALESCE ( HRS.PLH, 0 ) = 0 THEN CASE WHEN LD.AimSeqNumber = FM25.CoreAimSeqNumber THEN COALESCE ( HRS.Funding, 0 ) ELSE 0 END
+						WHEN COALESCE ( HRS.PLH, 0 ) = 0 THEN CASE WHEN LD.AimSeqNumber = FM25.CoreAimSeqNumber THEN COALESCE ( HRS.OnProgPayment, 0 ) ELSE 0 END
 						ELSE
-							( COALESCE ( HRS.Funding, 0 ) / COALESCE ( HRS.PLH, 0 ) ) * COALESCE ( CASE WHEN COALESCE ( LD.WithdrawReason, ''0'' ) <> ''40'' OR HRS.TFerOnly = 1 THEN PROS.PLH END, 0 )
+							( COALESCE ( HRS.OnProgPayment, 0 ) / COALESCE ( HRS.PLH, 0 ) ) * COALESCE ( CASE WHEN COALESCE ( LD.WithdrawReason, ''0'' ) <> ''40'' OR HRS.TFerOnly = 1 THEN PROS.PLH END, 0 )
 					END
-				ELSE FM25.OnProgPayment END / 12 ) END, FM35P.OnProgPaymentP01, FM36P.OnProgPaymentP01, HE.GROSSFEE / 12, 0 ),
-			LearnSuppPaymentP01 = COALESCE ( FM35P.LearnSuppPaymentP01, FM36P.LearnSuppPaymentP01, 0 ),
+				ELSE 
+					FM25.OnProgPayment
+					- CASE 
+						WHEN @1619ALSFundingPercent > 0 THEN
+							( FM25.OnProgPayment / 100 ) * ( 0.07 * 100 )
+						ELSE
+							0
+					END
+				END / 12 ) END, FM35P.OnProgPaymentP01, FM36P.OnProgPaymentP01, HE.GROSSFEE / 12, 0 ),
+			LearnSuppPaymentP01 = COALESCE ( CASE WHEN LD.FundModel = ''25'' THEN ( CASE WHEN @Split1619Funding = 1 
+				THEN
+					CASE
+						WHEN COALESCE ( HRS.PLH, 0 ) = 0 THEN CASE WHEN LD.AimSeqNumber = FM25.CoreAimSeqNumber THEN COALESCE ( HRS.LearnSuppPayment, 0 ) ELSE 0 END
+						ELSE
+							( COALESCE ( HRS.LearnSuppPayment, 0 ) / COALESCE ( HRS.PLH, 0 ) ) * COALESCE ( CASE WHEN COALESCE ( LD.WithdrawReason, ''0'' ) <> ''40'' OR HRS.TFerOnly = 1 THEN PROS.PLH END, 0 )
+					END
+				ELSE 
+					CASE 
+						WHEN @1619ALSFundingPercent > 0 THEN
+							( FM25.OnProgPayment / 100 ) * ( 0.07 * 100 )
+						ELSE
+							0
+					END
+				END / 12 ) END, FM35P.LearnSuppPaymentP01, FM36P.LearnSuppPaymentP01, 0 ),
 			AchCompPaymentP01 = COALESCE ( FM35P.AchievePaymentP01, FM36P.CompletionPaymentP01, 0 ),
 			BalancePaymentP01 = COALESCE ( FM35P.BalancePaymentP01, FM36P.BalancePaymentP01, 0 ),
 			EmpOutcomePayP01 = COALESCE ( FM35P.EmpOutcomePayYrEnd, 0 ),
@@ -944,21 +1043,43 @@ BEGIN
 			TotFundP01 = COALESCE ( CASE WHEN LD.FundModel = ''25'' THEN ( CASE WHEN @Split1619Funding = 1 
 				THEN
 					CASE
-						WHEN COALESCE ( HRS.PLH, 0 ) = 0 THEN CASE WHEN LD.AimSeqNumber = FM25.CoreAimSeqNumber THEN COALESCE ( HRS.Funding, 0 ) ELSE 0 END
+						WHEN COALESCE ( HRS.PLH, 0 ) = 0 THEN CASE WHEN LD.AimSeqNumber = FM25.CoreAimSeqNumber THEN COALESCE ( HRS.TotFund, 0 ) ELSE 0 END
 						ELSE
-							( COALESCE ( HRS.Funding, 0 ) / COALESCE ( HRS.PLH, 0 ) ) * COALESCE ( CASE WHEN COALESCE ( LD.WithdrawReason, ''0'' ) <> ''40'' OR HRS.TFerOnly = 1 THEN PROS.PLH END, 0 )
+							( COALESCE ( HRS.TotFund, 0 ) / COALESCE ( HRS.PLH, 0 ) ) * COALESCE ( CASE WHEN COALESCE ( LD.WithdrawReason, ''0'' ) <> ''40'' OR HRS.TFerOnly = 1 THEN PROS.PLH END, 0 )
 					END
 				ELSE FM25.OnProgPayment END / 12 ) END, FM35P.TotFundP01, FM36P.TotFundP01, HE.GROSSFEE / 12, 0 ),
 
 			OnProgPaymentP02 = COALESCE ( CASE WHEN LD.FundModel = ''25'' THEN ( CASE WHEN @Split1619Funding = 1 
 				THEN
 					CASE
-						WHEN COALESCE ( HRS.PLH, 0 ) = 0 THEN CASE WHEN LD.AimSeqNumber = FM25.CoreAimSeqNumber THEN COALESCE ( HRS.Funding, 0 ) ELSE 0 END
+						WHEN COALESCE ( HRS.PLH, 0 ) = 0 THEN CASE WHEN LD.AimSeqNumber = FM25.CoreAimSeqNumber THEN COALESCE ( HRS.OnProgPayment, 0 ) ELSE 0 END
 						ELSE
-							( COALESCE ( HRS.Funding, 0 ) / COALESCE ( HRS.PLH, 0 ) ) * COALESCE ( CASE WHEN COALESCE ( LD.WithdrawReason, ''0'' ) <> ''40'' OR HRS.TFerOnly = 1 THEN PROS.PLH END, 0 )
+							( COALESCE ( HRS.OnProgPayment, 0 ) / COALESCE ( HRS.PLH, 0 ) ) * COALESCE ( CASE WHEN COALESCE ( LD.WithdrawReason, ''0'' ) <> ''40'' OR HRS.TFerOnly = 1 THEN PROS.PLH END, 0 )
 					END
-				ELSE FM25.OnProgPayment END / 12 ) END, FM35P.OnProgPaymentP02, FM36P.OnProgPaymentP02, HE.GROSSFEE / 12, 0 ),
-			LearnSuppPaymentP02 = COALESCE ( FM35P.LearnSuppPaymentP02, FM36P.LearnSuppPaymentP02, 0 ),
+				ELSE 
+					FM25.OnProgPayment
+					- CASE 
+						WHEN @1619ALSFundingPercent > 0 THEN
+							( FM25.OnProgPayment / 100 ) * ( 0.07 * 100 )
+						ELSE
+							0
+					END
+				END / 12 ) END, FM35P.OnProgPaymentP02, FM36P.OnProgPaymentP02, HE.GROSSFEE / 12, 0 ),
+			LearnSuppPaymentP02 = COALESCE ( CASE WHEN LD.FundModel = ''25'' THEN ( CASE WHEN @Split1619Funding = 1 
+				THEN
+					CASE
+						WHEN COALESCE ( HRS.PLH, 0 ) = 0 THEN CASE WHEN LD.AimSeqNumber = FM25.CoreAimSeqNumber THEN COALESCE ( HRS.LearnSuppPayment, 0 ) ELSE 0 END
+						ELSE
+							( COALESCE ( HRS.LearnSuppPayment, 0 ) / COALESCE ( HRS.PLH, 0 ) ) * COALESCE ( CASE WHEN COALESCE ( LD.WithdrawReason, ''0'' ) <> ''40'' OR HRS.TFerOnly = 1 THEN PROS.PLH END, 0 )
+					END
+				ELSE 
+					CASE 
+						WHEN @1619ALSFundingPercent > 0 THEN
+							( FM25.OnProgPayment / 100 ) * ( 0.07 * 100 )
+						ELSE
+							0
+					END
+				END / 12 ) END, FM35P.LearnSuppPaymentP02, FM36P.LearnSuppPaymentP02, 0 ),
 			AchCompPaymentP02 = COALESCE ( FM35P.AchievePaymentP02, FM36P.CompletionPaymentP02, 0 ),
 			BalancePaymentP02 = COALESCE ( FM35P.BalancePaymentP02, FM36P.BalancePaymentP02, 0 ),
 			EmpOutcomePayP02 = COALESCE ( FM35P.EmpOutcomePayYrEnd, 0 ),
@@ -966,9 +1087,9 @@ BEGIN
 			TotFundP02 = COALESCE ( CASE WHEN LD.FundModel = ''25'' THEN ( CASE WHEN @Split1619Funding = 1 
 				THEN
 					CASE
-						WHEN COALESCE ( HRS.PLH, 0 ) = 0 THEN CASE WHEN LD.AimSeqNumber = FM25.CoreAimSeqNumber THEN COALESCE ( HRS.Funding, 0 ) ELSE 0 END
+						WHEN COALESCE ( HRS.PLH, 0 ) = 0 THEN CASE WHEN LD.AimSeqNumber = FM25.CoreAimSeqNumber THEN COALESCE ( HRS.TotFund, 0 ) ELSE 0 END
 						ELSE
-							( COALESCE ( HRS.Funding, 0 ) / COALESCE ( HRS.PLH, 0 ) ) * COALESCE ( CASE WHEN COALESCE ( LD.WithdrawReason, ''0'' ) <> ''40'' OR HRS.TFerOnly = 1 THEN PROS.PLH END, 0 )
+							( COALESCE ( HRS.TotFund, 0 ) / COALESCE ( HRS.PLH, 0 ) ) * COALESCE ( CASE WHEN COALESCE ( LD.WithdrawReason, ''0'' ) <> ''40'' OR HRS.TFerOnly = 1 THEN PROS.PLH END, 0 )
 					END
 				ELSE FM25.OnProgPayment END / 12 ) END, FM35P.TotFundP02, FM36P.TotFundP02, HE.GROSSFEE / 12, 0 ),
     '
@@ -978,12 +1099,34 @@ BEGIN
 			OnProgPaymentP03 = COALESCE ( CASE WHEN LD.FundModel = ''25'' THEN ( CASE WHEN @Split1619Funding = 1 
 				THEN
 					CASE
-						WHEN COALESCE ( HRS.PLH, 0 ) = 0 THEN CASE WHEN LD.AimSeqNumber = FM25.CoreAimSeqNumber THEN COALESCE ( HRS.Funding, 0 ) ELSE 0 END
+						WHEN COALESCE ( HRS.PLH, 0 ) = 0 THEN CASE WHEN LD.AimSeqNumber = FM25.CoreAimSeqNumber THEN COALESCE ( HRS.OnProgPayment, 0 ) ELSE 0 END
 						ELSE
-							( COALESCE ( HRS.Funding, 0 ) / COALESCE ( HRS.PLH, 0 ) ) * COALESCE ( CASE WHEN COALESCE ( LD.WithdrawReason, ''0'' ) <> ''40'' OR HRS.TFerOnly = 1 THEN PROS.PLH END, 0 )
+							( COALESCE ( HRS.OnProgPayment, 0 ) / COALESCE ( HRS.PLH, 0 ) ) * COALESCE ( CASE WHEN COALESCE ( LD.WithdrawReason, ''0'' ) <> ''40'' OR HRS.TFerOnly = 1 THEN PROS.PLH END, 0 )
 					END
-				ELSE FM25.OnProgPayment END / 12 ) END, FM35P.OnProgPaymentP03, FM36P.OnProgPaymentP03, HE.GROSSFEE / 12, 0 ),
-			LearnSuppPaymentP03 = COALESCE ( FM35P.LearnSuppPaymentP03, FM36P.LearnSuppPaymentP03, 0 ),
+				ELSE 
+					FM25.OnProgPayment
+					- CASE 
+						WHEN @1619ALSFundingPercent > 0 THEN
+							( FM25.OnProgPayment / 100 ) * ( 0.07 * 100 )
+						ELSE
+							0
+					END
+				END / 12 ) END, FM35P.OnProgPaymentP03, FM36P.OnProgPaymentP03, HE.GROSSFEE / 12, 0 ),
+			LearnSuppPaymentP03 = COALESCE ( CASE WHEN LD.FundModel = ''25'' THEN ( CASE WHEN @Split1619Funding = 1 
+				THEN
+					CASE
+						WHEN COALESCE ( HRS.PLH, 0 ) = 0 THEN CASE WHEN LD.AimSeqNumber = FM25.CoreAimSeqNumber THEN COALESCE ( HRS.LearnSuppPayment, 0 ) ELSE 0 END
+						ELSE
+							( COALESCE ( HRS.LearnSuppPayment, 0 ) / COALESCE ( HRS.PLH, 0 ) ) * COALESCE ( CASE WHEN COALESCE ( LD.WithdrawReason, ''0'' ) <> ''40'' OR HRS.TFerOnly = 1 THEN PROS.PLH END, 0 )
+					END
+				ELSE 
+					CASE 
+						WHEN @1619ALSFundingPercent > 0 THEN
+							( FM25.OnProgPayment / 100 ) * ( 0.07 * 100 )
+						ELSE
+							0
+					END
+				END / 12 ) END, FM35P.LearnSuppPaymentP03, FM36P.LearnSuppPaymentP03, 0 ),
 			AchCompPaymentP03 = COALESCE ( FM35P.AchievePaymentP03, FM36P.CompletionPaymentP03, 0 ),
 			BalancePaymentP03 = COALESCE ( FM35P.BalancePaymentP03, FM36P.BalancePaymentP03, 0 ),
 			EmpOutcomePayP03 = COALESCE ( FM35P.EmpOutcomePayYrEnd, 0 ),
@@ -991,21 +1134,43 @@ BEGIN
 			TotFundP03 = COALESCE ( CASE WHEN LD.FundModel = ''25'' THEN ( CASE WHEN @Split1619Funding = 1 
 				THEN
 					CASE
-						WHEN COALESCE ( HRS.PLH, 0 ) = 0 THEN CASE WHEN LD.AimSeqNumber = FM25.CoreAimSeqNumber THEN COALESCE ( HRS.Funding, 0 ) ELSE 0 END
+						WHEN COALESCE ( HRS.PLH, 0 ) = 0 THEN CASE WHEN LD.AimSeqNumber = FM25.CoreAimSeqNumber THEN COALESCE ( HRS.TotFund, 0 ) ELSE 0 END
 						ELSE
-							( COALESCE ( HRS.Funding, 0 ) / COALESCE ( HRS.PLH, 0 ) ) * COALESCE ( CASE WHEN COALESCE ( LD.WithdrawReason, ''0'' ) <> ''40'' OR HRS.TFerOnly = 1 THEN PROS.PLH END, 0 )
+							( COALESCE ( HRS.TotFund, 0 ) / COALESCE ( HRS.PLH, 0 ) ) * COALESCE ( CASE WHEN COALESCE ( LD.WithdrawReason, ''0'' ) <> ''40'' OR HRS.TFerOnly = 1 THEN PROS.PLH END, 0 )
 					END
 				ELSE FM25.OnProgPayment END / 12 ) END, FM35P.TotFundP03, FM36P.TotFundP03, HE.GROSSFEE / 12, 0 ),
 
 			OnProgPaymentP04 = COALESCE ( CASE WHEN LD.FundModel = ''25'' THEN ( CASE WHEN @Split1619Funding = 1 
 				THEN
 					CASE
-						WHEN COALESCE ( HRS.PLH, 0 ) = 0 THEN CASE WHEN LD.AimSeqNumber = FM25.CoreAimSeqNumber THEN COALESCE ( HRS.Funding, 0 ) ELSE 0 END
+						WHEN COALESCE ( HRS.PLH, 0 ) = 0 THEN CASE WHEN LD.AimSeqNumber = FM25.CoreAimSeqNumber THEN COALESCE ( HRS.OnProgPayment, 0 ) ELSE 0 END
 						ELSE
-							( COALESCE ( HRS.Funding, 0 ) / COALESCE ( HRS.PLH, 0 ) ) * COALESCE ( CASE WHEN COALESCE ( LD.WithdrawReason, ''0'' ) <> ''40'' OR HRS.TFerOnly = 1 THEN PROS.PLH END, 0 )
+							( COALESCE ( HRS.OnProgPayment, 0 ) / COALESCE ( HRS.PLH, 0 ) ) * COALESCE ( CASE WHEN COALESCE ( LD.WithdrawReason, ''0'' ) <> ''40'' OR HRS.TFerOnly = 1 THEN PROS.PLH END, 0 )
 					END
-				ELSE FM25.OnProgPayment END / 12 ) END, FM35P.OnProgPaymentP04, FM36P.OnProgPaymentP04, HE.GROSSFEE / 12, 0 ),
-			LearnSuppPaymentP04 = COALESCE ( FM35P.LearnSuppPaymentP04, FM36P.LearnSuppPaymentP04, 0 ),
+				ELSE 
+					FM25.OnProgPayment
+					- CASE 
+						WHEN @1619ALSFundingPercent > 0 THEN
+							( FM25.OnProgPayment / 100 ) * ( 0.07 * 100 )
+						ELSE
+							0
+					END
+				END / 12 ) END, FM35P.OnProgPaymentP04, FM36P.OnProgPaymentP04, HE.GROSSFEE / 12, 0 ),
+			LearnSuppPaymentP04 = COALESCE ( CASE WHEN LD.FundModel = ''25'' THEN ( CASE WHEN @Split1619Funding = 1 
+				THEN
+					CASE
+						WHEN COALESCE ( HRS.PLH, 0 ) = 0 THEN CASE WHEN LD.AimSeqNumber = FM25.CoreAimSeqNumber THEN COALESCE ( HRS.LearnSuppPayment, 0 ) ELSE 0 END
+						ELSE
+							( COALESCE ( HRS.LearnSuppPayment, 0 ) / COALESCE ( HRS.PLH, 0 ) ) * COALESCE ( CASE WHEN COALESCE ( LD.WithdrawReason, ''0'' ) <> ''40'' OR HRS.TFerOnly = 1 THEN PROS.PLH END, 0 )
+					END
+				ELSE 
+					CASE 
+						WHEN @1619ALSFundingPercent > 0 THEN
+							( FM25.OnProgPayment / 100 ) * ( 0.07 * 100 )
+						ELSE
+							0
+					END
+				END / 12 ) END, FM35P.LearnSuppPaymentP04, FM36P.LearnSuppPaymentP04, 0 ),
 			AchCompPaymentP04 = COALESCE ( FM35P.AchievePaymentP04, FM36P.CompletionPaymentP04, 0 ),
 			BalancePaymentP04 = COALESCE ( FM35P.BalancePaymentP04, FM36P.BalancePaymentP04, 0 ),
 			EmpOutcomePayP04 = COALESCE ( FM35P.EmpOutcomePayYrEnd, 0 ),
@@ -1013,9 +1178,9 @@ BEGIN
 			TotFundP04 = COALESCE ( CASE WHEN LD.FundModel = ''25'' THEN ( CASE WHEN @Split1619Funding = 1 
 				THEN
 					CASE
-						WHEN COALESCE ( HRS.PLH, 0 ) = 0 THEN CASE WHEN LD.AimSeqNumber = FM25.CoreAimSeqNumber THEN COALESCE ( HRS.Funding, 0 ) ELSE 0 END
+						WHEN COALESCE ( HRS.PLH, 0 ) = 0 THEN CASE WHEN LD.AimSeqNumber = FM25.CoreAimSeqNumber THEN COALESCE ( HRS.TotFund, 0 ) ELSE 0 END
 						ELSE
-							( COALESCE ( HRS.Funding, 0 ) / COALESCE ( HRS.PLH, 0 ) ) * COALESCE ( CASE WHEN COALESCE ( LD.WithdrawReason, ''0'' ) <> ''40'' OR HRS.TFerOnly = 1 THEN PROS.PLH END, 0 )
+							( COALESCE ( HRS.TotFund, 0 ) / COALESCE ( HRS.PLH, 0 ) ) * COALESCE ( CASE WHEN COALESCE ( LD.WithdrawReason, ''0'' ) <> ''40'' OR HRS.TFerOnly = 1 THEN PROS.PLH END, 0 )
 					END
 				ELSE FM25.OnProgPayment END / 12 ) END, FM35P.TotFundP04, FM36P.TotFundP04, HE.GROSSFEE / 12, 0 ),
 	'
@@ -1025,12 +1190,34 @@ BEGIN
 			OnProgPaymentP05 = COALESCE ( CASE WHEN LD.FundModel = ''25'' THEN ( CASE WHEN @Split1619Funding = 1 
 				THEN
 					CASE
-						WHEN COALESCE ( HRS.PLH, 0 ) = 0 THEN CASE WHEN LD.AimSeqNumber = FM25.CoreAimSeqNumber THEN COALESCE ( HRS.Funding, 0 ) ELSE 0 END
+						WHEN COALESCE ( HRS.PLH, 0 ) = 0 THEN CASE WHEN LD.AimSeqNumber = FM25.CoreAimSeqNumber THEN COALESCE ( HRS.OnProgPayment, 0 ) ELSE 0 END
 						ELSE
-							( COALESCE ( HRS.Funding, 0 ) / COALESCE ( HRS.PLH, 0 ) ) * COALESCE ( CASE WHEN COALESCE ( LD.WithdrawReason, ''0'' ) <> ''40'' OR HRS.TFerOnly = 1 THEN PROS.PLH END, 0 )
+							( COALESCE ( HRS.OnProgPayment, 0 ) / COALESCE ( HRS.PLH, 0 ) ) * COALESCE ( CASE WHEN COALESCE ( LD.WithdrawReason, ''0'' ) <> ''40'' OR HRS.TFerOnly = 1 THEN PROS.PLH END, 0 )
 					END
-				ELSE FM25.OnProgPayment END / 12 ) END, FM35P.OnProgPaymentP05, FM36P.OnProgPaymentP05, HE.GROSSFEE / 12, 0 ),
-			LearnSuppPaymentP05 = COALESCE ( FM35P.LearnSuppPaymentP05, FM36P.LearnSuppPaymentP05, 0 ),
+				ELSE 
+					FM25.OnProgPayment
+					- CASE 
+						WHEN @1619ALSFundingPercent > 0 THEN
+							( FM25.OnProgPayment / 100 ) * ( 0.07 * 100 )
+						ELSE
+							0
+					END
+				END / 12 ) END, FM35P.OnProgPaymentP05, FM36P.OnProgPaymentP05, HE.GROSSFEE / 12, 0 ),
+			LearnSuppPaymentP05 = COALESCE ( CASE WHEN LD.FundModel = ''25'' THEN ( CASE WHEN @Split1619Funding = 1 
+				THEN
+					CASE
+						WHEN COALESCE ( HRS.PLH, 0 ) = 0 THEN CASE WHEN LD.AimSeqNumber = FM25.CoreAimSeqNumber THEN COALESCE ( HRS.LearnSuppPayment, 0 ) ELSE 0 END
+						ELSE
+							( COALESCE ( HRS.LearnSuppPayment, 0 ) / COALESCE ( HRS.PLH, 0 ) ) * COALESCE ( CASE WHEN COALESCE ( LD.WithdrawReason, ''0'' ) <> ''40'' OR HRS.TFerOnly = 1 THEN PROS.PLH END, 0 )
+					END
+				ELSE 
+					CASE 
+						WHEN @1619ALSFundingPercent > 0 THEN
+							( FM25.OnProgPayment / 100 ) * ( 0.07 * 100 )
+						ELSE
+							0
+					END
+				END / 12 ) END, FM35P.LearnSuppPaymentP05, FM36P.LearnSuppPaymentP05, 0 ),
 			AchCompPaymentP05 = COALESCE ( FM35P.AchievePaymentP05, FM36P.CompletionPaymentP05, 0 ),
 			BalancePaymentP05 = COALESCE ( FM35P.BalancePaymentP05, FM36P.BalancePaymentP05, 0 ),
 			EmpOutcomePayP05 = COALESCE ( FM35P.EmpOutcomePayYrEnd, 0 ),
@@ -1038,21 +1225,43 @@ BEGIN
 			TotFundP05 = COALESCE ( CASE WHEN LD.FundModel = ''25'' THEN ( CASE WHEN @Split1619Funding = 1 
 				THEN
 					CASE
-						WHEN COALESCE ( HRS.PLH, 0 ) = 0 THEN CASE WHEN LD.AimSeqNumber = FM25.CoreAimSeqNumber THEN COALESCE ( HRS.Funding, 0 ) ELSE 0 END
+						WHEN COALESCE ( HRS.PLH, 0 ) = 0 THEN CASE WHEN LD.AimSeqNumber = FM25.CoreAimSeqNumber THEN COALESCE ( HRS.TotFund, 0 ) ELSE 0 END
 						ELSE
-							( COALESCE ( HRS.Funding, 0 ) / COALESCE ( HRS.PLH, 0 ) ) * COALESCE ( CASE WHEN COALESCE ( LD.WithdrawReason, ''0'' ) <> ''40'' OR HRS.TFerOnly = 1 THEN PROS.PLH END, 0 )
+							( COALESCE ( HRS.TotFund, 0 ) / COALESCE ( HRS.PLH, 0 ) ) * COALESCE ( CASE WHEN COALESCE ( LD.WithdrawReason, ''0'' ) <> ''40'' OR HRS.TFerOnly = 1 THEN PROS.PLH END, 0 )
 					END
 				ELSE FM25.OnProgPayment END / 12 ) END, FM35P.TotFundP05, FM36P.TotFundP05, HE.GROSSFEE / 12, 0 ),
 
 			OnProgPaymentP06 = COALESCE ( CASE WHEN LD.FundModel = ''25'' THEN ( CASE WHEN @Split1619Funding = 1 
 				THEN
 					CASE
-						WHEN COALESCE ( HRS.PLH, 0 ) = 0 THEN CASE WHEN LD.AimSeqNumber = FM25.CoreAimSeqNumber THEN COALESCE ( HRS.Funding, 0 ) ELSE 0 END
+						WHEN COALESCE ( HRS.PLH, 0 ) = 0 THEN CASE WHEN LD.AimSeqNumber = FM25.CoreAimSeqNumber THEN COALESCE ( HRS.OnProgPayment, 0 ) ELSE 0 END
 						ELSE
-							( COALESCE ( HRS.Funding, 0 ) / COALESCE ( HRS.PLH, 0 ) ) * COALESCE ( CASE WHEN COALESCE ( LD.WithdrawReason, ''0'' ) <> ''40'' OR HRS.TFerOnly = 1 THEN PROS.PLH END, 0 )
+							( COALESCE ( HRS.OnProgPayment, 0 ) / COALESCE ( HRS.PLH, 0 ) ) * COALESCE ( CASE WHEN COALESCE ( LD.WithdrawReason, ''0'' ) <> ''40'' OR HRS.TFerOnly = 1 THEN PROS.PLH END, 0 )
 					END
-				ELSE FM25.OnProgPayment END / 12 ) END, FM35P.OnProgPaymentP06, FM36P.OnProgPaymentP06, HE.GROSSFEE / 12, 0 ),
-			LearnSuppPaymentP06 = COALESCE ( FM35P.LearnSuppPaymentP06, FM36P.LearnSuppPaymentP06, 0 ),
+				ELSE 
+					FM25.OnProgPayment
+					- CASE 
+						WHEN @1619ALSFundingPercent > 0 THEN
+							( FM25.OnProgPayment / 100 ) * ( 0.07 * 100 )
+						ELSE
+							0
+					END
+				END / 12 ) END, FM35P.OnProgPaymentP06, FM36P.OnProgPaymentP06, HE.GROSSFEE / 12, 0 ),
+			LearnSuppPaymentP06 = COALESCE ( CASE WHEN LD.FundModel = ''25'' THEN ( CASE WHEN @Split1619Funding = 1 
+				THEN
+					CASE
+						WHEN COALESCE ( HRS.PLH, 0 ) = 0 THEN CASE WHEN LD.AimSeqNumber = FM25.CoreAimSeqNumber THEN COALESCE ( HRS.LearnSuppPayment, 0 ) ELSE 0 END
+						ELSE
+							( COALESCE ( HRS.LearnSuppPayment, 0 ) / COALESCE ( HRS.PLH, 0 ) ) * COALESCE ( CASE WHEN COALESCE ( LD.WithdrawReason, ''0'' ) <> ''40'' OR HRS.TFerOnly = 1 THEN PROS.PLH END, 0 )
+					END
+				ELSE 
+					CASE 
+						WHEN @1619ALSFundingPercent > 0 THEN
+							( FM25.OnProgPayment / 100 ) * ( 0.07 * 100 )
+						ELSE
+							0
+					END
+				END / 12 ) END, FM35P.LearnSuppPaymentP06, FM36P.LearnSuppPaymentP06, 0 ),
 			AchCompPaymentP06 = COALESCE ( FM35P.AchievePaymentP06, FM36P.CompletionPaymentP06, 0 ),
 			BalancePaymentP06 = COALESCE ( FM35P.BalancePaymentP06, FM36P.BalancePaymentP06, 0 ),
 			EmpOutcomePayP06 = COALESCE ( FM35P.EmpOutcomePayYrEnd, 0 ),
@@ -1060,9 +1269,9 @@ BEGIN
 			TotFundP06 = COALESCE ( CASE WHEN LD.FundModel = ''25'' THEN ( CASE WHEN @Split1619Funding = 1 
 				THEN
 					CASE
-						WHEN COALESCE ( HRS.PLH, 0 ) = 0 THEN CASE WHEN LD.AimSeqNumber = FM25.CoreAimSeqNumber THEN COALESCE ( HRS.Funding, 0 ) ELSE 0 END
+						WHEN COALESCE ( HRS.PLH, 0 ) = 0 THEN CASE WHEN LD.AimSeqNumber = FM25.CoreAimSeqNumber THEN COALESCE ( HRS.TotFund, 0 ) ELSE 0 END
 						ELSE
-							( COALESCE ( HRS.Funding, 0 ) / COALESCE ( HRS.PLH, 0 ) ) * COALESCE ( CASE WHEN COALESCE ( LD.WithdrawReason, ''0'' ) <> ''40'' OR HRS.TFerOnly = 1 THEN PROS.PLH END, 0 )
+							( COALESCE ( HRS.TotFund, 0 ) / COALESCE ( HRS.PLH, 0 ) ) * COALESCE ( CASE WHEN COALESCE ( LD.WithdrawReason, ''0'' ) <> ''40'' OR HRS.TFerOnly = 1 THEN PROS.PLH END, 0 )
 					END
 				ELSE FM25.OnProgPayment END / 12 ) END, FM35P.TotFundP06, FM36P.TotFundP06, HE.GROSSFEE / 12, 0 ),
     '
@@ -1072,12 +1281,34 @@ BEGIN
 			OnProgPaymentP07 = COALESCE ( CASE WHEN LD.FundModel = ''25'' THEN ( CASE WHEN @Split1619Funding = 1 
 				THEN
 					CASE
-						WHEN COALESCE ( HRS.PLH, 0 ) = 0 THEN CASE WHEN LD.AimSeqNumber = FM25.CoreAimSeqNumber THEN COALESCE ( HRS.Funding, 0 ) ELSE 0 END
+						WHEN COALESCE ( HRS.PLH, 0 ) = 0 THEN CASE WHEN LD.AimSeqNumber = FM25.CoreAimSeqNumber THEN COALESCE ( HRS.OnProgPayment, 0 ) ELSE 0 END
 						ELSE
-							( COALESCE ( HRS.Funding, 0 ) / COALESCE ( HRS.PLH, 0 ) ) * COALESCE ( CASE WHEN COALESCE ( LD.WithdrawReason, ''0'' ) <> ''40'' OR HRS.TFerOnly = 1 THEN PROS.PLH END, 0 )
+							( COALESCE ( HRS.OnProgPayment, 0 ) / COALESCE ( HRS.PLH, 0 ) ) * COALESCE ( CASE WHEN COALESCE ( LD.WithdrawReason, ''0'' ) <> ''40'' OR HRS.TFerOnly = 1 THEN PROS.PLH END, 0 )
 					END
-				ELSE FM25.OnProgPayment END / 12 ) END, FM35P.OnProgPaymentP07, FM36P.OnProgPaymentP07, HE.GROSSFEE / 12, 0 ),
-			LearnSuppPaymentP07 = COALESCE ( FM35P.LearnSuppPaymentP07, FM36P.LearnSuppPaymentP07, 0 ),
+				ELSE 
+					FM25.OnProgPayment
+					- CASE 
+						WHEN @1619ALSFundingPercent > 0 THEN
+							( FM25.OnProgPayment / 100 ) * ( 0.07 * 100 )
+						ELSE
+							0
+					END
+				END / 12 ) END, FM35P.OnProgPaymentP07, FM36P.OnProgPaymentP07, HE.GROSSFEE / 12, 0 ),
+			LearnSuppPaymentP07 = COALESCE ( CASE WHEN LD.FundModel = ''25'' THEN ( CASE WHEN @Split1619Funding = 1 
+				THEN
+					CASE
+						WHEN COALESCE ( HRS.PLH, 0 ) = 0 THEN CASE WHEN LD.AimSeqNumber = FM25.CoreAimSeqNumber THEN COALESCE ( HRS.LearnSuppPayment, 0 ) ELSE 0 END
+						ELSE
+							( COALESCE ( HRS.LearnSuppPayment, 0 ) / COALESCE ( HRS.PLH, 0 ) ) * COALESCE ( CASE WHEN COALESCE ( LD.WithdrawReason, ''0'' ) <> ''40'' OR HRS.TFerOnly = 1 THEN PROS.PLH END, 0 )
+					END
+				ELSE 
+					CASE 
+						WHEN @1619ALSFundingPercent > 0 THEN
+							( FM25.OnProgPayment / 100 ) * ( 0.07 * 100 )
+						ELSE
+							0
+					END
+				END / 12 ) END, FM35P.LearnSuppPaymentP07, FM36P.LearnSuppPaymentP07, 0 ),
 			AchCompPaymentP07 = COALESCE ( FM35P.AchievePaymentP07, FM36P.CompletionPaymentP07, 0 ),
 			BalancePaymentP07 = COALESCE ( FM35P.BalancePaymentP07, FM36P.BalancePaymentP07, 0 ),
 			EmpOutcomePayP07 = COALESCE ( FM35P.EmpOutcomePayYrEnd, 0 ),
@@ -1085,21 +1316,43 @@ BEGIN
 			TotFundP07 = COALESCE ( CASE WHEN LD.FundModel = ''25'' THEN ( CASE WHEN @Split1619Funding = 1 
 				THEN
 					CASE
-						WHEN COALESCE ( HRS.PLH, 0 ) = 0 THEN CASE WHEN LD.AimSeqNumber = FM25.CoreAimSeqNumber THEN COALESCE ( HRS.Funding, 0 ) ELSE 0 END
+						WHEN COALESCE ( HRS.PLH, 0 ) = 0 THEN CASE WHEN LD.AimSeqNumber = FM25.CoreAimSeqNumber THEN COALESCE ( HRS.TotFund, 0 ) ELSE 0 END
 						ELSE
-							( COALESCE ( HRS.Funding, 0 ) / COALESCE ( HRS.PLH, 0 ) ) * COALESCE ( CASE WHEN COALESCE ( LD.WithdrawReason, ''0'' ) <> ''40'' OR HRS.TFerOnly = 1 THEN PROS.PLH END, 0 )
+							( COALESCE ( HRS.TotFund, 0 ) / COALESCE ( HRS.PLH, 0 ) ) * COALESCE ( CASE WHEN COALESCE ( LD.WithdrawReason, ''0'' ) <> ''40'' OR HRS.TFerOnly = 1 THEN PROS.PLH END, 0 )
 					END
 				ELSE FM25.OnProgPayment END / 12 ) END, FM35P.TotFundP07, FM36P.TotFundP07, HE.GROSSFEE / 12, 0 ),
 
 			OnProgPaymentP08 = COALESCE ( CASE WHEN LD.FundModel = ''25'' THEN ( CASE WHEN @Split1619Funding = 1 
 				THEN
 					CASE
-						WHEN COALESCE ( HRS.PLH, 0 ) = 0 THEN CASE WHEN LD.AimSeqNumber = FM25.CoreAimSeqNumber THEN COALESCE ( HRS.Funding, 0 ) ELSE 0 END
+						WHEN COALESCE ( HRS.PLH, 0 ) = 0 THEN CASE WHEN LD.AimSeqNumber = FM25.CoreAimSeqNumber THEN COALESCE ( HRS.OnProgPayment, 0 ) ELSE 0 END
 						ELSE
-							( COALESCE ( HRS.Funding, 0 ) / COALESCE ( HRS.PLH, 0 ) ) * COALESCE ( CASE WHEN COALESCE ( LD.WithdrawReason, ''0'' ) <> ''40'' OR HRS.TFerOnly = 1 THEN PROS.PLH END, 0 )
+							( COALESCE ( HRS.OnProgPayment, 0 ) / COALESCE ( HRS.PLH, 0 ) ) * COALESCE ( CASE WHEN COALESCE ( LD.WithdrawReason, ''0'' ) <> ''40'' OR HRS.TFerOnly = 1 THEN PROS.PLH END, 0 )
 					END
-				ELSE FM25.OnProgPayment END / 12 ) END, FM35P.OnProgPaymentP08, FM36P.OnProgPaymentP08, HE.GROSSFEE / 12, 0 ),
-			LearnSuppPaymentP08 = COALESCE ( FM35P.LearnSuppPaymentP08, FM36P.LearnSuppPaymentP08, 0 ),
+				ELSE 
+					FM25.OnProgPayment
+					- CASE 
+						WHEN @1619ALSFundingPercent > 0 THEN
+							( FM25.OnProgPayment / 100 ) * ( 0.07 * 100 )
+						ELSE
+							0
+					END
+				END / 12 ) END, FM35P.OnProgPaymentP08, FM36P.OnProgPaymentP08, HE.GROSSFEE / 12, 0 ),
+			LearnSuppPaymentP08 = COALESCE ( CASE WHEN LD.FundModel = ''25'' THEN ( CASE WHEN @Split1619Funding = 1 
+				THEN
+					CASE
+						WHEN COALESCE ( HRS.PLH, 0 ) = 0 THEN CASE WHEN LD.AimSeqNumber = FM25.CoreAimSeqNumber THEN COALESCE ( HRS.LearnSuppPayment, 0 ) ELSE 0 END
+						ELSE
+							( COALESCE ( HRS.LearnSuppPayment, 0 ) / COALESCE ( HRS.PLH, 0 ) ) * COALESCE ( CASE WHEN COALESCE ( LD.WithdrawReason, ''0'' ) <> ''40'' OR HRS.TFerOnly = 1 THEN PROS.PLH END, 0 )
+					END
+				ELSE 
+					CASE 
+						WHEN @1619ALSFundingPercent > 0 THEN
+							( FM25.OnProgPayment / 100 ) * ( 0.07 * 100 )
+						ELSE
+							0
+					END
+				END / 12 ) END, FM35P.LearnSuppPaymentP08, FM36P.LearnSuppPaymentP08, 0 ),
 			AchCompPaymentP08 = COALESCE ( FM35P.AchievePaymentP08, FM36P.CompletionPaymentP08, 0 ),
 			BalancePaymentP08 = COALESCE ( FM35P.BalancePaymentP08, FM36P.BalancePaymentP08, 0 ),
 			EmpOutcomePayP08 = COALESCE ( FM35P.EmpOutcomePayYrEnd, 0 ),
@@ -1107,24 +1360,46 @@ BEGIN
 			TotFundP08 = COALESCE ( CASE WHEN LD.FundModel = ''25'' THEN ( CASE WHEN @Split1619Funding = 1 
 				THEN
 					CASE
-						WHEN COALESCE ( HRS.PLH, 0 ) = 0 THEN CASE WHEN LD.AimSeqNumber = FM25.CoreAimSeqNumber THEN COALESCE ( HRS.Funding, 0 ) ELSE 0 END
+						WHEN COALESCE ( HRS.PLH, 0 ) = 0 THEN CASE WHEN LD.AimSeqNumber = FM25.CoreAimSeqNumber THEN COALESCE ( HRS.TotFund, 0 ) ELSE 0 END
 						ELSE
-							( COALESCE ( HRS.Funding, 0 ) / COALESCE ( HRS.PLH, 0 ) ) * COALESCE ( CASE WHEN COALESCE ( LD.WithdrawReason, ''0'' ) <> ''40'' OR HRS.TFerOnly = 1 THEN PROS.PLH END, 0 )
+							( COALESCE ( HRS.TotFund, 0 ) / COALESCE ( HRS.PLH, 0 ) ) * COALESCE ( CASE WHEN COALESCE ( LD.WithdrawReason, ''0'' ) <> ''40'' OR HRS.TFerOnly = 1 THEN PROS.PLH END, 0 )
 					END
 				ELSE FM25.OnProgPayment END / 12 ) END, FM35P.TotFundP08, FM36P.TotFundP08, HE.GROSSFEE / 12, 0 ),
 	'
-
+    
     SET @SQLString += 
         N'
 			OnProgPaymentP09 = COALESCE ( CASE WHEN LD.FundModel = ''25'' THEN ( CASE WHEN @Split1619Funding = 1 
 				THEN
 					CASE
-						WHEN COALESCE ( HRS.PLH, 0 ) = 0 THEN CASE WHEN LD.AimSeqNumber = FM25.CoreAimSeqNumber THEN COALESCE ( HRS.Funding, 0 ) ELSE 0 END
+						WHEN COALESCE ( HRS.PLH, 0 ) = 0 THEN CASE WHEN LD.AimSeqNumber = FM25.CoreAimSeqNumber THEN COALESCE ( HRS.OnProgPayment, 0 ) ELSE 0 END
 						ELSE
-							( COALESCE ( HRS.Funding, 0 ) / COALESCE ( HRS.PLH, 0 ) ) * COALESCE ( CASE WHEN COALESCE ( LD.WithdrawReason, ''0'' ) <> ''40'' OR HRS.TFerOnly = 1 THEN PROS.PLH END, 0 )
+							( COALESCE ( HRS.OnProgPayment, 0 ) / COALESCE ( HRS.PLH, 0 ) ) * COALESCE ( CASE WHEN COALESCE ( LD.WithdrawReason, ''0'' ) <> ''40'' OR HRS.TFerOnly = 1 THEN PROS.PLH END, 0 )
 					END
-				ELSE FM25.OnProgPayment END / 12 ) END, FM35P.OnProgPaymentP09, FM36P.OnProgPaymentP09, HE.GROSSFEE / 12, 0 ),
-			LearnSuppPaymentP09 = COALESCE ( FM35P.LearnSuppPaymentP09, FM36P.LearnSuppPaymentP09, 0 ),
+				ELSE 
+					FM25.OnProgPayment
+					- CASE 
+						WHEN @1619ALSFundingPercent > 0 THEN
+							( FM25.OnProgPayment / 100 ) * ( 0.07 * 100 )
+						ELSE
+							0
+					END
+				END / 12 ) END, FM35P.OnProgPaymentP09, FM36P.OnProgPaymentP09, HE.GROSSFEE / 12, 0 ),
+			LearnSuppPaymentP09 = COALESCE ( CASE WHEN LD.FundModel = ''25'' THEN ( CASE WHEN @Split1619Funding = 1 
+				THEN
+					CASE
+						WHEN COALESCE ( HRS.PLH, 0 ) = 0 THEN CASE WHEN LD.AimSeqNumber = FM25.CoreAimSeqNumber THEN COALESCE ( HRS.LearnSuppPayment, 0 ) ELSE 0 END
+						ELSE
+							( COALESCE ( HRS.LearnSuppPayment, 0 ) / COALESCE ( HRS.PLH, 0 ) ) * COALESCE ( CASE WHEN COALESCE ( LD.WithdrawReason, ''0'' ) <> ''40'' OR HRS.TFerOnly = 1 THEN PROS.PLH END, 0 )
+					END
+				ELSE 
+					CASE 
+						WHEN @1619ALSFundingPercent > 0 THEN
+							( FM25.OnProgPayment / 100 ) * ( 0.07 * 100 )
+						ELSE
+							0
+					END
+				END / 12 ) END, FM35P.LearnSuppPaymentP09, FM36P.LearnSuppPaymentP09, 0 ),
 			AchCompPaymentP09 = COALESCE ( FM35P.AchievePaymentP09, FM36P.CompletionPaymentP09, 0 ),
 			BalancePaymentP09 = COALESCE ( FM35P.BalancePaymentP09, FM36P.BalancePaymentP09, 0 ),
 			EmpOutcomePayP09 = COALESCE ( FM35P.EmpOutcomePayYrEnd, 0 ),
@@ -1132,21 +1407,43 @@ BEGIN
 			TotFundP09 = COALESCE ( CASE WHEN LD.FundModel = ''25'' THEN ( CASE WHEN @Split1619Funding = 1 
 				THEN
 					CASE
-						WHEN COALESCE ( HRS.PLH, 0 ) = 0 THEN CASE WHEN LD.AimSeqNumber = FM25.CoreAimSeqNumber THEN COALESCE ( HRS.Funding, 0 ) ELSE 0 END
+						WHEN COALESCE ( HRS.PLH, 0 ) = 0 THEN CASE WHEN LD.AimSeqNumber = FM25.CoreAimSeqNumber THEN COALESCE ( HRS.TotFund, 0 ) ELSE 0 END
 						ELSE
-							( COALESCE ( HRS.Funding, 0 ) / COALESCE ( HRS.PLH, 0 ) ) * COALESCE ( CASE WHEN COALESCE ( LD.WithdrawReason, ''0'' ) <> ''40'' OR HRS.TFerOnly = 1 THEN PROS.PLH END, 0 )
+							( COALESCE ( HRS.TotFund, 0 ) / COALESCE ( HRS.PLH, 0 ) ) * COALESCE ( CASE WHEN COALESCE ( LD.WithdrawReason, ''0'' ) <> ''40'' OR HRS.TFerOnly = 1 THEN PROS.PLH END, 0 )
 					END
 				ELSE FM25.OnProgPayment END / 12 ) END, FM35P.TotFundP09, FM36P.TotFundP09, HE.GROSSFEE / 12, 0 ),
 
 			OnProgPaymentP10 = COALESCE ( CASE WHEN LD.FundModel = ''25'' THEN ( CASE WHEN @Split1619Funding = 1 
 				THEN
 					CASE
-						WHEN COALESCE ( HRS.PLH, 0 ) = 0 THEN CASE WHEN LD.AimSeqNumber = FM25.CoreAimSeqNumber THEN COALESCE ( HRS.Funding, 0 ) ELSE 0 END
+						WHEN COALESCE ( HRS.PLH, 0 ) = 0 THEN CASE WHEN LD.AimSeqNumber = FM25.CoreAimSeqNumber THEN COALESCE ( HRS.OnProgPayment, 0 ) ELSE 0 END
 						ELSE
-							( COALESCE ( HRS.Funding, 0 ) / COALESCE ( HRS.PLH, 0 ) ) * COALESCE ( CASE WHEN COALESCE ( LD.WithdrawReason, ''0'' ) <> ''40'' OR HRS.TFerOnly = 1 THEN PROS.PLH END, 0 )
+							( COALESCE ( HRS.OnProgPayment, 0 ) / COALESCE ( HRS.PLH, 0 ) ) * COALESCE ( CASE WHEN COALESCE ( LD.WithdrawReason, ''0'' ) <> ''40'' OR HRS.TFerOnly = 1 THEN PROS.PLH END, 0 )
 					END
-				ELSE FM25.OnProgPayment END / 12 ) END, FM35P.OnProgPaymentP10, FM36P.OnProgPaymentP10, HE.GROSSFEE / 12, 0 ),
-			LearnSuppPaymentP10 = COALESCE ( FM35P.LearnSuppPaymentP10, FM36P.LearnSuppPaymentP10, 0 ),
+				ELSE
+					FM25.OnProgPayment
+					- CASE 
+						WHEN @1619ALSFundingPercent > 0 THEN
+							( FM25.OnProgPayment / 100 ) * ( 0.07 * 100 )
+						ELSE
+							0
+					END
+				END / 12 ) END, FM35P.OnProgPaymentP10, FM36P.OnProgPaymentP10, HE.GROSSFEE / 12, 0 ),
+			LearnSuppPaymentP10 = COALESCE ( CASE WHEN LD.FundModel = ''25'' THEN ( CASE WHEN @Split1619Funding = 1 
+				THEN
+					CASE
+						WHEN COALESCE ( HRS.PLH, 0 ) = 0 THEN CASE WHEN LD.AimSeqNumber = FM25.CoreAimSeqNumber THEN COALESCE ( HRS.LearnSuppPayment, 0 ) ELSE 0 END
+						ELSE
+							( COALESCE ( HRS.LearnSuppPayment, 0 ) / COALESCE ( HRS.PLH, 0 ) ) * COALESCE ( CASE WHEN COALESCE ( LD.WithdrawReason, ''0'' ) <> ''40'' OR HRS.TFerOnly = 1 THEN PROS.PLH END, 0 )
+					END
+				ELSE 
+					CASE 
+						WHEN @1619ALSFundingPercent > 0 THEN
+							( FM25.OnProgPayment / 100 ) * ( 0.07 * 100 )
+						ELSE
+							0
+					END
+				END / 12 ) END, FM35P.LearnSuppPaymentP10, FM36P.LearnSuppPaymentP10, 0 ),
 			AchCompPaymentP10 = COALESCE ( FM35P.AchievePaymentP10, FM36P.CompletionPaymentP10, 0 ),
 			BalancePaymentP10 = COALESCE ( FM35P.BalancePaymentP10, FM36P.BalancePaymentP10, 0 ),
 			EmpOutcomePayP10 = COALESCE ( FM35P.EmpOutcomePayYrEnd, 0 ),
@@ -1154,9 +1451,9 @@ BEGIN
 			TotFundP10 = COALESCE ( CASE WHEN LD.FundModel = ''25'' THEN ( CASE WHEN @Split1619Funding = 1 
 				THEN
 					CASE
-						WHEN COALESCE ( HRS.PLH, 0 ) = 0 THEN CASE WHEN LD.AimSeqNumber = FM25.CoreAimSeqNumber THEN COALESCE ( HRS.Funding, 0 ) ELSE 0 END
+						WHEN COALESCE ( HRS.PLH, 0 ) = 0 THEN CASE WHEN LD.AimSeqNumber = FM25.CoreAimSeqNumber THEN COALESCE ( HRS.TotFund, 0 ) ELSE 0 END
 						ELSE
-							( COALESCE ( HRS.Funding, 0 ) / COALESCE ( HRS.PLH, 0 ) ) * COALESCE ( CASE WHEN COALESCE ( LD.WithdrawReason, ''0'' ) <> ''40'' OR HRS.TFerOnly = 1 THEN PROS.PLH END, 0 )
+							( COALESCE ( HRS.TotFund, 0 ) / COALESCE ( HRS.PLH, 0 ) ) * COALESCE ( CASE WHEN COALESCE ( LD.WithdrawReason, ''0'' ) <> ''40'' OR HRS.TFerOnly = 1 THEN PROS.PLH END, 0 )
 					END
 				ELSE FM25.OnProgPayment END / 12 ) END, FM35P.TotFundP10, FM36P.TotFundP10, HE.GROSSFEE / 12, 0 ),
     '
@@ -1166,12 +1463,34 @@ BEGIN
 			OnProgPaymentP11 = COALESCE ( CASE WHEN LD.FundModel = ''25'' THEN ( CASE WHEN @Split1619Funding = 1 
 				THEN
 					CASE
-						WHEN COALESCE ( HRS.PLH, 0 ) = 0 THEN CASE WHEN LD.AimSeqNumber = FM25.CoreAimSeqNumber THEN COALESCE ( HRS.Funding, 0 ) ELSE 0 END
+						WHEN COALESCE ( HRS.PLH, 0 ) = 0 THEN CASE WHEN LD.AimSeqNumber = FM25.CoreAimSeqNumber THEN COALESCE ( HRS.OnProgPayment, 0 ) ELSE 0 END
 						ELSE
-							( COALESCE ( HRS.Funding, 0 ) / COALESCE ( HRS.PLH, 0 ) ) * COALESCE ( CASE WHEN COALESCE ( LD.WithdrawReason, ''0'' ) <> ''40'' OR HRS.TFerOnly = 1 THEN PROS.PLH END, 0 )
+							( COALESCE ( HRS.OnProgPayment, 0 ) / COALESCE ( HRS.PLH, 0 ) ) * COALESCE ( CASE WHEN COALESCE ( LD.WithdrawReason, ''0'' ) <> ''40'' OR HRS.TFerOnly = 1 THEN PROS.PLH END, 0 )
 					END
-				ELSE FM25.OnProgPayment END / 12 ) END, FM35P.OnProgPaymentP11, FM36P.OnProgPaymentP11, HE.GROSSFEE / 12, 0 ),
-			LearnSuppPaymentP11 = COALESCE ( FM35P.LearnSuppPaymentP11, FM36P.LearnSuppPaymentP11, 0 ),
+				ELSE
+					FM25.OnProgPayment
+					- CASE 
+						WHEN @1619ALSFundingPercent > 0 THEN
+							( FM25.OnProgPayment / 100 ) * ( 0.07 * 100 )
+						ELSE
+							0
+					END
+				END / 12 ) END, FM35P.OnProgPaymentP11, FM36P.OnProgPaymentP11, HE.GROSSFEE / 12, 0 ),
+			LearnSuppPaymentP11 = COALESCE ( CASE WHEN LD.FundModel = ''25'' THEN ( CASE WHEN @Split1619Funding = 1 
+				THEN
+					CASE
+						WHEN COALESCE ( HRS.PLH, 0 ) = 0 THEN CASE WHEN LD.AimSeqNumber = FM25.CoreAimSeqNumber THEN COALESCE ( HRS.LearnSuppPayment, 0 ) ELSE 0 END
+						ELSE
+							( COALESCE ( HRS.LearnSuppPayment, 0 ) / COALESCE ( HRS.PLH, 0 ) ) * COALESCE ( CASE WHEN COALESCE ( LD.WithdrawReason, ''0'' ) <> ''40'' OR HRS.TFerOnly = 1 THEN PROS.PLH END, 0 )
+					END
+				ELSE 
+					CASE 
+						WHEN @1619ALSFundingPercent > 0 THEN
+							( FM25.OnProgPayment / 100 ) * ( 0.07 * 100 )
+						ELSE
+							0
+					END
+				END / 12 ) END, FM35P.LearnSuppPaymentP11, FM36P.LearnSuppPaymentP11, 0 ),
 			AchCompPaymentP11 = COALESCE ( FM35P.AchievePaymentP11, FM36P.CompletionPaymentP11, 0 ),
 			BalancePaymentP11 = COALESCE ( FM35P.BalancePaymentP11, FM36P.BalancePaymentP11, 0 ),
 			EmpOutcomePayP11 = COALESCE ( FM35P.EmpOutcomePayYrEnd, 0 ),
@@ -1179,21 +1498,43 @@ BEGIN
 			TotFundP11 = COALESCE ( CASE WHEN LD.FundModel = ''25'' THEN ( CASE WHEN @Split1619Funding = 1 
 				THEN
 					CASE
-						WHEN COALESCE ( HRS.PLH, 0 ) = 0 THEN CASE WHEN LD.AimSeqNumber = FM25.CoreAimSeqNumber THEN COALESCE ( HRS.Funding, 0 ) ELSE 0 END
+						WHEN COALESCE ( HRS.PLH, 0 ) = 0 THEN CASE WHEN LD.AimSeqNumber = FM25.CoreAimSeqNumber THEN COALESCE ( HRS.TotFund, 0 ) ELSE 0 END
 						ELSE
-							( COALESCE ( HRS.Funding, 0 ) / COALESCE ( HRS.PLH, 0 ) ) * COALESCE ( CASE WHEN COALESCE ( LD.WithdrawReason, ''0'' ) <> ''40'' OR HRS.TFerOnly = 1 THEN PROS.PLH END, 0 )
+							( COALESCE ( HRS.TotFund, 0 ) / COALESCE ( HRS.PLH, 0 ) ) * COALESCE ( CASE WHEN COALESCE ( LD.WithdrawReason, ''0'' ) <> ''40'' OR HRS.TFerOnly = 1 THEN PROS.PLH END, 0 )
 					END
 				ELSE FM25.OnProgPayment END / 12 ) END, FM35P.TotFundP11, FM36P.TotFundP11, HE.GROSSFEE / 12, 0 ),
 
 			OnProgPaymentP12 = COALESCE ( CASE WHEN LD.FundModel = ''25'' THEN ( CASE WHEN @Split1619Funding = 1 
 				THEN
 					CASE
-						WHEN COALESCE ( HRS.PLH, 0 ) = 0 THEN CASE WHEN LD.AimSeqNumber = FM25.CoreAimSeqNumber THEN COALESCE ( HRS.Funding, 0 ) ELSE 0 END
+						WHEN COALESCE ( HRS.PLH, 0 ) = 0 THEN CASE WHEN LD.AimSeqNumber = FM25.CoreAimSeqNumber THEN COALESCE ( HRS.OnProgPayment, 0 ) ELSE 0 END
 						ELSE
-							( COALESCE ( HRS.Funding, 0 ) / COALESCE ( HRS.PLH, 0 ) ) * COALESCE ( CASE WHEN COALESCE ( LD.WithdrawReason, ''0'' ) <> ''40'' OR HRS.TFerOnly = 1 THEN PROS.PLH END, 0 )
+							( COALESCE ( HRS.OnProgPayment, 0 ) / COALESCE ( HRS.PLH, 0 ) ) * COALESCE ( CASE WHEN COALESCE ( LD.WithdrawReason, ''0'' ) <> ''40'' OR HRS.TFerOnly = 1 THEN PROS.PLH END, 0 )
 					END
-				ELSE FM25.OnProgPayment END / 12 ) END, FM35P.OnProgPaymentP12, FM36P.OnProgPaymentP12, HE.GROSSFEE / 12, 0 ),
-			LearnSuppPaymentP12 = COALESCE ( FM35P.LearnSuppPaymentP12, FM36P.LearnSuppPaymentP12, 0 ),
+				ELSE 
+					FM25.OnProgPayment
+					- CASE 
+						WHEN @1619ALSFundingPercent > 0 THEN
+							( FM25.OnProgPayment / 100 ) * ( 0.07 * 100 )
+						ELSE
+							0
+					END
+				END / 12 ) END, FM35P.OnProgPaymentP12, FM36P.OnProgPaymentP12, HE.GROSSFEE / 12, 0 ),
+			LearnSuppPaymentP12 = COALESCE ( CASE WHEN LD.FundModel = ''25'' THEN ( CASE WHEN @Split1619Funding = 1 
+				THEN
+					CASE
+						WHEN COALESCE ( HRS.PLH, 0 ) = 0 THEN CASE WHEN LD.AimSeqNumber = FM25.CoreAimSeqNumber THEN COALESCE ( HRS.LearnSuppPayment, 0 ) ELSE 0 END
+						ELSE
+							( COALESCE ( HRS.LearnSuppPayment, 0 ) / COALESCE ( HRS.PLH, 0 ) ) * COALESCE ( CASE WHEN COALESCE ( LD.WithdrawReason, ''0'' ) <> ''40'' OR HRS.TFerOnly = 1 THEN PROS.PLH END, 0 )
+					END
+				ELSE 
+					CASE 
+						WHEN @1619ALSFundingPercent > 0 THEN
+							( FM25.OnProgPayment / 100 ) * ( 0.07 * 100 )
+						ELSE
+							0
+					END
+				END / 12 ) END, FM35P.LearnSuppPaymentP12, FM36P.LearnSuppPaymentP12, 0 ),
 			AchCompPaymentP12 = COALESCE ( FM35P.AchievePaymentP12, FM36P.CompletionPaymentP12, 0 ),
 			BalancePaymentP12 = COALESCE ( FM35P.BalancePaymentP12, FM36P.BalancePaymentP12, 0 ),
 			EmpOutcomePayP12 = COALESCE ( FM35P.EmpOutcomePayYrEnd, 0 ),
@@ -1201,9 +1542,9 @@ BEGIN
 			TotFundP12 = COALESCE ( CASE WHEN LD.FundModel = ''25'' THEN ( CASE WHEN @Split1619Funding = 1 
 				THEN
 					CASE
-						WHEN COALESCE ( HRS.PLH, 0 ) = 0 THEN CASE WHEN LD.AimSeqNumber = FM25.CoreAimSeqNumber THEN COALESCE ( HRS.Funding, 0 ) ELSE 0 END
+						WHEN COALESCE ( HRS.PLH, 0 ) = 0 THEN CASE WHEN LD.AimSeqNumber = FM25.CoreAimSeqNumber THEN COALESCE ( HRS.TotFund, 0 ) ELSE 0 END
 						ELSE
-							( COALESCE ( HRS.Funding, 0 ) / COALESCE ( HRS.PLH, 0 ) ) * COALESCE ( CASE WHEN COALESCE ( LD.WithdrawReason, ''0'' ) <> ''40'' OR HRS.TFerOnly = 1 THEN PROS.PLH END, 0 )
+							( COALESCE ( HRS.TotFund, 0 ) / COALESCE ( HRS.PLH, 0 ) ) * COALESCE ( CASE WHEN COALESCE ( LD.WithdrawReason, ''0'' ) <> ''40'' OR HRS.TFerOnly = 1 THEN PROS.PLH END, 0 )
 					END
 				ELSE FM25.OnProgPayment END / 12 ) END, FM35P.TotFundP12, FM36P.TotFundP12, HE.GROSSFEE / 12, 0 )
 
@@ -1222,9 +1563,10 @@ BEGIN
 			AND LDR.AimSeqNumber = LD.AimSeqNumber
 		INNER JOIN ' + @FISDatabase + '.dbo.Valid_Source SRC
 			ON 1 = 1
-		INNER JOIN ( --Find main dept
+		INNER JOIN (
 			SELECT
 				LD.LearnRefNumber,
+				LD.AimSeqNumber,
 				FacCode = 
 					CASE
 						WHEN @ProviderFieldFacLocation = ''A'' THEN
@@ -1273,18 +1615,30 @@ BEGIN
 							PSDMD.ProvSpecDelMon
 						ELSE ''-''
 					END,
-				EnrolmentID = PSDMC.ProvSpecDelMon,
-				RowNum =
-					ROW_NUMBER () OVER (
+				RowNum = 
+					ROW_NUMBER () OVER ( 
 						PARTITION BY
 							LD.LearnRefNumber
 						ORDER BY
-							LD.AimType DESC,
-							LD.LearnStartDate DESC,
+							COALESCE ( FM25.StartFund, ALB.FundStart, FM35.FundStart, FM36.FundStart, 0 ) DESC,
+							COALESCE ( LD.ProgType, ''99'' ),
+							CASE
+								WHEN LD.AimType = 2 THEN 4.5
+								ELSE LD.AimType
+							END DESC,
 							LD.CompStatus,
+							DATEDIFF ( DAY, LD.LearnStartDate, COALESCE ( LD.LearnActEndDate, LD.LearnPlanEndDate ) ) DESC,
+							COALESCE ( L.PlanLearnHours, 0 ) + COALESCE ( L.PlanEEPHours, 0 ) DESC,
+							LD.LearnStartDate,
 							LD.AimSeqNumber
 					)
-			FROM ' + @FISDatabase + '.dbo.Valid_LearningDelivery LD
+	'
+
+    SET @SQLString += 
+        N'
+			FROM ' + @FISDatabase + '.dbo.Valid_Learner L
+			INNER JOIN ' + @FISDatabase + '.dbo.Valid_LearningDelivery LD
+				ON LD.LearnRefNumber = L.LearnRefNumber
 			LEFT JOIN ' + @FISDatabase + '.dbo.Valid_ProviderSpecDeliveryMonitoring PSDMA
 				ON PSDMA.LearnRefNumber = LD.LearnRefNumber
 				AND PSDMA.AimSeqNumber = LD.AimSeqNumber
@@ -1301,8 +1655,29 @@ BEGIN
 				ON PSDMD.LearnRefNumber = LD.LearnRefNumber
 				AND PSDMD.AimSeqNumber = LD.AimSeqNumber
 				AND PSDMD.ProvSpecDelMonOccur = ''D''
+			--16-19
+			LEFT JOIN ' + @FISDatabase + '.dbo.Rulebase_FM25_Learner FM25
+				ON FM25.LearnRefNumber = LD.LearnRefNumber
+				AND FM25.CoreAimSeqNumber = LD.AimSeqNumber
+				--AND FM25.StartFund = 1
+
+			--Apps and AEB
+			LEFT JOIN ' + @FISDatabase + '.dbo.Rulebase_FM35_LearningDelivery FM35
+				ON FM35.LearnRefNumber = LD.LearnRefNumber
+				AND FM35.AimSeqNumber = LD.AimSeqNumber
+				--AND FM35.FundStart = 1
+
+			--Loans and Bursaries
+			LEFT JOIN ' + @FISDatabase + '.dbo.Rulebase_ALB_LearningDelivery ALB
+				ON ALB.LearnRefNumber = LD.LearnRefNumber
+				AND ALB.AimSeqNumber = LD.AimSeqNumber
+
+			--FW Standards
+			LEFT JOIN ' + @FISDatabase + '.dbo.Rulebase_AEC_LearningDelivery FM36
+				ON FM36.LearnRefNumber = LD.LearnRefNumber
+				AND FM36.AimSeqNumber = LD.AimSeqNumber
 		) MA
-			On MA.LearnRefNumber = L.LearnRefNumber
+			ON MA.LearnRefNumber = LD.LearnRefNumber
 			AND MA.RowNum = 1
 	'
 
@@ -2272,6 +2647,40 @@ BEGIN
 		) PROSM
 			ON PROSM.ProvSpecField = MA.CourseCode
 	'
+    
+    SET @SQLString += 
+        N'
+        LEFT JOIN ' + @FISOutputTableLocation + 'FIS_Faculties FAC2
+            ON FAC2.FacCode = 
+                CASE
+                    WHEN @ProviderFieldFacLocation = ''A'' THEN
+                        PSDMA.ProvSpecDelMon
+                    WHEN @ProviderFieldFacLocation = ''B'' THEN
+                        PSDMB.ProvSpecDelMon
+                    WHEN @ProviderFieldFacLocation = ''C'' THEN
+                        PSDMC.ProvSpecDelMon
+                    WHEN @ProviderFieldFacLocation = ''D'' THEN
+                        PSDMD.ProvSpecDelMon
+                    ELSE 
+                        PSDMA.ProvSpecDelMon
+                END
+            AND FAC2.AcademicYear = @AcademicYear
+        LEFT JOIN ' + @FISOutputTableLocation + 'FIS_Teams TEAM2
+            ON TEAM2.TeamCode = 
+                CASE
+                    WHEN @ProviderFieldTeamLocation = ''A'' THEN
+                        PSDMA.ProvSpecDelMon
+                    WHEN @ProviderFieldTeamLocation = ''B'' THEN
+                        PSDMB.ProvSpecDelMon
+                    WHEN @ProviderFieldTeamLocation = ''C'' THEN
+                        PSDMC.ProvSpecDelMon
+                    WHEN @ProviderFieldTeamLocation = ''D'' THEN
+                        PSDMD.ProvSpecDelMon
+                    ELSE 
+                        PSDMA.ProvSpecDelMon
+                END
+            AND TEAM2.AcademicYear = @AcademicYear
+	'
 
     SET @SQLString += 
         N'
@@ -2284,7 +2693,21 @@ BEGIN
 				TFerOnly = CASE WHEN ACT.LearnRefNumber IS NULL THEN 1 ELSE 0 END,
 				PLH = COALESCE ( SUM ( PROS.PLH ), 0 ),
 				EEP = COALESCE ( SUM ( PROS.EEP ), 0 ),
-				Funding = MAX ( FM25.OnProgPayment ),
+				OnProgPayment = 
+					MAX ( FM25.OnProgPayment )
+					- CASE 
+						WHEN @1619ALSFundingPercent > 0 THEN
+							( MAX ( FM25.OnProgPayment ) / 100 ) * ( 0.07 * 100 )
+						ELSE
+							0
+					END,
+				LearnSuppPaymentYrEnd = 
+					CASE 
+						WHEN @1619ALSFundingPercent > 0 THEN
+							( MAX ( FM25.OnProgPayment ) / 100 ) * ( 0.07 * 100 )
+						ELSE
+							0
+					END,
 				IsFunded = MAX ( CAST ( FM25.StartFund AS INT ) )
 			FROM ' + @FISDatabase + '.dbo.Valid_LearningDelivery LD
 			INNER JOIN ' + @FISDatabase + '.dbo.Rulebase_EFA_Learner FM25
@@ -2378,7 +2801,7 @@ BEGIN
 			ON SSA2.SSA_Tier2_code = AIM.SSA2ID
 		LEFT JOIN (
 			SELECT
-				EmployerID = CAST ( ORG.EDRSRef AS INT ),
+				EmployerID = CASE WHEN ISNUMERIC ( ORG.EDRSRef ) = 1 THEN CAST ( ORG.EDRSRef AS INT ) ELSE NULL END,
 				OrganisationID = MIN ( ORG.OrganisationID )
 			FROM ' + @ProSolutionDatabaseLocation + 'Organisation ORG
 			WHERE
@@ -2393,11 +2816,19 @@ BEGIN
 		LEFT JOIN ' + @ProSolutionDatabaseLocation + 'Organisation EMPN
 			ON EMPN.OrganisationID = MEMP.OrganisationID
 		LEFT JOIN ' + @ProSolutionDatabaseLocation + 'Organisation PTN
-			ON CAST ( COALESCE ( PTN.FranchPartnerRef, PTN.UKPRN, PTN.OrganisationRef ) AS INT ) = 
+			ON 
 				CASE
-					WHEN LD.LearnAimRef = ''ZPROG001'' THEN PTR.PartnerUKPRN
-					ELSE LD.PartnerUKPRN
-				END
+					WHEN ISNUMERIC ( LTRIM ( RTRIM ( COALESCE ( PTN.FranchPartnerRef, PTN.UKPRN, PTN.OrganisationRef ) ) ) ) = 1 THEN
+						CASE
+							WHEN CAST ( COALESCE ( PTN.FranchPartnerRef, PTN.UKPRN, PTN.OrganisationRef ) AS INT ) = 
+							CASE
+								WHEN LD.LearnAimRef = ''ZPROG001'' THEN PTR.PartnerUKPRN
+								ELSE LD.PartnerUKPRN
+							END THEN 1
+							ELSE 0
+						END
+					ELSE 0
+				END = 1
 			AND LEN ( LTRIM ( RTRIM ( COALESCE ( PTN.FranchPartnerRef, PTN.UKPRN, PTN.OrganisationRef ) ) ) ) = 8
 
 		--WHERE
@@ -2418,6 +2849,7 @@ BEGIN
     	@IsFinalReturn bit,
     	@Split1619Funding bit,
     	@FutureAchieveWeighting DECIMAL(3,2),
+        @FISOutputTableLocation NVARCHAR(200),
     	@ProviderFieldFacLocation CHAR(1),
 		@ProviderFieldTeamLocation CHAR(1),
 		@ProviderFieldCostCentreLocation CHAR(1),
@@ -2441,6 +2873,7 @@ BEGIN
     	@IsFinalReturn = @IsFinalReturn,
     	@Split1619Funding = @Split1619Funding,
     	@FutureAchieveWeighting = @FutureAchieveWeighting,
+        @FISOutputTableLocation = @FISOutputTableLocation,
     	@ProviderFieldFacLocation = @ProviderFieldFacLocation,
 		@ProviderFieldTeamLocation = @ProviderFieldTeamLocation,
 		@ProviderFieldCostCentreLocation = @ProviderFieldCostCentreLocation,

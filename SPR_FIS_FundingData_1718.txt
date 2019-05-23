@@ -2,8 +2,10 @@ CREATE PROCEDURE SPR_FIS_FundingData_1718
 	@FISDatabase NVARCHAR(50),
 	@AcademicYear NVARCHAR(5),
 	@ILRReturn NVARCHAR(2),
-	@IsFinalReturn bit,
-	@Split1619Funding bit,
+	@IsFinalReturn BIT,
+	@Split1619Funding BIT,
+	@1619ALSFundingPercent DECIMAL(3,2),
+	@IncludeHEAdvLoanPossIncome BIT,
 	@FutureAchieveWeighting DECIMAL(3,2),
     @FISOutputTableLocation NVARCHAR(200),
 	@ProSolutionDatabaseLocation NVARCHAR(200),
@@ -26,25 +28,27 @@ AS
 BEGIN
 	SET NOCOUNT ON;
 
-	-- DECLARE @FISDatabase NVARCHAR(50) = 'FIS_1819_R05_F'
-	-- DECLARE @AcademicYear NVARCHAR(5) = '17/18'
-	-- DECLARE @ILRReturn NVARCHAR(2) = '5'
-	-- DECLARE @IsFinalReturn BIT = 1
-	-- DECLARE @Split1619Funding BIT = 1
-	-- DECLARE @FutureAchieveWeighting DECIMAL(3,2) = 0.75
-	-- DECLARE @ProSolutionDatabaseLocation NVARCHAR(200) = 'ProSolution.dbo.'
-	-- DECLARE @ProAchieveDatabaseLocation NVARCHAR(200) = 'ussql01.ProGeneral.dbo.'
-	-- DECLARE @ProviderFieldCourseLocation CHAR(1) = 'A'
-	-- DECLARE @ProviderFieldCourseFormat NVARCHAR(50) = 'CRS.Code + "-" + GRP.Code'
-	-- DECLARE @OverrideEngFac NVARCHAR(50) = 'F05'
-	-- DECLARE @OverrideMatFac NVARCHAR(50) = 'F05'
-	-- DECLARE @OverrideEngTeam NVARCHAR(50) = 'T01'
-	-- DECLARE @OverrideMatTeam NVARCHAR(50) = 'T02'
-	-- DECLARE @OverrideEngCostCentre NVARCHAR(50) = '4461'
-	-- DECLARE @OverrideMatCostCentre NVARCHAR(50) = '4462'
-	-- DECLARE @OverridePartnerFac NVARCHAR(50) = 'F00'
-	-- DECLARE @OverridePartnerTeam NVARCHAR(50) = 'T00'
-	-- DECLARE @OverridePartnerCostCentre NVARCHAR(50) = ''
+	--DECLARE @FISDatabase NVARCHAR(50) = 'FIS_1819_R05_F'
+	--DECLARE @AcademicYear NVARCHAR(5) = '17/18'
+	--DECLARE @ILRReturn NVARCHAR(2) = '5'
+	--DECLARE @IsFinalReturn BIT = 1
+	--DECLARE @Split1619Funding BIT = 1
+	--DECLARE @1619ALSFundingPercent DECIMAL(3,2) = 0.03
+	--DECLARE @IncludeHEAdvLoanPossIncome BIT = 1,
+	--DECLARE @FutureAchieveWeighting DECIMAL(3,2) = 0.75
+	--DECLARE @ProSolutionDatabaseLocation NVARCHAR(200) = 'ProSolution.dbo.'
+	--DECLARE @ProAchieveDatabaseLocation NVARCHAR(200) = 'ussql01.ProGeneral.dbo.'
+	--DECLARE @ProviderFieldCourseLocation CHAR(1) = 'A'
+	--DECLARE @ProviderFieldCourseFormat NVARCHAR(50) = 'CRS.Code + "-" + GRP.Code'
+	--DECLARE @OverrideEngFac NVARCHAR(50) = 'F05'
+	--DECLARE @OverrideMatFac NVARCHAR(50) = 'F05'
+	--DECLARE @OverrideEngTeam NVARCHAR(50) = 'T01'
+	--DECLARE @OverrideMatTeam NVARCHAR(50) = 'T02'
+	--DECLARE @OverrideEngCostCentre NVARCHAR(50) = '4461'
+	--DECLARE @OverrideMatCostCentre NVARCHAR(50) = '4462'
+	--DECLARE @OverridePartnerFac NVARCHAR(50) = 'F00'
+	--DECLARE @OverridePartnerTeam NVARCHAR(50) = 'T00'
+	--DECLARE @OverridePartnerCostCentre NVARCHAR(50) = ''
 
 	DECLARE @SQLString NVARCHAR(MAX);
     DECLARE @SQLParams NVARCHAR(MAX);
@@ -2843,11 +2847,15 @@ BEGIN
 		--	L.GivenNames,
 		--	L.LearnRefNumber';
 
+	--SELECT @SQLString AS [processing-instruction(x)] FOR XML PATH('')
+
 	SET @SQLParams = 
         N'@AcademicYear NVARCHAR(5),
     	@ILRReturn NVARCHAR(2),
-    	@IsFinalReturn bit,
-    	@Split1619Funding bit,
+    	@IsFinalReturn BIT,
+    	@Split1619Funding BIT,
+		@1619ALSFundingPercent DECIMAL(3,2),
+		@IncludeHEAdvLoanPossIncome BIT,
     	@FutureAchieveWeighting DECIMAL(3,2),
         @FISOutputTableLocation NVARCHAR(200),
     	@ProviderFieldFacLocation CHAR(1),
@@ -2872,6 +2880,8 @@ BEGIN
     	@ILRReturn = @ILRReturn,
     	@IsFinalReturn = @IsFinalReturn,
     	@Split1619Funding = @Split1619Funding,
+		@1619ALSFundingPercent = @1619ALSFundingPercent,
+		@IncludeHEAdvLoanPossIncome = @IncludeHEAdvLoanPossIncome,
     	@FutureAchieveWeighting = @FutureAchieveWeighting,
         @FISOutputTableLocation = @FISOutputTableLocation,
     	@ProviderFieldFacLocation = @ProviderFieldFacLocation,

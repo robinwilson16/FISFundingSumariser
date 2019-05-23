@@ -2,9 +2,10 @@ CREATE PROCEDURE SPR_FIS_FundingData_1819
 	@FISDatabase NVARCHAR(50),
 	@AcademicYear NVARCHAR(5),
 	@ILRReturn NVARCHAR(2),
-	@IsFinalReturn bit,
-	@Split1619Funding bit,
+	@IsFinalReturn BIT,
+	@Split1619Funding BIT,
 	@1619ALSFundingPercent DECIMAL(3,2),
+	@IncludeHEAdvLoanPossIncome BIT,
 	@FutureAchieveWeighting DECIMAL(3,2),
     @FISOutputTableLocation NVARCHAR(200),
 	@ProSolutionDatabaseLocation NVARCHAR(200),
@@ -27,30 +28,31 @@ AS
 BEGIN
 	SET NOCOUNT ON;
 
-	 --DECLARE @FISDatabase NVARCHAR(50) = 'FIS_1819_R10_2'
-	 --DECLARE @AcademicYear NVARCHAR(5) = '18/19'
-	 --DECLARE @ILRReturn NVARCHAR(2) = '10'
-	 --DECLARE @IsFinalReturn BIT = 0
-	 --DECLARE @Split1619Funding BIT = 1
-	 --DECLARE @1619ALSFundingPercent DECIMAL(3,2) = 0.03
-	 --DECLARE @FutureAchieveWeighting DECIMAL(3,2) = 0.75
-  --   DECLARE @FISOutputTableLocation NVARCHAR(200) = 'ProSolutionReports.dbo.'
-	 --DECLARE @ProSolutionDatabaseLocation NVARCHAR(200) = 'ProSolution.dbo.'
-	 --DECLARE @ProAchieveDatabaseLocation NVARCHAR(200) = 'ussql01.ProGeneral.dbo.'
-	 --DECLARE @ProviderFieldFacLocation NCHAR(1) = 'D'
-  --   DECLARE @ProviderFieldTeamLocation NCHAR(1) = 'C'
-  --   DECLARE @ProviderFieldCostCentreLocation NCHAR(1) = 'B'
-  --   DECLARE @ProviderFieldCourseLocation NCHAR(1) = 'A'
-	 --DECLARE @ProviderFieldCourseFormat NVARCHAR(50) = 'CRS.Code + "-" + GRP.Code'
-	 --DECLARE @OverrideEngFac NVARCHAR(50) = 'F05'
-	 --DECLARE @OverrideMatFac NVARCHAR(50) = 'F05'
-	 --DECLARE @OverrideEngTeam NVARCHAR(50) = 'T01'
-	 --DECLARE @OverrideMatTeam NVARCHAR(50) = 'T02'
-	 --DECLARE @OverrideEngCostCentre NVARCHAR(50) = '4461'
-	 --DECLARE @OverrideMatCostCentre NVARCHAR(50) = '4462'
-	 --DECLARE @OverridePartnerFac NVARCHAR(50) = 'F00'
-	 --DECLARE @OverridePartnerTeam NVARCHAR(50) = 'T00'
-	 --DECLARE @OverridePartnerCostCentre NVARCHAR(50) = ''
+	--DECLARE @FISDatabase NVARCHAR(50) = 'FIS_1819_R10_2'
+	--DECLARE @AcademicYear NVARCHAR(5) = '18/19'
+	--DECLARE @ILRReturn NVARCHAR(2) = '10'
+	--DECLARE @IsFinalReturn BIT = 0
+	--DECLARE @Split1619Funding BIT = 1
+	--DECLARE @1619ALSFundingPercent DECIMAL(3,2) = 0.03
+	--DECLARE @IncludeHEAdvLoanPossIncome BIT = 1,
+	--DECLARE @FutureAchieveWeighting DECIMAL(3,2) = 0.75
+	--DECLARE @FISOutputTableLocation NVARCHAR(200) = 'ProSolutionReports.dbo.'
+	--DECLARE @ProSolutionDatabaseLocation NVARCHAR(200) = 'ProSolution.dbo.'
+	--DECLARE @ProAchieveDatabaseLocation NVARCHAR(200) = 'ussql01.ProGeneral.dbo.'
+	--DECLARE @ProviderFieldFacLocation NCHAR(1) = 'D'
+	--DECLARE @ProviderFieldTeamLocation NCHAR(1) = 'C'
+	--DECLARE @ProviderFieldCostCentreLocation NCHAR(1) = 'B'
+	--DECLARE @ProviderFieldCourseLocation NCHAR(1) = 'A'
+	--DECLARE @ProviderFieldCourseFormat NVARCHAR(50) = 'CRS.Code + "-" + GRP.Code'
+	--DECLARE @OverrideEngFac NVARCHAR(50) = 'F05'
+	--DECLARE @OverrideMatFac NVARCHAR(50) = 'F05'
+	--DECLARE @OverrideEngTeam NVARCHAR(50) = 'T01'
+	--DECLARE @OverrideMatTeam NVARCHAR(50) = 'T02'
+	--DECLARE @OverrideEngCostCentre NVARCHAR(50) = '4461'
+	--DECLARE @OverrideMatCostCentre NVARCHAR(50) = '4462'
+	--DECLARE @OverridePartnerFac NVARCHAR(50) = 'F00'
+	--DECLARE @OverridePartnerTeam NVARCHAR(50) = 'T00'
+	--DECLARE @OverridePartnerCostCentre NVARCHAR(50) = ''
 
 	DECLARE @SQLString NVARCHAR(MAX);
     DECLARE @SQLParams NVARCHAR(MAX);
@@ -901,7 +903,7 @@ BEGIN
 						ELSE
 							0
 					END
-				END / 12 ) * @ILRReturn END, FM35P.OnProgPaymentToPeriod, FM36P.OnProgPaymentToPeriod, ( HE.GROSSFEE / 12 ) * @ILRReturn, 0 ),
+				END / 12 ) * @ILRReturn END, FM35P.OnProgPaymentToPeriod, FM36P.OnProgPaymentToPeriod, ( CASE WHEN @IncludeHEAdvLoanPossIncome = 1 THEN HE.GROSSFEE ELSE 0 END / 12 ) * @ILRReturn, 0 ),
 			LearnSuppPaymentToPeriod = COALESCE ( CASE WHEN LD.FundModel = ''25'' THEN ( CASE WHEN @Split1619Funding = 1 
 				THEN
 					CASE
@@ -928,7 +930,7 @@ BEGIN
 						ELSE
 							( COALESCE ( HRS.TotFund, 0 ) / COALESCE ( HRS.PLH, 0 ) ) * COALESCE ( CASE WHEN COALESCE ( LD.WithdrawReason, ''0'' ) <> ''40'' OR HRS.TFerOnly = 1 THEN PROS.PLH END, 0 )
 					END
-				ELSE FM25.OnProgPayment END / 12 ) * @ILRReturn END, FM35P.TotFundToPeriod, FM36P.TotFundToPeriod, ( HE.GROSSFEE / 12 ) * @ILRReturn, 0 ),
+				ELSE FM25.OnProgPayment END / 12 ) * @ILRReturn END, FM35P.TotFundToPeriod, FM36P.TotFundToPeriod, ( CASE WHEN @IncludeHEAdvLoanPossIncome = 1 THEN HE.GROSSFEE ELSE 0 END / 12 ) * @ILRReturn, 0 ),
 
 			OnProgPayment6Mon = COALESCE ( CASE WHEN LD.FundModel = ''25'' THEN ( CASE WHEN @Split1619Funding = 1 
 				THEN
@@ -945,7 +947,7 @@ BEGIN
 						ELSE
 							0
 					END
-				END / 12 ) * 6 END, FM35P.OnProgPayment6Mon, FM36P.OnProgPayment6Mon, ( HE.GROSSFEE / 12 ) * 6, 0 ),
+				END / 12 ) * 6 END, FM35P.OnProgPayment6Mon, FM36P.OnProgPayment6Mon, ( CASE WHEN @IncludeHEAdvLoanPossIncome = 1 THEN HE.GROSSFEE ELSE 0 END / 12 ) * 6, 0 ),
 			LearnSuppPayment6Mon = COALESCE ( CASE WHEN LD.FundModel = ''25'' THEN ( CASE WHEN @Split1619Funding = 1 
 				THEN
 					CASE
@@ -972,7 +974,7 @@ BEGIN
 						ELSE
 							( COALESCE ( HRS.TotFund, 0 ) / COALESCE ( HRS.PLH, 0 ) ) * COALESCE ( CASE WHEN COALESCE ( LD.WithdrawReason, ''0'' ) <> ''40'' OR HRS.TFerOnly = 1 THEN PROS.PLH END, 0 )
 					END
-				ELSE FM25.OnProgPayment END / 12 ) * 6 END, FM35P.TotFund6Mon, FM36P.TotFund6Mon, ( HE.GROSSFEE / 12 ) * 6, 0 ),
+				ELSE FM25.OnProgPayment END / 12 ) * 6 END, FM35P.TotFund6Mon, FM36P.TotFund6Mon, ( CASE WHEN @IncludeHEAdvLoanPossIncome = 1 THEN HE.GROSSFEE ELSE 0 END / 12 ) * 6, 0 ),
     '
 
     SET @SQLString += 
@@ -992,7 +994,7 @@ BEGIN
 						ELSE
 							0
 					END
-				END END, FM35P.OnProgPaymentYrEnd, FM36P.OnProgPaymentYrEnd, HE.GROSSFEE, 0 ),
+				END END, FM35P.OnProgPaymentYrEnd, FM36P.OnProgPaymentYrEnd, CASE WHEN @IncludeHEAdvLoanPossIncome = 1 THEN HE.GROSSFEE ELSE 0 END, 0 ),
 			LearnSuppPaymentYrEnd = COALESCE ( CASE WHEN LD.FundModel = ''25'' THEN CASE WHEN @Split1619Funding = 1 
 				THEN
 					CASE
@@ -1019,7 +1021,7 @@ BEGIN
 						ELSE
 							( COALESCE ( HRS.TotFund, 0 ) / COALESCE ( HRS.PLH, 0 ) ) * COALESCE ( CASE WHEN COALESCE ( LD.WithdrawReason, ''0'' ) <> ''40'' OR HRS.TFerOnly = 1 THEN PROS.PLH END, 0 )
 					END
-				ELSE FM25.OnProgPayment END END, FM35P.TotFundYrEnd, FM36P.TotFundYrEnd, HE.GROSSFEE, 0 ),
+				ELSE FM25.OnProgPayment END END, FM35P.TotFundYrEnd, FM36P.TotFundYrEnd, CASE WHEN @IncludeHEAdvLoanPossIncome = 1 THEN HE.GROSSFEE ELSE 0 END, 0 ),
 
 			FutureAchievePayment = 
 				CASE
@@ -1056,7 +1058,7 @@ BEGIN
 						ELSE
 							0
 					END
-				END / 12 ) END, FM35P.OnProgPaymentP01, FM36P.OnProgPaymentP01, HE.GROSSFEE / 12, 0 ),
+				END / 12 ) END, FM35P.OnProgPaymentP01, FM36P.OnProgPaymentP01, CASE WHEN @IncludeHEAdvLoanPossIncome = 1 THEN HE.GROSSFEE ELSE 0 END / 12, 0 ),
 			LearnSuppPaymentP01 = COALESCE ( CASE WHEN LD.FundModel = ''25'' THEN ( CASE WHEN @Split1619Funding = 1 
 				THEN
 					CASE
@@ -1083,7 +1085,7 @@ BEGIN
 						ELSE
 							( COALESCE ( HRS.TotFund, 0 ) / COALESCE ( HRS.PLH, 0 ) ) * COALESCE ( CASE WHEN COALESCE ( LD.WithdrawReason, ''0'' ) <> ''40'' OR HRS.TFerOnly = 1 THEN PROS.PLH END, 0 )
 					END
-				ELSE FM25.OnProgPayment END / 12 ) END, FM35P.TotFundP01, FM36P.TotFundP01, HE.GROSSFEE / 12, 0 ),
+				ELSE FM25.OnProgPayment END / 12 ) END, FM35P.TotFundP01, FM36P.TotFundP01, CASE WHEN @IncludeHEAdvLoanPossIncome = 1 THEN HE.GROSSFEE ELSE 0 END / 12, 0 ),
 
 			OnProgPaymentP02 = COALESCE ( CASE WHEN LD.FundModel = ''25'' THEN ( CASE WHEN @Split1619Funding = 1 
 				THEN
@@ -1100,7 +1102,7 @@ BEGIN
 						ELSE
 							0
 					END
-				END / 12 ) END, FM35P.OnProgPaymentP02, FM36P.OnProgPaymentP02, HE.GROSSFEE / 12, 0 ),
+				END / 12 ) END, FM35P.OnProgPaymentP02, FM36P.OnProgPaymentP02, CASE WHEN @IncludeHEAdvLoanPossIncome = 1 THEN HE.GROSSFEE ELSE 0 END / 12, 0 ),
 			LearnSuppPaymentP02 = COALESCE ( CASE WHEN LD.FundModel = ''25'' THEN ( CASE WHEN @Split1619Funding = 1 
 				THEN
 					CASE
@@ -1127,7 +1129,7 @@ BEGIN
 						ELSE
 							( COALESCE ( HRS.TotFund, 0 ) / COALESCE ( HRS.PLH, 0 ) ) * COALESCE ( CASE WHEN COALESCE ( LD.WithdrawReason, ''0'' ) <> ''40'' OR HRS.TFerOnly = 1 THEN PROS.PLH END, 0 )
 					END
-				ELSE FM25.OnProgPayment END / 12 ) END, FM35P.TotFundP02, FM36P.TotFundP02, HE.GROSSFEE / 12, 0 ),
+				ELSE FM25.OnProgPayment END / 12 ) END, FM35P.TotFundP02, FM36P.TotFundP02, CASE WHEN @IncludeHEAdvLoanPossIncome = 1 THEN HE.GROSSFEE ELSE 0 END / 12, 0 ),
     '
 
     SET @SQLString += 
@@ -1147,7 +1149,7 @@ BEGIN
 						ELSE
 							0
 					END
-				END / 12 ) END, FM35P.OnProgPaymentP03, FM36P.OnProgPaymentP03, HE.GROSSFEE / 12, 0 ),
+				END / 12 ) END, FM35P.OnProgPaymentP03, FM36P.OnProgPaymentP03, CASE WHEN @IncludeHEAdvLoanPossIncome = 1 THEN HE.GROSSFEE ELSE 0 END / 12, 0 ),
 			LearnSuppPaymentP03 = COALESCE ( CASE WHEN LD.FundModel = ''25'' THEN ( CASE WHEN @Split1619Funding = 1 
 				THEN
 					CASE
@@ -1174,7 +1176,7 @@ BEGIN
 						ELSE
 							( COALESCE ( HRS.TotFund, 0 ) / COALESCE ( HRS.PLH, 0 ) ) * COALESCE ( CASE WHEN COALESCE ( LD.WithdrawReason, ''0'' ) <> ''40'' OR HRS.TFerOnly = 1 THEN PROS.PLH END, 0 )
 					END
-				ELSE FM25.OnProgPayment END / 12 ) END, FM35P.TotFundP03, FM36P.TotFundP03, HE.GROSSFEE / 12, 0 ),
+				ELSE FM25.OnProgPayment END / 12 ) END, FM35P.TotFundP03, FM36P.TotFundP03, CASE WHEN @IncludeHEAdvLoanPossIncome = 1 THEN HE.GROSSFEE ELSE 0 END / 12, 0 ),
 
 			OnProgPaymentP04 = COALESCE ( CASE WHEN LD.FundModel = ''25'' THEN ( CASE WHEN @Split1619Funding = 1 
 				THEN
@@ -1191,7 +1193,7 @@ BEGIN
 						ELSE
 							0
 					END
-				END / 12 ) END, FM35P.OnProgPaymentP04, FM36P.OnProgPaymentP04, HE.GROSSFEE / 12, 0 ),
+				END / 12 ) END, FM35P.OnProgPaymentP04, FM36P.OnProgPaymentP04, CASE WHEN @IncludeHEAdvLoanPossIncome = 1 THEN HE.GROSSFEE ELSE 0 END / 12, 0 ),
 			LearnSuppPaymentP04 = COALESCE ( CASE WHEN LD.FundModel = ''25'' THEN ( CASE WHEN @Split1619Funding = 1 
 				THEN
 					CASE
@@ -1218,7 +1220,7 @@ BEGIN
 						ELSE
 							( COALESCE ( HRS.TotFund, 0 ) / COALESCE ( HRS.PLH, 0 ) ) * COALESCE ( CASE WHEN COALESCE ( LD.WithdrawReason, ''0'' ) <> ''40'' OR HRS.TFerOnly = 1 THEN PROS.PLH END, 0 )
 					END
-				ELSE FM25.OnProgPayment END / 12 ) END, FM35P.TotFundP04, FM36P.TotFundP04, HE.GROSSFEE / 12, 0 ),
+				ELSE FM25.OnProgPayment END / 12 ) END, FM35P.TotFundP04, FM36P.TotFundP04, CASE WHEN @IncludeHEAdvLoanPossIncome = 1 THEN HE.GROSSFEE ELSE 0 END / 12, 0 ),
 	'
 
     SET @SQLString += 
@@ -1238,7 +1240,7 @@ BEGIN
 						ELSE
 							0
 					END
-				END / 12 ) END, FM35P.OnProgPaymentP05, FM36P.OnProgPaymentP05, HE.GROSSFEE / 12, 0 ),
+				END / 12 ) END, FM35P.OnProgPaymentP05, FM36P.OnProgPaymentP05, CASE WHEN @IncludeHEAdvLoanPossIncome = 1 THEN HE.GROSSFEE ELSE 0 END / 12, 0 ),
 			LearnSuppPaymentP05 = COALESCE ( CASE WHEN LD.FundModel = ''25'' THEN ( CASE WHEN @Split1619Funding = 1 
 				THEN
 					CASE
@@ -1265,7 +1267,7 @@ BEGIN
 						ELSE
 							( COALESCE ( HRS.TotFund, 0 ) / COALESCE ( HRS.PLH, 0 ) ) * COALESCE ( CASE WHEN COALESCE ( LD.WithdrawReason, ''0'' ) <> ''40'' OR HRS.TFerOnly = 1 THEN PROS.PLH END, 0 )
 					END
-				ELSE FM25.OnProgPayment END / 12 ) END, FM35P.TotFundP05, FM36P.TotFundP05, HE.GROSSFEE / 12, 0 ),
+				ELSE FM25.OnProgPayment END / 12 ) END, FM35P.TotFundP05, FM36P.TotFundP05, CASE WHEN @IncludeHEAdvLoanPossIncome = 1 THEN HE.GROSSFEE ELSE 0 END / 12, 0 ),
 
 			OnProgPaymentP06 = COALESCE ( CASE WHEN LD.FundModel = ''25'' THEN ( CASE WHEN @Split1619Funding = 1 
 				THEN
@@ -1282,7 +1284,7 @@ BEGIN
 						ELSE
 							0
 					END
-				END / 12 ) END, FM35P.OnProgPaymentP06, FM36P.OnProgPaymentP06, HE.GROSSFEE / 12, 0 ),
+				END / 12 ) END, FM35P.OnProgPaymentP06, FM36P.OnProgPaymentP06, CASE WHEN @IncludeHEAdvLoanPossIncome = 1 THEN HE.GROSSFEE ELSE 0 END / 12, 0 ),
 			LearnSuppPaymentP06 = COALESCE ( CASE WHEN LD.FundModel = ''25'' THEN ( CASE WHEN @Split1619Funding = 1 
 				THEN
 					CASE
@@ -1309,7 +1311,7 @@ BEGIN
 						ELSE
 							( COALESCE ( HRS.TotFund, 0 ) / COALESCE ( HRS.PLH, 0 ) ) * COALESCE ( CASE WHEN COALESCE ( LD.WithdrawReason, ''0'' ) <> ''40'' OR HRS.TFerOnly = 1 THEN PROS.PLH END, 0 )
 					END
-				ELSE FM25.OnProgPayment END / 12 ) END, FM35P.TotFundP06, FM36P.TotFundP06, HE.GROSSFEE / 12, 0 ),
+				ELSE FM25.OnProgPayment END / 12 ) END, FM35P.TotFundP06, FM36P.TotFundP06, CASE WHEN @IncludeHEAdvLoanPossIncome = 1 THEN HE.GROSSFEE ELSE 0 END / 12, 0 ),
     '
 
     SET @SQLString += 
@@ -1329,7 +1331,7 @@ BEGIN
 						ELSE
 							0
 					END
-				END / 12 ) END, FM35P.OnProgPaymentP07, FM36P.OnProgPaymentP07, HE.GROSSFEE / 12, 0 ),
+				END / 12 ) END, FM35P.OnProgPaymentP07, FM36P.OnProgPaymentP07, CASE WHEN @IncludeHEAdvLoanPossIncome = 1 THEN HE.GROSSFEE ELSE 0 END / 12, 0 ),
 			LearnSuppPaymentP07 = COALESCE ( CASE WHEN LD.FundModel = ''25'' THEN ( CASE WHEN @Split1619Funding = 1 
 				THEN
 					CASE
@@ -1356,7 +1358,7 @@ BEGIN
 						ELSE
 							( COALESCE ( HRS.TotFund, 0 ) / COALESCE ( HRS.PLH, 0 ) ) * COALESCE ( CASE WHEN COALESCE ( LD.WithdrawReason, ''0'' ) <> ''40'' OR HRS.TFerOnly = 1 THEN PROS.PLH END, 0 )
 					END
-				ELSE FM25.OnProgPayment END / 12 ) END, FM35P.TotFundP07, FM36P.TotFundP07, HE.GROSSFEE / 12, 0 ),
+				ELSE FM25.OnProgPayment END / 12 ) END, FM35P.TotFundP07, FM36P.TotFundP07, CASE WHEN @IncludeHEAdvLoanPossIncome = 1 THEN HE.GROSSFEE ELSE 0 END / 12, 0 ),
 
 			OnProgPaymentP08 = COALESCE ( CASE WHEN LD.FundModel = ''25'' THEN ( CASE WHEN @Split1619Funding = 1 
 				THEN
@@ -1373,7 +1375,7 @@ BEGIN
 						ELSE
 							0
 					END
-				END / 12 ) END, FM35P.OnProgPaymentP08, FM36P.OnProgPaymentP08, HE.GROSSFEE / 12, 0 ),
+				END / 12 ) END, FM35P.OnProgPaymentP08, FM36P.OnProgPaymentP08, CASE WHEN @IncludeHEAdvLoanPossIncome = 1 THEN HE.GROSSFEE ELSE 0 END / 12, 0 ),
 			LearnSuppPaymentP08 = COALESCE ( CASE WHEN LD.FundModel = ''25'' THEN ( CASE WHEN @Split1619Funding = 1 
 				THEN
 					CASE
@@ -1400,7 +1402,7 @@ BEGIN
 						ELSE
 							( COALESCE ( HRS.TotFund, 0 ) / COALESCE ( HRS.PLH, 0 ) ) * COALESCE ( CASE WHEN COALESCE ( LD.WithdrawReason, ''0'' ) <> ''40'' OR HRS.TFerOnly = 1 THEN PROS.PLH END, 0 )
 					END
-				ELSE FM25.OnProgPayment END / 12 ) END, FM35P.TotFundP08, FM36P.TotFundP08, HE.GROSSFEE / 12, 0 ),
+				ELSE FM25.OnProgPayment END / 12 ) END, FM35P.TotFundP08, FM36P.TotFundP08, CASE WHEN @IncludeHEAdvLoanPossIncome = 1 THEN HE.GROSSFEE ELSE 0 END / 12, 0 ),
 	'
     
     SET @SQLString += 
@@ -1420,7 +1422,7 @@ BEGIN
 						ELSE
 							0
 					END
-				END / 12 ) END, FM35P.OnProgPaymentP09, FM36P.OnProgPaymentP09, HE.GROSSFEE / 12, 0 ),
+				END / 12 ) END, FM35P.OnProgPaymentP09, FM36P.OnProgPaymentP09, CASE WHEN @IncludeHEAdvLoanPossIncome = 1 THEN HE.GROSSFEE ELSE 0 END / 12, 0 ),
 			LearnSuppPaymentP09 = COALESCE ( CASE WHEN LD.FundModel = ''25'' THEN ( CASE WHEN @Split1619Funding = 1 
 				THEN
 					CASE
@@ -1447,7 +1449,7 @@ BEGIN
 						ELSE
 							( COALESCE ( HRS.TotFund, 0 ) / COALESCE ( HRS.PLH, 0 ) ) * COALESCE ( CASE WHEN COALESCE ( LD.WithdrawReason, ''0'' ) <> ''40'' OR HRS.TFerOnly = 1 THEN PROS.PLH END, 0 )
 					END
-				ELSE FM25.OnProgPayment END / 12 ) END, FM35P.TotFundP09, FM36P.TotFundP09, HE.GROSSFEE / 12, 0 ),
+				ELSE FM25.OnProgPayment END / 12 ) END, FM35P.TotFundP09, FM36P.TotFundP09, CASE WHEN @IncludeHEAdvLoanPossIncome = 1 THEN HE.GROSSFEE ELSE 0 END / 12, 0 ),
 
 			OnProgPaymentP10 = COALESCE ( CASE WHEN LD.FundModel = ''25'' THEN ( CASE WHEN @Split1619Funding = 1 
 				THEN
@@ -1464,7 +1466,7 @@ BEGIN
 						ELSE
 							0
 					END
-				END / 12 ) END, FM35P.OnProgPaymentP10, FM36P.OnProgPaymentP10, HE.GROSSFEE / 12, 0 ),
+				END / 12 ) END, FM35P.OnProgPaymentP10, FM36P.OnProgPaymentP10, CASE WHEN @IncludeHEAdvLoanPossIncome = 1 THEN HE.GROSSFEE ELSE 0 END / 12, 0 ),
 			LearnSuppPaymentP10 = COALESCE ( CASE WHEN LD.FundModel = ''25'' THEN ( CASE WHEN @Split1619Funding = 1 
 				THEN
 					CASE
@@ -1491,7 +1493,7 @@ BEGIN
 						ELSE
 							( COALESCE ( HRS.TotFund, 0 ) / COALESCE ( HRS.PLH, 0 ) ) * COALESCE ( CASE WHEN COALESCE ( LD.WithdrawReason, ''0'' ) <> ''40'' OR HRS.TFerOnly = 1 THEN PROS.PLH END, 0 )
 					END
-				ELSE FM25.OnProgPayment END / 12 ) END, FM35P.TotFundP10, FM36P.TotFundP10, HE.GROSSFEE / 12, 0 ),
+				ELSE FM25.OnProgPayment END / 12 ) END, FM35P.TotFundP10, FM36P.TotFundP10, CASE WHEN @IncludeHEAdvLoanPossIncome = 1 THEN HE.GROSSFEE ELSE 0 END / 12, 0 ),
     '
 
     SET @SQLString += 
@@ -1511,7 +1513,7 @@ BEGIN
 						ELSE
 							0
 					END
-				END / 12 ) END, FM35P.OnProgPaymentP11, FM36P.OnProgPaymentP11, HE.GROSSFEE / 12, 0 ),
+				END / 12 ) END, FM35P.OnProgPaymentP11, FM36P.OnProgPaymentP11, CASE WHEN @IncludeHEAdvLoanPossIncome = 1 THEN HE.GROSSFEE ELSE 0 END / 12, 0 ),
 			LearnSuppPaymentP11 = COALESCE ( CASE WHEN LD.FundModel = ''25'' THEN ( CASE WHEN @Split1619Funding = 1 
 				THEN
 					CASE
@@ -1538,7 +1540,7 @@ BEGIN
 						ELSE
 							( COALESCE ( HRS.TotFund, 0 ) / COALESCE ( HRS.PLH, 0 ) ) * COALESCE ( CASE WHEN COALESCE ( LD.WithdrawReason, ''0'' ) <> ''40'' OR HRS.TFerOnly = 1 THEN PROS.PLH END, 0 )
 					END
-				ELSE FM25.OnProgPayment END / 12 ) END, FM35P.TotFundP11, FM36P.TotFundP11, HE.GROSSFEE / 12, 0 ),
+				ELSE FM25.OnProgPayment END / 12 ) END, FM35P.TotFundP11, FM36P.TotFundP11, CASE WHEN @IncludeHEAdvLoanPossIncome = 1 THEN HE.GROSSFEE ELSE 0 END / 12, 0 ),
 
 			OnProgPaymentP12 = COALESCE ( CASE WHEN LD.FundModel = ''25'' THEN ( CASE WHEN @Split1619Funding = 1 
 				THEN
@@ -1555,7 +1557,7 @@ BEGIN
 						ELSE
 							0
 					END
-				END / 12 ) END, FM35P.OnProgPaymentP12, FM36P.OnProgPaymentP12, HE.GROSSFEE / 12, 0 ),
+				END / 12 ) END, FM35P.OnProgPaymentP12, FM36P.OnProgPaymentP12, CASE WHEN @IncludeHEAdvLoanPossIncome = 1 THEN HE.GROSSFEE ELSE 0 END / 12, 0 ),
 			LearnSuppPaymentP12 = COALESCE ( CASE WHEN LD.FundModel = ''25'' THEN ( CASE WHEN @Split1619Funding = 1 
 				THEN
 					CASE
@@ -1582,7 +1584,7 @@ BEGIN
 						ELSE
 							( COALESCE ( HRS.TotFund, 0 ) / COALESCE ( HRS.PLH, 0 ) ) * COALESCE ( CASE WHEN COALESCE ( LD.WithdrawReason, ''0'' ) <> ''40'' OR HRS.TFerOnly = 1 THEN PROS.PLH END, 0 )
 					END
-				ELSE FM25.OnProgPayment END / 12 ) END, FM35P.TotFundP12, FM36P.TotFundP12, HE.GROSSFEE / 12, 0 )
+				ELSE FM25.OnProgPayment END / 12 ) END, FM35P.TotFundP12, FM36P.TotFundP12, CASE WHEN @IncludeHEAdvLoanPossIncome = 1 THEN HE.GROSSFEE ELSE 0 END / 12, 0 )
 
 			--INTO FundingDataTemp
 	'
@@ -2909,13 +2911,16 @@ BEGIN
 		--	L.FamilyName,
 		--	L.GivenNames,
 		--	L.LearnRefNumber'
+	
+	--SELECT @SQLString AS [processing-instruction(x)] FOR XML PATH('')
 
 	SET @SQLParams = 
         N'@AcademicYear NVARCHAR(5),
     	@ILRReturn NVARCHAR(2),
-    	@IsFinalReturn bit,
-    	@Split1619Funding bit,
+    	@IsFinalReturn BIT,
+    	@Split1619Funding BIT,
 		@1619ALSFundingPercent DECIMAL(3,2),
+		@IncludeHEAdvLoanPossIncome BIT,
     	@FutureAchieveWeighting DECIMAL(3,2),
         @FISOutputTableLocation NVARCHAR(200),
     	@ProviderFieldFacLocation CHAR(1),
@@ -2941,6 +2946,7 @@ BEGIN
     	@IsFinalReturn = @IsFinalReturn,
     	@Split1619Funding = @Split1619Funding,
 		@1619ALSFundingPercent = @1619ALSFundingPercent,
+		@IncludeHEAdvLoanPossIncome = @IncludeHEAdvLoanPossIncome,
     	@FutureAchieveWeighting = @FutureAchieveWeighting,
         @FISOutputTableLocation = @FISOutputTableLocation,
     	@ProviderFieldFacLocation = @ProviderFieldFacLocation,

@@ -1,9 +1,10 @@
 DECLARE @FISDatabase NVARCHAR(100) = 'FIS_1819_R10_2'
 DECLARE @AcademicYear NVARCHAR(5) = '18/19'
 DECLARE @ILRReturn int = 10
-DECLARE @IsFinalReturn bit = 0
-DECLARE @Split1619Funding bit = 1 --Split the funding into the 12 periods
+DECLARE @IsFinalReturn BIT = 0
+DECLARE @Split1619Funding BIT = 1 --Split the funding into the 12 periods
 DECLARE @1619ALSFundingPercent DECIMAL(3,2) = 0.07 --Deduct this percent from Tot Funding and assign to ALS column
+DECLARE @IncludeHEAdvLoanPossIncome BIT = 0 --HE gross fee is only achieved if at all 3 SLC census points learners remain current
 DECLARE @FutureAchieveWeighting DECIMAL(3,2) = 1 --Future ach weighting factor. If 1 then is 100% of all remaining ach monies
 DECLARE @Mode NCHAR(1) = 'I' --I=Insert new ILR return data leaving existing data, R=Replace table
 DECLARE @FISOutputTableLocation NVARCHAR(200) = 'ProSolutionReports.dbo.'
@@ -35,6 +36,7 @@ SET @SQLString = N'
 		@IsFinalReturn,
 		@Split1619Funding,
         @1619ALSFundingPercent,
+		@IncludeHEAdvLoanPossIncome,
 		@FutureAchieveWeighting,
 		@Mode,
 		@FISOutputTableLocation,
@@ -59,9 +61,10 @@ SET @SQLParams =
         N'@FISDatabase NVARCHAR(100),
         @AcademicYear NVARCHAR(5),
         @ILRReturn int,
-        @IsFinalReturn bit,
-        @Split1619Funding bit,
+        @IsFinalReturn BIT,
+        @Split1619Funding BIT,
         @1619ALSFundingPercent DECIMAL(3,2),
+		@IncludeHEAdvLoanPossIncome BIT,
         @FutureAchieveWeighting DECIMAL(3,2),
         @Mode NCHAR(1),
         @FISOutputTableLocation NVARCHAR(200),
@@ -91,6 +94,7 @@ EXECUTE sp_executesql
     @IsFinalReturn = @IsFinalReturn,
     @Split1619Funding = @Split1619Funding,
     @1619ALSFundingPercent = @1619ALSFundingPercent,
+	@IncludeHEAdvLoanPossIncome = @IncludeHEAdvLoanPossIncome,
     @FutureAchieveWeighting = @FutureAchieveWeighting,
     @Mode = @Mode,
     @FISOutputTableLocation = @FISOutputTableLocation,

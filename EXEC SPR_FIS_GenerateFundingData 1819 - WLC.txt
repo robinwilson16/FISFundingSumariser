@@ -1,11 +1,12 @@
 DECLARE @FISDatabase NVARCHAR(100) = 'Hegel.FIS_CY'
 DECLARE @AcademicYear NVARCHAR(5) = '18/19'
 DECLARE @ILRReturn int = 9
-DECLARE @IsFinalReturn bit = 1
-DECLARE @Split1619Funding bit = 1
-DECLARE @1619ALSFundingPercent DECIMAL(3,2) = 0.07
-DECLARE @FutureAchieveWeighting DECIMAL(3,2) = 0.8
-DECLARE @Mode NCHAR(1) = 'I'
+DECLARE @IsFinalReturn BIT = 1
+DECLARE @Split1619Funding BIT = 0 --Split the funding into the 12 periods
+DECLARE @1619ALSFundingPercent DECIMAL(3,2) = 0.07 --Deduct this percent from Tot Funding and assign to ALS column
+DECLARE @IncludeHEAdvLoanPossIncome BIT = 1 --HE gross fee is only achieved if at all 3 SLC census points learners remain current
+DECLARE @FutureAchieveWeighting DECIMAL(3,2) = 1 --Future ach weighting factor. If 1 then is 100% of all remaining ach monies
+DECLARE @Mode NCHAR(1) = 'I' --I=Insert new ILR return data leaving existing data, R=Replace table
 DECLARE @FISOutputTableLocation NVARCHAR(200) = 'wlc.dbo.'
 DECLARE @ProSolutionDatabaseLocation NVARCHAR(200) = 'fifi1.ProSolution.dbo.'
 DECLARE @ProAchieveDatabaseLocation NVARCHAR(200) = 'Hegel.ProGeneral.dbo.'
@@ -35,6 +36,7 @@ SET @SQLString = N'
 		@IsFinalReturn,
 		@Split1619Funding,
         @1619ALSFundingPercent,
+		@IncludeHEAdvLoanPossIncome,
 		@FutureAchieveWeighting,
 		@Mode,
 		@FISOutputTableLocation,
@@ -59,9 +61,10 @@ SET @SQLParams =
         N'@FISDatabase NVARCHAR(100),
         @AcademicYear NVARCHAR(5),
         @ILRReturn int,
-        @IsFinalReturn bit,
-        @Split1619Funding bit,
+        @IsFinalReturn BIT,
+        @Split1619Funding BIT,
         @1619ALSFundingPercent DECIMAL(3,2),
+		@IncludeHEAdvLoanPossIncome BIT,
         @FutureAchieveWeighting DECIMAL(3,2),
         @Mode NCHAR(1),
         @FISOutputTableLocation NVARCHAR(200),
@@ -91,6 +94,7 @@ EXECUTE sp_executesql
     @IsFinalReturn = @IsFinalReturn,
     @Split1619Funding = @Split1619Funding,
     @1619ALSFundingPercent = @1619ALSFundingPercent,
+	@IncludeHEAdvLoanPossIncome = @IncludeHEAdvLoanPossIncome,
     @FutureAchieveWeighting = @FutureAchieveWeighting,
     @Mode = @Mode,
     @FISOutputTableLocation = @FISOutputTableLocation,

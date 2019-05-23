@@ -5,6 +5,7 @@ CREATE PROCEDURE SPR_FIS_GenerateFundingData
 	@IsFinalReturn BIT,
 	@Split1619Funding BIT,
     @1619ALSFundingPercent DECIMAL(3,2),
+	@IncludeHEAdvLoanPossIncome BIT,
 	@FutureAchieveWeighting DECIMAL(3,2),
 	@Mode NCHAR(1),
 	@FISOutputTableLocation NVARCHAR(200),
@@ -36,8 +37,8 @@ BEGIN
     -- DECLARE @FISDatabase NVARCHAR(100) = 'FIS_1819_R09_F'
     -- DECLARE @AcademicYear NVARCHAR(5) = '18/19'
     -- DECLARE @ILRReturn int = 9
-    -- DECLARE @IsFinalReturn bit = 1
-    -- DECLARE @Split1619Funding bit = 1
+    -- DECLARE @IsFinalReturn BIT = 1
+    -- DECLARE @Split1619Funding BIT = 1
     -- DECLARE @FutureAchieveWeighting DECIMAL(3,2) = 0.75
     -- DECLARE @Mode NCHAR(1) = 'R'
     -- DECLARE @FISOutputTableLocation NVARCHAR(200) = 'ProSolutionReports.dbo.'
@@ -390,6 +391,7 @@ BEGIN
 			@IsFinalReturn,
 			@Split1619Funding,
             @1619ALSFundingPercent,
+			@IncludeHEAdvLoanPossIncome,
 			@FutureAchieveWeighting,
             @FISOutputTableLocation,
 			@ProSolutionDatabaseLocation,
@@ -413,9 +415,10 @@ BEGIN
         N'@FISDatabase NVARCHAR(50),
         @AcademicYear NVARCHAR(5),
     	@ILRReturn NVARCHAR(2),
-    	@IsFinalReturn bit,
-    	@Split1619Funding bit,
+    	@IsFinalReturn BIT,
+    	@Split1619Funding BIT,
         @1619ALSFundingPercent DECIMAL(3,2),
+		@IncludeHEAdvLoanPossIncome BIT,
     	@FutureAchieveWeighting DECIMAL(3,2),
         @FISOutputTableLocation NVARCHAR(200),
         @ProSolutionDatabaseLocation NVARCHAR(200),
@@ -444,6 +447,7 @@ BEGIN
     	@IsFinalReturn = @IsFinalReturn,
     	@Split1619Funding = @Split1619Funding,
         @1619ALSFundingPercent = @1619ALSFundingPercent,
+		@IncludeHEAdvLoanPossIncome = @IncludeHEAdvLoanPossIncome,
     	@FutureAchieveWeighting = @FutureAchieveWeighting,
         @FISOutputTableLocation = @FISOutputTableLocation,
         @ProSolutionDatabaseLocation = @ProSolutionDatabaseLocation,

@@ -4,7 +4,7 @@ CREATE PROCEDURE SPR_FIS_GenerateFundingData
 	@ILRReturn NVARCHAR(2),
 	@IsFinalReturn BIT,
 	@Split1619Funding BIT,
-    @1619ALSFundingPercent DECIMAL(3,2),
+	@1619ALSFundingPercent DECIMAL(3,2),
 	@IncludeHEAdvLoanPossIncome BIT,
 	@FutureAchieveWeighting DECIMAL(3,2),
 	@Mode NCHAR(1),
@@ -31,30 +31,30 @@ BEGIN
 	DECLARE @TableExists BIT = 1;
 	DECLARE @NumExistingRecords INT = 0;
 	
-    DECLARE @SQLString NVARCHAR(MAX);
-    DECLARE @SQLParams NVARCHAR(MAX);
+	DECLARE @SQLString NVARCHAR(MAX);
+	DECLARE @SQLParams NVARCHAR(MAX);
 
-    -- DECLARE @FISDatabase NVARCHAR(100) = 'FIS_1819_R09_F'
-    -- DECLARE @AcademicYear NVARCHAR(5) = '18/19'
-    -- DECLARE @ILRReturn int = 9
-    -- DECLARE @IsFinalReturn BIT = 1
-    -- DECLARE @Split1619Funding BIT = 1
-    -- DECLARE @FutureAchieveWeighting DECIMAL(3,2) = 0.75
-    -- DECLARE @Mode NCHAR(1) = 'R'
-    -- DECLARE @FISOutputTableLocation NVARCHAR(200) = 'ProSolutionReports.dbo.'
-    -- DECLARE @ProSolutionDatabaseLocation NVARCHAR(200) = 'ProSolution.dbo.'
-    -- DECLARE @ProAchieveDatabaseLocation NVARCHAR(200) = 'ussql01.ProGeneral.dbo.'
-    -- DECLARE @ProviderFieldCourseLocation NCHAR(1) = 'A'
-    -- DECLARE @ProviderFieldCourseFormat NVARCHAR(50) = 'CRS.Code + "-" + GRP.Code'
-    -- DECLARE @OverrideEngFac NVARCHAR(50) = 'F05'
-    -- DECLARE @OverrideMatFac NVARCHAR(50) = 'F05'
-    -- DECLARE @OverrideEngTeam NVARCHAR(50) = 'T01'
-    -- DECLARE @OverrideMatTeam NVARCHAR(50) = 'T02'
-    -- DECLARE @OverrideEngCostCentre NVARCHAR(50) = '4461'
-    -- DECLARE @OverrideMatCostCentre NVARCHAR(50) = '4462'
-    -- DECLARE @OverridePartnerFac NVARCHAR(50) = 'F00'
-    -- DECLARE @OverridePartnerTeam NVARCHAR(50) = 'T00'
-    -- DECLARE @OverridePartnerCostCentre NVARCHAR(50) = NULL
+	-- DECLARE @FISDatabase NVARCHAR(100) = 'FIS_1819_R09_F'
+	-- DECLARE @AcademicYear NVARCHAR(5) = '18/19'
+	-- DECLARE @ILRReturn int = 9
+	-- DECLARE @IsFinalReturn BIT = 1
+	-- DECLARE @Split1619Funding BIT = 1
+	-- DECLARE @FutureAchieveWeighting DECIMAL(3,2) = 0.75
+	-- DECLARE @Mode NCHAR(1) = 'R'
+	-- DECLARE @FISOutputTableLocation NVARCHAR(200) = 'ProSolutionReports.dbo.'
+	-- DECLARE @ProSolutionDatabaseLocation NVARCHAR(200) = 'ProSolution.dbo.'
+	-- DECLARE @ProAchieveDatabaseLocation NVARCHAR(200) = 'ussql01.ProGeneral.dbo.'
+	-- DECLARE @ProviderFieldCourseLocation NCHAR(1) = 'A'
+	-- DECLARE @ProviderFieldCourseFormat NVARCHAR(50) = 'CRS.Code + "-" + GRP.Code'
+	-- DECLARE @OverrideEngFac NVARCHAR(50) = 'F05'
+	-- DECLARE @OverrideMatFac NVARCHAR(50) = 'F05'
+	-- DECLARE @OverrideEngTeam NVARCHAR(50) = 'T01'
+	-- DECLARE @OverrideMatTeam NVARCHAR(50) = 'T02'
+	-- DECLARE @OverrideEngCostCentre NVARCHAR(50) = '4461'
+	-- DECLARE @OverrideMatCostCentre NVARCHAR(50) = '4462'
+	-- DECLARE @OverridePartnerFac NVARCHAR(50) = 'F00'
+	-- DECLARE @OverridePartnerTeam NVARCHAR(50) = 'T00'
+	-- DECLARE @OverridePartnerCostCentre NVARCHAR(50) = NULL
 
 	IF @Mode = 'R'
 		IF OBJECT_ID('dbo.FIS_FundingData', 'U') IS NOT NULL 
@@ -128,6 +128,7 @@ BEGIN
 					SortOrder INT NULL,
 					IsFunded INT NULL,
 					IsMainAim INT NULL,
+					IsMainAimInFundModel INT NULL,
 					IsAdvLearnLoan INT NULL,
 					RateBand NVARCHAR(50) NULL,
 					CofEnglish NVARCHAR(100) NULL,
@@ -378,7 +379,8 @@ BEGIN
                     EXECUTE sp_executesql 
                         @SQLString, 
                         @SQLParams,
-						@AcademicYear = @AcademicYear;
+						@AcademicYear = @AcademicYear,
+						@FISDatabase = @FISDatabase;
 				END
 		END
 
@@ -422,7 +424,7 @@ BEGIN
     	@FutureAchieveWeighting DECIMAL(3,2),
         @FISOutputTableLocation NVARCHAR(200),
         @ProSolutionDatabaseLocation NVARCHAR(200),
-	    @ProAchieveDatabaseLocation NVARCHAR(200),
+		@ProAchieveDatabaseLocation NVARCHAR(200),
     	@ProviderFieldFacLocation CHAR(1),
 		@ProviderFieldTeamLocation CHAR(1),
 		@ProviderFieldCostCentreLocation CHAR(1),
@@ -456,7 +458,7 @@ BEGIN
 		@ProviderFieldTeamLocation = @ProviderFieldTeamLocation,
 		@ProviderFieldCostCentreLocation = @ProviderFieldCostCentreLocation,
 		@ProviderFieldCourseLocation = @ProviderFieldCourseLocation,
-    	@ProviderFieldCourseFormat = @ProviderFieldCourseFormat,
+		@ProviderFieldCourseFormat = @ProviderFieldCourseFormat,
     	@OverrideEngFac = @OverrideEngFac,
     	@OverrideMatFac = @OverrideMatFac,
     	@OverrideEngTeam = @OverrideEngTeam,

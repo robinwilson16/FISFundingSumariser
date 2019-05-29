@@ -119,7 +119,7 @@ BEGIN
 					CASE WHEN LD.FundModel = ''25'' THEN HRS.FundLine END,
 					FM25.FundLine, 
 					CASE WHEN ALB.AdvLoan = 1 AND ALB.FundLine = ''None'' THEN ''Advanced Learner Loan (ALL)'' END,
-					AEC.LearnDelInitialFundLineType,
+					FM36.LearnDelInitialFundLineType,
 					FM35.FundLine,
 					CASE WHEN HE.LearnRefNumber IS NOT NULL THEN ''Higher Education'' END,
 					CASE WHEN LD.FundModel = ''99'' THEN ''Full Cost'' END 
@@ -135,7 +135,7 @@ BEGIN
 							CASE WHEN LD.FundModel = ''25'' THEN HRS.FundLine END,
 							FM25.FundLine, 
 							CASE WHEN ALB.AdvLoan = 1 AND ALB.FundLine = ''None'' THEN ''Advanced Learner Loan (ALL)'' END,
-							AEC.LearnDelInitialFundLineType,
+							FM36.LearnDelInitialFundLineType,
 							FM35.FundLine,
 							CASE WHEN HE.LearnRefNumber IS NOT NULL THEN ''Higher Education'' END,
 							CASE WHEN LD.FundModel = ''99'' THEN ''Full Cost'' END 
@@ -152,7 +152,7 @@ BEGIN
 							CASE WHEN LD.FundModel = ''25'' THEN HRS.FundLine END,
 							FM25.FundLine, 
 							CASE WHEN ALB.AdvLoan = 1 AND ALB.FundLine = ''None'' THEN ''Advanced Learner Loan (ALL)'' END,
-							AEC.LearnDelInitialFundLineType,
+							FM36.LearnDelInitialFundLineType,
 							FM35.FundLine,
 							CASE WHEN HE.LearnRefNumber IS NOT NULL THEN ''Higher Education'' END,
 							CASE WHEN LD.FundModel = ''99'' THEN ''Full Cost'' END 
@@ -161,7 +161,7 @@ BEGIN
 							CASE WHEN LD.FundModel = ''25'' THEN HRS.FundLine END,
 							FM25.FundLine, 
 							CASE WHEN ALB.AdvLoan = 1 AND ALB.FundLine = ''None'' THEN ''Advanced Learner Loan (ALL)'' END,
-							AEC.LearnDelInitialFundLineType,
+							FM36.LearnDelInitialFundLineType,
 							FM35.FundLine,
 							CASE WHEN HE.LearnRefNumber IS NOT NULL THEN ''Higher Education'' END,
 							CASE WHEN LD.FundModel = ''99'' THEN ''Full Cost'' END 
@@ -173,7 +173,7 @@ BEGIN
 							CASE WHEN LD.FundModel = ''25'' THEN HRS.FundLine END,
 							FM25.FundLine, 
 							CASE WHEN ALB.AdvLoan = 1 AND ALB.FundLine = ''None'' THEN ''Advanced Learner Loan (ALL)'' END,
-							AEC.LearnDelInitialFundLineType,
+							FM36.LearnDelInitialFundLineType,
 							FM35.FundLine,
 							CASE WHEN HE.LearnRefNumber IS NOT NULL THEN ''Higher Education'' END,
 							CASE WHEN LD.FundModel = ''99'' THEN ''Full Cost'' END 
@@ -182,7 +182,7 @@ BEGIN
 							CASE WHEN LD.FundModel = ''25'' THEN HRS.FundLine END,
 							FM25.FundLine, 
 							CASE WHEN ALB.AdvLoan = 1 AND ALB.FundLine = ''None'' THEN ''Advanced Learner Loan (ALL)'' END,
-							AEC.LearnDelInitialFundLineType,
+							FM36.LearnDelInitialFundLineType,
 							FM35.FundLine,
 							CASE WHEN HE.LearnRefNumber IS NOT NULL THEN ''Higher Education'' END,
 							CASE WHEN LD.FundModel = ''99'' THEN ''Full Cost'' END 
@@ -194,7 +194,7 @@ BEGIN
 							CASE WHEN LD.FundModel = ''25'' THEN HRS.FundLine END,
 							FM25.FundLine, 
 							CASE WHEN ALB.AdvLoan = 1 AND ALB.FundLine = ''None'' THEN ''Advanced Learner Loan (ALL)'' END,
-							AEC.LearnDelInitialFundLineType,
+							FM36.LearnDelInitialFundLineType,
 							FM35.FundLine,
 							CASE WHEN HE.LearnRefNumber IS NOT NULL THEN ''Higher Education'' END,
 							CASE WHEN LD.FundModel = ''99'' THEN ''Full Cost'' END 
@@ -203,7 +203,7 @@ BEGIN
 							CASE WHEN LD.FundModel = ''25'' THEN HRS.FundLine END,
 							FM25.FundLine, 
 							CASE WHEN ALB.AdvLoan = 1 AND ALB.FundLine = ''None'' THEN ''Advanced Learner Loan (ALL)'' END,
-							AEC.LearnDelInitialFundLineType,
+							FM36.LearnDelInitialFundLineType,
 							FM35.FundLine,
 							CASE WHEN HE.LearnRefNumber IS NOT NULL THEN ''Higher Education'' END,
 							CASE WHEN LD.FundModel = ''99'' THEN ''Full Cost'' END 
@@ -212,7 +212,7 @@ BEGIN
 							CASE WHEN LD.FundModel = ''25'' THEN HRS.FundLine END,
 							FM25.FundLine, 
 							CASE WHEN ALB.AdvLoan = 1 AND ALB.FundLine = ''None'' THEN ''Advanced Learner Loan (ALL)'' END,
-							AEC.LearnDelInitialFundLineType,
+							FM36.LearnDelInitialFundLineType,
 							FM35.FundLine,
 							CASE WHEN HE.LearnRefNumber IS NOT NULL THEN ''Higher Education'' END,
 							CASE WHEN LD.FundModel = ''99'' THEN ''Full Cost'' END 
@@ -227,7 +227,7 @@ BEGIN
 							CASE WHEN LD.FundModel = ''25'' THEN HRS.FundLine END,
 							FM25.FundLine, 
 							CASE WHEN ALB.AdvLoan = 1 AND ALB.FundLine = ''None'' THEN ''Advanced Learner Loan (ALL)'' END,
-							AEC.LearnDelInitialFundLineType,
+							FM36.LearnDelInitialFundLineType,
 							FM35.FundLine,
 							CASE WHEN HE.LearnRefNumber IS NOT NULL THEN ''Higher Education'' END,
 							CASE WHEN LD.FundModel = ''99'' THEN ''Full Cost'' END 
@@ -236,7 +236,7 @@ BEGIN
 							CASE WHEN LD.FundModel = ''25'' THEN HRS.FundLine END,
 							FM25.FundLine, 
 							CASE WHEN ALB.AdvLoan = 1 AND ALB.FundLine = ''None'' THEN ''Advanced Learner Loan (ALL)'' END,
-							AEC.LearnDelInitialFundLineType,
+							FM36.LearnDelInitialFundLineType,
 							FM35.FundLine,
 							CASE WHEN HE.LearnRefNumber IS NOT NULL THEN ''Higher Education'' END,
 							CASE WHEN LD.FundModel = ''99'' THEN ''Full Cost'' END 
@@ -248,7 +248,7 @@ BEGIN
 							CASE WHEN LD.FundModel = ''25'' THEN HRS.FundLine END,
 							FM25.FundLine, 
 							CASE WHEN ALB.AdvLoan = 1 AND ALB.FundLine = ''None'' THEN ''Advanced Learner Loan (ALL)'' END,
-							AEC.LearnDelInitialFundLineType,
+							FM36.LearnDelInitialFundLineType,
 							FM35.FundLine,
 							CASE WHEN HE.LearnRefNumber IS NOT NULL THEN ''Higher Education'' END,
 							CASE WHEN LD.FundModel = ''99'' THEN ''Full Cost'' END 
@@ -257,7 +257,7 @@ BEGIN
 							CASE WHEN LD.FundModel = ''25'' THEN HRS.FundLine END,
 							FM25.FundLine, 
 							CASE WHEN ALB.AdvLoan = 1 AND ALB.FundLine = ''None'' THEN ''Advanced Learner Loan (ALL)'' END,
-							AEC.LearnDelInitialFundLineType,
+							FM36.LearnDelInitialFundLineType,
 							FM35.FundLine,
 							CASE WHEN HE.LearnRefNumber IS NOT NULL THEN ''Higher Education'' END,
 							CASE WHEN LD.FundModel = ''99'' THEN ''Full Cost'' END 
@@ -272,7 +272,7 @@ BEGIN
 							CASE WHEN LD.FundModel = ''25'' THEN HRS.FundLine END,
 							FM25.FundLine, 
 							CASE WHEN ALB.AdvLoan = 1 AND ALB.FundLine = ''None'' THEN ''Advanced Learner Loan (ALL)'' END,
-							AEC.LearnDelInitialFundLineType,
+							FM36.LearnDelInitialFundLineType,
 							FM35.FundLine,
 							CASE WHEN HE.LearnRefNumber IS NOT NULL THEN ''Higher Education'' END,
 							CASE WHEN LD.FundModel = ''99'' THEN ''Full Cost'' END 
@@ -281,7 +281,7 @@ BEGIN
 							CASE WHEN LD.FundModel = ''25'' THEN HRS.FundLine END,
 							FM25.FundLine, 
 							CASE WHEN ALB.AdvLoan = 1 AND ALB.FundLine = ''None'' THEN ''Advanced Learner Loan (ALL)'' END,
-							AEC.LearnDelInitialFundLineType,
+							FM36.LearnDelInitialFundLineType,
 							FM35.FundLine,
 							CASE WHEN HE.LearnRefNumber IS NOT NULL THEN ''Higher Education'' END,
 							CASE WHEN LD.FundModel = ''99'' THEN ''Full Cost'' END 
@@ -290,7 +290,7 @@ BEGIN
 							CASE WHEN LD.FundModel = ''25'' THEN HRS.FundLine END,
 							FM25.FundLine, 
 							CASE WHEN ALB.AdvLoan = 1 AND ALB.FundLine = ''None'' THEN ''Advanced Learner Loan (ALL)'' END,
-							AEC.LearnDelInitialFundLineType,
+							FM36.LearnDelInitialFundLineType,
 							FM35.FundLine,
 							CASE WHEN HE.LearnRefNumber IS NOT NULL THEN ''Higher Education'' END,
 							CASE WHEN LD.FundModel = ''99'' THEN ''Full Cost'' END 
@@ -301,7 +301,7 @@ BEGIN
 							CASE WHEN LD.FundModel = ''25'' THEN HRS.FundLine END,
 							FM25.FundLine, 
 							CASE WHEN ALB.AdvLoan = 1 AND ALB.FundLine = ''None'' THEN ''Advanced Learner Loan (ALL)'' END,
-							AEC.LearnDelInitialFundLineType,
+							FM36.LearnDelInitialFundLineType,
 							FM35.FundLine,
 							CASE WHEN HE.LearnRefNumber IS NOT NULL THEN ''Higher Education'' END,
 							CASE WHEN LD.FundModel = ''99'' THEN ''Full Cost'' END 
@@ -313,7 +313,7 @@ BEGIN
 							CASE WHEN LD.FundModel = ''25'' THEN HRS.FundLine END,
 							FM25.FundLine, 
 							CASE WHEN ALB.AdvLoan = 1 AND ALB.FundLine = ''None'' THEN ''Advanced Learner Loan (ALL)'' END,
-							AEC.LearnDelInitialFundLineType,
+							FM36.LearnDelInitialFundLineType,
 							FM35.FundLine,
 							CASE WHEN HE.LearnRefNumber IS NOT NULL THEN ''Higher Education'' END,
 							CASE WHEN LD.FundModel = ''99'' THEN ''Full Cost'' END 
@@ -325,7 +325,7 @@ BEGIN
 							CASE WHEN LD.FundModel = ''25'' THEN HRS.FundLine END,
 							FM25.FundLine, 
 							CASE WHEN ALB.AdvLoan = 1 AND ALB.FundLine = ''None'' THEN ''Advanced Learner Loan (ALL)'' END,
-							AEC.LearnDelInitialFundLineType,
+							FM36.LearnDelInitialFundLineType,
 							FM35.FundLine,
 							CASE WHEN HE.LearnRefNumber IS NOT NULL THEN ''Higher Education'' END,
 							CASE WHEN LD.FundModel = ''99'' THEN ''Full Cost'' END 
@@ -337,7 +337,7 @@ BEGIN
 							CASE WHEN LD.FundModel = ''25'' THEN HRS.FundLine END,
 							FM25.FundLine, 
 							CASE WHEN ALB.AdvLoan = 1 AND ALB.FundLine = ''None'' THEN ''Advanced Learner Loan (ALL)'' END,
-							AEC.LearnDelInitialFundLineType,
+							FM36.LearnDelInitialFundLineType,
 							FM35.FundLine,
 							CASE WHEN HE.LearnRefNumber IS NOT NULL THEN ''Higher Education'' END,
 							CASE WHEN LD.FundModel = ''99'' THEN ''Full Cost'' END 
@@ -346,7 +346,7 @@ BEGIN
 							CASE WHEN LD.FundModel = ''25'' THEN HRS.FundLine END,
 							FM25.FundLine, 
 							CASE WHEN ALB.AdvLoan = 1 AND ALB.FundLine = ''None'' THEN ''Advanced Learner Loan (ALL)'' END,
-							AEC.LearnDelInitialFundLineType,
+							FM36.LearnDelInitialFundLineType,
 							FM35.FundLine,
 							CASE WHEN HE.LearnRefNumber IS NOT NULL THEN ''Higher Education'' END,
 							CASE WHEN LD.FundModel = ''99'' THEN ''Full Cost'' END 
@@ -358,7 +358,7 @@ BEGIN
 							CASE WHEN LD.FundModel = ''25'' THEN HRS.FundLine END,
 							FM25.FundLine, 
 							CASE WHEN ALB.AdvLoan = 1 AND ALB.FundLine = ''None'' THEN ''Advanced Learner Loan (ALL)'' END,
-							AEC.LearnDelInitialFundLineType,
+							FM36.LearnDelInitialFundLineType,
 							FM35.FundLine,
 							CASE WHEN HE.LearnRefNumber IS NOT NULL THEN ''Higher Education'' END,
 							CASE WHEN LD.FundModel = ''99'' THEN ''Full Cost'' END 
@@ -375,7 +375,7 @@ BEGIN
 							CASE WHEN LD.FundModel = ''25'' THEN HRS.FundLine END,
 							FM25.FundLine, 
 							CASE WHEN ALB.AdvLoan = 1 AND ALB.FundLine = ''None'' THEN ''Advanced Learner Loan (ALL)'' END,
-							AEC.LearnDelInitialFundLineType,
+							FM36.LearnDelInitialFundLineType,
 							FM35.FundLine,
 							CASE WHEN HE.LearnRefNumber IS NOT NULL THEN ''Higher Education'' END,
 							CASE WHEN LD.FundModel = ''99'' THEN ''Full Cost'' END 
@@ -392,7 +392,7 @@ BEGIN
 							CASE WHEN LD.FundModel = ''25'' THEN HRS.FundLine END,
 							FM25.FundLine, 
 							CASE WHEN ALB.AdvLoan = 1 AND ALB.FundLine = ''None'' THEN ''Advanced Learner Loan (ALL)'' END,
-							AEC.LearnDelInitialFundLineType,
+							FM36.LearnDelInitialFundLineType,
 							FM35.FundLine,
 							CASE WHEN HE.LearnRefNumber IS NOT NULL THEN ''Higher Education'' END,
 							CASE WHEN LD.FundModel = ''99'' THEN ''Full Cost'' END 
@@ -401,7 +401,7 @@ BEGIN
 							CASE WHEN LD.FundModel = ''25'' THEN HRS.FundLine END,
 							FM25.FundLine, 
 							CASE WHEN ALB.AdvLoan = 1 AND ALB.FundLine = ''None'' THEN ''Advanced Learner Loan (ALL)'' END,
-							AEC.LearnDelInitialFundLineType,
+							FM36.LearnDelInitialFundLineType,
 							FM35.FundLine,
 							CASE WHEN HE.LearnRefNumber IS NOT NULL THEN ''Higher Education'' END,
 							CASE WHEN LD.FundModel = ''99'' THEN ''Full Cost'' END 
@@ -413,7 +413,7 @@ BEGIN
 							CASE WHEN LD.FundModel = ''25'' THEN HRS.FundLine END,
 							FM25.FundLine, 
 							CASE WHEN ALB.AdvLoan = 1 AND ALB.FundLine = ''None'' THEN ''Advanced Learner Loan (ALL)'' END,
-							AEC.LearnDelInitialFundLineType,
+							FM36.LearnDelInitialFundLineType,
 							FM35.FundLine,
 							CASE WHEN HE.LearnRefNumber IS NOT NULL THEN ''Higher Education'' END,
 							CASE WHEN LD.FundModel = ''99'' THEN ''Full Cost'' END 
@@ -422,7 +422,7 @@ BEGIN
 							CASE WHEN LD.FundModel = ''25'' THEN HRS.FundLine END,
 							FM25.FundLine, 
 							CASE WHEN ALB.AdvLoan = 1 AND ALB.FundLine = ''None'' THEN ''Advanced Learner Loan (ALL)'' END,
-							AEC.LearnDelInitialFundLineType,
+							FM36.LearnDelInitialFundLineType,
 							FM35.FundLine,
 							CASE WHEN HE.LearnRefNumber IS NOT NULL THEN ''Higher Education'' END,
 							CASE WHEN LD.FundModel = ''99'' THEN ''Full Cost'' END 
@@ -434,7 +434,7 @@ BEGIN
 							CASE WHEN LD.FundModel = ''25'' THEN HRS.FundLine END,
 							FM25.FundLine, 
 							CASE WHEN ALB.AdvLoan = 1 AND ALB.FundLine = ''None'' THEN ''Advanced Learner Loan (ALL)'' END,
-							AEC.LearnDelInitialFundLineType,
+							FM36.LearnDelInitialFundLineType,
 							FM35.FundLine,
 							CASE WHEN HE.LearnRefNumber IS NOT NULL THEN ''Higher Education'' END,
 							CASE WHEN LD.FundModel = ''99'' THEN ''Full Cost'' END 
@@ -443,7 +443,7 @@ BEGIN
 							CASE WHEN LD.FundModel = ''25'' THEN HRS.FundLine END,
 							FM25.FundLine, 
 							CASE WHEN ALB.AdvLoan = 1 AND ALB.FundLine = ''None'' THEN ''Advanced Learner Loan (ALL)'' END,
-							AEC.LearnDelInitialFundLineType,
+							FM36.LearnDelInitialFundLineType,
 							FM35.FundLine,
 							CASE WHEN HE.LearnRefNumber IS NOT NULL THEN ''Higher Education'' END,
 							CASE WHEN LD.FundModel = ''99'' THEN ''Full Cost'' END 
@@ -452,7 +452,7 @@ BEGIN
 							CASE WHEN LD.FundModel = ''25'' THEN HRS.FundLine END,
 							FM25.FundLine, 
 							CASE WHEN ALB.AdvLoan = 1 AND ALB.FundLine = ''None'' THEN ''Advanced Learner Loan (ALL)'' END,
-							AEC.LearnDelInitialFundLineType,
+							FM36.LearnDelInitialFundLineType,
 							FM35.FundLine,
 							CASE WHEN HE.LearnRefNumber IS NOT NULL THEN ''Higher Education'' END,
 							CASE WHEN LD.FundModel = ''99'' THEN ''Full Cost'' END 
@@ -467,7 +467,7 @@ BEGIN
 							CASE WHEN LD.FundModel = ''25'' THEN HRS.FundLine END,
 							FM25.FundLine, 
 							CASE WHEN ALB.AdvLoan = 1 AND ALB.FundLine = ''None'' THEN ''Advanced Learner Loan (ALL)'' END,
-							AEC.LearnDelInitialFundLineType,
+							FM36.LearnDelInitialFundLineType,
 							FM35.FundLine,
 							CASE WHEN HE.LearnRefNumber IS NOT NULL THEN ''Higher Education'' END,
 							CASE WHEN LD.FundModel = ''99'' THEN ''Full Cost'' END 
@@ -476,7 +476,7 @@ BEGIN
 							CASE WHEN LD.FundModel = ''25'' THEN HRS.FundLine END,
 							FM25.FundLine, 
 							CASE WHEN ALB.AdvLoan = 1 AND ALB.FundLine = ''None'' THEN ''Advanced Learner Loan (ALL)'' END,
-							AEC.LearnDelInitialFundLineType,
+							FM36.LearnDelInitialFundLineType,
 							FM35.FundLine,
 							CASE WHEN HE.LearnRefNumber IS NOT NULL THEN ''Higher Education'' END,
 							CASE WHEN LD.FundModel = ''99'' THEN ''Full Cost'' END 
@@ -488,7 +488,7 @@ BEGIN
 							CASE WHEN LD.FundModel = ''25'' THEN HRS.FundLine END,
 							FM25.FundLine, 
 							CASE WHEN ALB.AdvLoan = 1 AND ALB.FundLine = ''None'' THEN ''Advanced Learner Loan (ALL)'' END,
-							AEC.LearnDelInitialFundLineType,
+							FM36.LearnDelInitialFundLineType,
 							FM35.FundLine,
 							CASE WHEN HE.LearnRefNumber IS NOT NULL THEN ''Higher Education'' END,
 							CASE WHEN LD.FundModel = ''99'' THEN ''Full Cost'' END 
@@ -497,7 +497,7 @@ BEGIN
 							CASE WHEN LD.FundModel = ''25'' THEN HRS.FundLine END,
 							FM25.FundLine, 
 							CASE WHEN ALB.AdvLoan = 1 AND ALB.FundLine = ''None'' THEN ''Advanced Learner Loan (ALL)'' END,
-							AEC.LearnDelInitialFundLineType,
+							FM36.LearnDelInitialFundLineType,
 							FM35.FundLine,
 							CASE WHEN HE.LearnRefNumber IS NOT NULL THEN ''Higher Education'' END,
 							CASE WHEN LD.FundModel = ''99'' THEN ''Full Cost'' END 
@@ -512,7 +512,7 @@ BEGIN
 							CASE WHEN LD.FundModel = ''25'' THEN HRS.FundLine END,
 							FM25.FundLine, 
 							CASE WHEN ALB.AdvLoan = 1 AND ALB.FundLine = ''None'' THEN ''Advanced Learner Loan (ALL)'' END,
-							AEC.LearnDelInitialFundLineType,
+							FM36.LearnDelInitialFundLineType,
 							FM35.FundLine,
 							CASE WHEN HE.LearnRefNumber IS NOT NULL THEN ''Higher Education'' END,
 							CASE WHEN LD.FundModel = ''99'' THEN ''Full Cost'' END 
@@ -521,7 +521,7 @@ BEGIN
 							CASE WHEN LD.FundModel = ''25'' THEN HRS.FundLine END,
 							FM25.FundLine, 
 							CASE WHEN ALB.AdvLoan = 1 AND ALB.FundLine = ''None'' THEN ''Advanced Learner Loan (ALL)'' END,
-							AEC.LearnDelInitialFundLineType,
+							FM36.LearnDelInitialFundLineType,
 							FM35.FundLine,
 							CASE WHEN HE.LearnRefNumber IS NOT NULL THEN ''Higher Education'' END,
 							CASE WHEN LD.FundModel = ''99'' THEN ''Full Cost'' END 
@@ -530,7 +530,7 @@ BEGIN
 							CASE WHEN LD.FundModel = ''25'' THEN HRS.FundLine END,
 							FM25.FundLine, 
 							CASE WHEN ALB.AdvLoan = 1 AND ALB.FundLine = ''None'' THEN ''Advanced Learner Loan (ALL)'' END,
-							AEC.LearnDelInitialFundLineType,
+							FM36.LearnDelInitialFundLineType,
 							FM35.FundLine,
 							CASE WHEN HE.LearnRefNumber IS NOT NULL THEN ''Higher Education'' END,
 							CASE WHEN LD.FundModel = ''99'' THEN ''Full Cost'' END 
@@ -541,7 +541,7 @@ BEGIN
 							CASE WHEN LD.FundModel = ''25'' THEN HRS.FundLine END,
 							FM25.FundLine, 
 							CASE WHEN ALB.AdvLoan = 1 AND ALB.FundLine = ''None'' THEN ''Advanced Learner Loan (ALL)'' END,
-							AEC.LearnDelInitialFundLineType,
+							FM36.LearnDelInitialFundLineType,
 							FM35.FundLine,
 							CASE WHEN HE.LearnRefNumber IS NOT NULL THEN ''Higher Education'' END,
 							CASE WHEN LD.FundModel = ''99'' THEN ''Full Cost'' END 
@@ -550,7 +550,7 @@ BEGIN
 							CASE WHEN LD.FundModel = ''25'' THEN HRS.FundLine END,
 							FM25.FundLine, 
 							CASE WHEN ALB.AdvLoan = 1 AND ALB.FundLine = ''None'' THEN ''Advanced Learner Loan (ALL)'' END,
-							AEC.LearnDelInitialFundLineType,
+							FM36.LearnDelInitialFundLineType,
 							FM35.FundLine,
 							CASE WHEN HE.LearnRefNumber IS NOT NULL THEN ''Higher Education'' END,
 							CASE WHEN LD.FundModel = ''99'' THEN ''Full Cost'' END 
@@ -562,7 +562,7 @@ BEGIN
 							CASE WHEN LD.FundModel = ''25'' THEN HRS.FundLine END,
 							FM25.FundLine, 
 							CASE WHEN ALB.AdvLoan = 1 AND ALB.FundLine = ''None'' THEN ''Advanced Learner Loan (ALL)'' END,
-							AEC.LearnDelInitialFundLineType,
+							FM36.LearnDelInitialFundLineType,
 							FM35.FundLine,
 							CASE WHEN HE.LearnRefNumber IS NOT NULL THEN ''Higher Education'' END,
 							CASE WHEN LD.FundModel = ''99'' THEN ''Full Cost'' END 
@@ -579,7 +579,7 @@ BEGIN
 						CASE WHEN LD.FundModel = ''25'' THEN HRS.FundLine END,
 						FM25.FundLine, 
 						CASE WHEN ALB.AdvLoan = 1 AND ALB.FundLine = ''None'' THEN ''Advanced Learner Loan (ALL)'' END,
-						AEC.LearnDelInitialFundLineType,
+						FM36.LearnDelInitialFundLineType,
 						FM35.FundLine,
 						CASE WHEN HE.LearnRefNumber IS NOT NULL THEN ''Higher Education'' END,
 						CASE WHEN LD.FundModel = ''99'' THEN ''Full Cost'' END 
@@ -603,6 +603,11 @@ BEGIN
 			IsMainAim = 
 				CASE
 					WHEN LD.AimSeqNumber = MA.AimSeqNumber THEN 1
+					ELSE 0
+				END,
+			IsMainAimInFundModel = 
+				CASE
+					WHEN LD.AimSeqNumber = MAFM.AimSeqNumber THEN 1
 					ELSE 0
 				END,
 			IsAdvLearnLoan = ALB.AdvLoan,
@@ -1567,9 +1572,14 @@ BEGIN
 			AND LDR.AimSeqNumber = LD.AimSeqNumber
 		INNER JOIN ' + @FISDatabase + '.dbo.Valid_Source SRC
 			ON 1 = 1
+	'
+    
+    SET @SQLString += 
+		N'
 		INNER JOIN (
 			SELECT
 				LD.LearnRefNumber,
+				LD.FundModel,
 				LD.AimSeqNumber,
 				FacCode = 
 					CASE
@@ -1622,9 +1632,23 @@ BEGIN
 				RowNum = 
 					ROW_NUMBER () OVER ( 
 						PARTITION BY
-							LD.LearnRefNumber
+							LD.LearnRefNumber,
+							LD.FundModel
 						ORDER BY
 							COALESCE ( FM25.StartFund, ALB.FundStart, FM35.FundStart, FM36.FundStart, 0 ) DESC,
+                            CASE
+                                COALESCE ( 
+                                    FM25.FundLine, 
+                                    CASE WHEN ALB.AdvLoan = 1 AND ALB.FundLine = ''None'' THEN ''Advanced Learner Loan (ALL)'' END,
+                                    FM36.LearnDelInitialFundLineType,
+                                    FM35.FundLine,
+                                    CASE WHEN HE.LearnRefNumber IS NOT NULL THEN ''Higher Education'' END,
+                                    CASE WHEN LD.FundModel = ''99'' THEN ''Full Cost'' END 
+                                ) 
+                                WHEN ''16-19 Students (inc. High Needs)'' THEN 1
+                                WHEN ''None'' THEN 9
+                                ELSE 2
+                            END,
 							COALESCE ( LD.ProgType, ''99'' ),
 							CASE
 								WHEN LD.AimType = 2 THEN 4.5
@@ -1659,30 +1683,37 @@ BEGIN
 				ON PSDMD.LearnRefNumber = LD.LearnRefNumber
 				AND PSDMD.AimSeqNumber = LD.AimSeqNumber
 				AND PSDMD.ProvSpecDelMonOccur = ''D''
+			
 			--16-19
-			LEFT JOIN ' + @FISDatabase + '.dbo.Rulebase_FM25_Learner FM25
+			LEFT JOIN ' + @FISDatabase + '.dbo.Rulebase_EFA_Learner FM25
 				ON FM25.LearnRefNumber = LD.LearnRefNumber
 				AND FM25.CoreAimSeqNumber = LD.AimSeqNumber
 				--AND FM25.StartFund = 1
 
-			--Apps and AEB
-			LEFT JOIN ' + @FISDatabase + '.dbo.Rulebase_FM35_LearningDelivery FM35
+			--AEB and Apps (Legacy)
+			LEFT JOIN ' + @FISDatabase + '.dbo.Rulebase_SFA_LearningDelivery FM35
 				ON FM35.LearnRefNumber = LD.LearnRefNumber
 				AND FM35.AimSeqNumber = LD.AimSeqNumber
 				--AND FM35.FundStart = 1
+		
+			--Apps (Reformed)
+			LEFT JOIN ' + @FISDatabase + '.dbo.Rulebase_AEC_LearningDelivery FM36
+				ON FM36.LearnRefNumber = LD.LearnRefNumber
+				AND FM36.AimSeqNumber = LD.AimSeqNumber
 
 			--Loans and Bursaries
 			LEFT JOIN ' + @FISDatabase + '.dbo.Rulebase_ALB_LearningDelivery ALB
 				ON ALB.LearnRefNumber = LD.LearnRefNumber
 				AND ALB.AimSeqNumber = LD.AimSeqNumber
 
-			--FW Standards
-			LEFT JOIN ' + @FISDatabase + '.dbo.Rulebase_AEC_LearningDelivery FM36
-				ON FM36.LearnRefNumber = LD.LearnRefNumber
-				AND FM36.AimSeqNumber = LD.AimSeqNumber
-		) MA
-			ON MA.LearnRefNumber = LD.LearnRefNumber
-			AND MA.RowNum = 1
+			--Higher Education
+			LEFT JOIN ' + @FISDatabase + '.dbo.Valid_LearningDeliveryHE HE
+				ON HE.LearnRefNumber = LD.LearnRefNumber
+				AND HE.AimSeqNumber = LD.AimSeqNumber
+		) MAFM
+			ON MAFM.LearnRefNumber = LD.LearnRefNumber
+			AND MAFM.FundModel = LD.FundModel
+			AND MAFM.RowNum = 1
 	'
 
     SET @SQLString += 
@@ -1798,21 +1829,21 @@ BEGIN
 			AND FM25.CoreAimSeqNumber = LD.AimSeqNumber
 			--AND FM25.StartFund = 1
 
-		--Apps and AEB
+		--AEB and Apps (Legacy)
 		LEFT JOIN ' + @FISDatabase + '.dbo.Rulebase_SFA_LearningDelivery FM35
 			ON FM35.LearnRefNumber = LD.LearnRefNumber
 			AND FM35.AimSeqNumber = LD.AimSeqNumber
 			--AND FM35.FundStart = 1
+		
+		--Apps (Reformed)
+		LEFT JOIN ' + @FISDatabase + '.dbo.Rulebase_AEC_LearningDelivery FM36
+			ON FM36.LearnRefNumber = LD.LearnRefNumber
+			AND FM36.AimSeqNumber = LD.AimSeqNumber
 
 		--Loans and Bursaries
 		LEFT JOIN ' + @FISDatabase + '.dbo.Rulebase_ALB_LearningDelivery ALB
 			ON ALB.LearnRefNumber = LD.LearnRefNumber
 			AND ALB.AimSeqNumber = LD.AimSeqNumber
-
-		--Apps Levy/Non-Levy
-		LEFT JOIN ' + @FISDatabase + '.dbo.Rulebase_AEC_LearningDelivery AEC
-			ON AEC.LearnRefNumber = LD.LearnRefNumber
-			AND AEC.AimSeqNumber = LD.AimSeqNumber
 
 		--Higher Education
 		LEFT JOIN ' + @FISDatabase + '.dbo.Valid_LearningDeliveryHE HE
@@ -2050,10 +2081,6 @@ BEGIN
 
     SET @SQLString += 
         N'
-		--FW Standards
-		LEFT JOIN ' + @FISDatabase + '.dbo.Rulebase_AEC_LearningDelivery FM36
-			ON FM36.LearnRefNumber = LD.LearnRefNumber
-			AND FM36.AimSeqNumber = LD.AimSeqNumber
 		LEFT JOIN (
 			SELECT
 				FM36PE.LearnRefNumber,

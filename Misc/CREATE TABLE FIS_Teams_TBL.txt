@@ -1,4 +1,4 @@
-CREATE TABLE FIS_Teams (
+CREATE TABLE FIS_Teams_TBL (
     AcademicYear NVARCHAR(5),
 	TeamCode NVARCHAR(20),
 	TeamName NVARCHAR(255),

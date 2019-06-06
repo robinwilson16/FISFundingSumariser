@@ -1,24 +1,22 @@
-DECLARE @FISDatabase NVARCHAR(100) = 'FIS_1819_NLAND_R09_F'
+DECLARE @FISDatabase NVARCHAR(100) = 'Hegel.FIS_CY'
 DECLARE @AcademicYear NVARCHAR(5) = '18/19'
 DECLARE @ILRReturn int = 9
 DECLARE @IsFinalReturn BIT = 1
 DECLARE @Split1619Funding BIT = 0 --Split the funding into the 12 periods
 DECLARE @1619ALSFundingPercent DECIMAL(3,2) = 0.07 --Deduct this percent from Tot Funding and assign to ALS column
-DECLARE @IncludeHEAdvLoanPossIncome BIT = 0 --HE gross fee is only achieved if at all 3 SLC census points learners remain current
+DECLARE @IncludeHEAdvLoanPossIncome BIT = 1 --HE gross fee is only achieved if at all 3 SLC census points learners remain current
 DECLARE @FutureAchieveWeighting DECIMAL(3,2) = 1 --Future ach weighting factor. If 1 then is 100% of all remaining ach monies
 DECLARE @Mode NCHAR(1) = 'I' --I=Insert new ILR return data leaving existing data, R=Replace table
-DECLARE @FISOutputTableLocation NVARCHAR(200) = 'ProSolutionReports.dbo.'
-DECLARE @ProSolutionDatabaseLocation NVARCHAR(200) = 'ussql04.ProSolution.dbo.'
-DECLARE @ProAchieveDatabaseLocation NVARCHAR(200) = 'ussql01.ProGeneral.dbo.'
-DECLARE @ProviderFieldFacLocation NCHAR(1) = 'D'
+DECLARE @FISOutputTableLocation NVARCHAR(200) = 'wlc.dbo.'
+DECLARE @ProviderFieldFacLocation NCHAR(1) = 'B'
 DECLARE @ProviderFieldTeamLocation NCHAR(1) = 'C'
-DECLARE @ProviderFieldCostCentreLocation NCHAR(1) = 'B'
+DECLARE @ProviderFieldCostCentreLocation NCHAR(1) = 'D'
 DECLARE @ProviderFieldCourseLocation NCHAR(1) = 'A'
 DECLARE @ProviderFieldCourseFormat NVARCHAR(50) = 'CRS.Code'
-DECLARE @OverrideEngFac NVARCHAR(50) = NULL
-DECLARE @OverrideMatFac NVARCHAR(50) = NULL
-DECLARE @OverrideEngTeam NVARCHAR(50) = NULL
-DECLARE @OverrideMatTeam NVARCHAR(50) = NULL
+DECLARE @OverrideEngFac NVARCHAR(50) = '14'
+DECLARE @OverrideMatFac NVARCHAR(50) = '14'
+DECLARE @OverrideEngTeam NVARCHAR(50) = '1410'
+DECLARE @OverrideMatTeam NVARCHAR(50) = '1420'
 DECLARE @OverrideEngCostCentre NVARCHAR(50) = NULL
 DECLARE @OverrideMatCostCentre NVARCHAR(50) = NULL
 DECLARE @OverridePartnerFac NVARCHAR(50) = NULL
@@ -40,8 +38,6 @@ SET @SQLString = N'
 		@FutureAchieveWeighting,
 		@Mode,
 		@FISOutputTableLocation,
-		@ProSolutionDatabaseLocation,
-		@ProAchieveDatabaseLocation,
 		@ProviderFieldFacLocation,
 		@ProviderFieldTeamLocation,
 		@ProviderFieldCostCentreLocation,
@@ -68,9 +64,7 @@ SET @SQLParams =
         @FutureAchieveWeighting DECIMAL(3,2),
         @Mode NCHAR(1),
         @FISOutputTableLocation NVARCHAR(200),
-        @ProSolutionDatabaseLocation NVARCHAR(200),
-        @ProAchieveDatabaseLocation NVARCHAR(200),
-		@ProviderFieldFacLocation NCHAR(1),
+        @ProviderFieldFacLocation NCHAR(1),
 		@ProviderFieldTeamLocation NCHAR(1),
 		@ProviderFieldCostCentreLocation NCHAR(1),
 		@ProviderFieldCourseLocation NCHAR(1),
@@ -98,8 +92,6 @@ EXECUTE sp_executesql
     @FutureAchieveWeighting = @FutureAchieveWeighting,
     @Mode = @Mode,
     @FISOutputTableLocation = @FISOutputTableLocation,
-    @ProSolutionDatabaseLocation = @ProSolutionDatabaseLocation,
-    @ProAchieveDatabaseLocation = @ProAchieveDatabaseLocation,
     @ProviderFieldFacLocation = @ProviderFieldFacLocation,
 	@ProviderFieldTeamLocation = @ProviderFieldTeamLocation,
 	@ProviderFieldCostCentreLocation = @ProviderFieldCostCentreLocation,

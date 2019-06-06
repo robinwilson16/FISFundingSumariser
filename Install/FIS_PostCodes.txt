@@ -1,0 +1,16 @@
+CREATE VIEW FIS_PostCodes
+AS
+	SELECT
+		PostCode = PCW.Postcode,
+		WardCode = PCW.WardCode,
+		WardName = PCW.WardName,
+		DistrictCode = PCW.DistrictCode,
+		DistrictName = PCW.DistrictName,
+		LEACode = PCW.LEACode,
+		LEAName = PCW.LEAName,
+		Uplift1619 = COALESCE ( PCU.EFA_UPLIFT, 1 ),
+		UpliftAdult = COALESCE ( PCU.SFA_UPLIFT, 1 ),
+		UpliftApp = COALESCE ( PCU.APP_FUNDING_UPLIFT, 1 )
+	FROM ussql01.ProGeneral.dbo.PostCodeWard PCW
+	INNER JOIN ussql01.ProGeneral.dbo.PostCodeUplift PCU
+		ON  PCU.POSTCODE = PCW.Postcode

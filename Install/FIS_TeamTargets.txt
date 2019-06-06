@@ -1,4 +1,4 @@
-CREATE TABLE dbo.FIS_TeamTargets(
+CREATE TABLE FIS_TeamTargets (
 	AcademicYear nvarchar(50) NULL,
 	College nvarchar(50) NULL,
 	TeamCode nvarchar(50) NULL,

@@ -1,4 +1,4 @@
-CREATE TABLE FIS_Faculties (
+CREATE TABLE FIS_Faculties_TBL (
     AcademicYear NVARCHAR(5),
 	FacCode NVARCHAR(20),
 	FacName NVARCHAR(255),

@@ -8,8 +8,6 @@ CREATE PROCEDURE SPR_FIS_FundingData_1718
 	@IncludeHEAdvLoanPossIncome BIT,
 	@FutureAchieveWeighting DECIMAL(3,2),
     @FISOutputTableLocation NVARCHAR(200),
-	@ProSolutionDatabaseLocation NVARCHAR(200),
-	@ProAchieveDatabaseLocation NVARCHAR(200),
 	@ProviderFieldFacLocation CHAR(1),
 	@ProviderFieldTeamLocation CHAR(1),
 	@ProviderFieldCostCentreLocation CHAR(1),
@@ -37,8 +35,6 @@ BEGIN
 	--DECLARE @IncludeHEAdvLoanPossIncome BIT = 1,
 	--DECLARE @FutureAchieveWeighting DECIMAL(3,2) = 0.75
 	--DECLARE @FISOutputTableLocation NVARCHAR(200) = 'ProSolutionReports.dbo.'
-	--DECLARE @ProSolutionDatabaseLocation NVARCHAR(200) = 'ProSolution.dbo.'
-	--DECLARE @ProAchieveDatabaseLocation NVARCHAR(200) = 'ussql01.ProGeneral.dbo.'
 	--DECLARE @ProviderFieldFacLocation NCHAR(1) = 'D'
 	--DECLARE @ProviderFieldTeamLocation NCHAR(1) = 'C'
 	--DECLARE @ProviderFieldCostCentreLocation NCHAR(1) = 'B'

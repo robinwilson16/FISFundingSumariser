@@ -21,3 +21,19 @@ AS
         ON FAC.SID = TEAM.ParentSID
     LEFT JOIN ProSolution.dbo.OfferingGroup GRP
         ON GRP.OfferingID = CRS.OfferingID
+
+	UNION ALL
+	
+	SELECT
+		AcademicYear = YR.AcademicYearID,
+		SiteCode = NULL,
+		SiteName = NULL,
+        FacCode = NULL,
+        FacName = NULL,
+        TeamCode = 'T00',
+        TeamName = 'Subcontractors',
+        CostCentreCode = NULL,
+		CourseCode = NULL,
+		CourseTitle = NULL,
+        ProvSpecField = NULL
+	FROM ProSolution.dbo.AcademicYear YR

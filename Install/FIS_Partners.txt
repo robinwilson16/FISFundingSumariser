@@ -3,7 +3,7 @@ AS
 	SELECT
 		PartnerUKPRN = LTRIM ( RTRIM ( COALESCE ( ORG.FranchPartnerRef, ORG.UKPRN, ORG.OrganisationRef ) ) ),
 		PartnerName = MIN ( ORG.Name )
-	FROM ProSolution.dbo.Organisation ORG
+	FROM besql03.ProSolution.dbo.Organisation ORG
 	WHERE
 		ORG.Active = 1
 		AND LTRIM ( RTRIM ( COALESCE ( ORG.FranchPartnerRef, ORG.UKPRN, ORG.OrganisationRef ) ) ) IS NOT NULL

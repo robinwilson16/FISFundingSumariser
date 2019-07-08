@@ -1,0 +1,7 @@
+CREATE TABLE FIS_FacultyTitles (
+	AcademicYear nvarchar(50) NOT NULL,
+	ProviderNumber int NOT NULL,
+	FacCode nvarchar(50) NOT NULL,
+	FacName nvarchar(255) NOT NULL,
+	CONSTRAINT FIS_FacultyTitles_PK PRIMARY KEY (AcademicYear, ProviderNumber, FacCode)
+)

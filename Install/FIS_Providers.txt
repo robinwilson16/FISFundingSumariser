@@ -1,0 +1,11 @@
+CREATE VIEW FIS_Providers
+AS
+	SELECT
+		ProviderID = 10004760,
+		ProviderName = 'Northumberland'
+
+	UNION ALL
+
+	SELECT
+		ProviderID = 10001475,
+		ProviderName = 'Sunderland'

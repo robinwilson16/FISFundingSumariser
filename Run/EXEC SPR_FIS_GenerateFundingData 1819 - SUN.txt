@@ -1,18 +1,17 @@
-DECLARE @FISDatabase NVARCHAR(100) = 'FIS_1819_R10_F'
+DECLARE @FISDatabase NVARCHAR(100) = 'FIS_1819_R11_F'
 DECLARE @AcademicYear NVARCHAR(5) = '18/19'
-DECLARE @ILRReturn int = 10
+DECLARE @ILRReturn int = 11
 DECLARE @IsFinalReturn BIT = 1
 DECLARE @Split1619Funding BIT = 1 --Split the funding into the 12 periods
 DECLARE @1619ALSFundingPercent DECIMAL(3,2) = 0.07 --Deduct this percent from Tot Funding and assign to ALS column
 DECLARE @IncludeHEAdvLoanPossIncome BIT = 0 --HE gross fee is only achieved if at all 3 SLC census points learners remain current
 DECLARE @FutureAchieveWeighting DECIMAL(3,2) = 1 --Future ach weighting factor. If 1 then is 100% of all remaining ach monies
 DECLARE @Mode NCHAR(1) = 'I' --I=Insert new ILR return data leaving existing data, R=Replace table
-DECLARE @FISOutputTableLocation NVARCHAR(200) = 'ProSolutionReports.dbo.'
+DECLARE @FISOutputTableLocation NVARCHAR(200) = 'StagingArea.dbo.'
 DECLARE @ProviderFieldFacLocation NCHAR(1) = 'B'
 DECLARE @ProviderFieldTeamLocation NCHAR(1) = 'C'
 DECLARE @ProviderFieldCostCentreLocation NCHAR(1) = 'D'
 DECLARE @ProviderFieldCourseLocation NCHAR(1) = 'A'
-DECLARE @ProviderFieldCourseFormat NVARCHAR(50) = 'CRS.Code + "-" + GRP.Code'
 DECLARE @OverrideEngFac NVARCHAR(50) = 'F05'
 DECLARE @OverrideMatFac NVARCHAR(50) = 'F05'
 DECLARE @OverrideEngTeam NVARCHAR(50) = 'T01'
@@ -42,7 +41,6 @@ SET @SQLString = N'
 		@ProviderFieldTeamLocation,
 		@ProviderFieldCostCentreLocation,
 		@ProviderFieldCourseLocation,
-		@ProviderFieldCourseFormat,
 		@OverrideEngFac,
 		@OverrideMatFac,
 		@OverrideEngTeam,
@@ -68,7 +66,6 @@ SET @SQLParams =
 		@ProviderFieldTeamLocation NCHAR(1),
 		@ProviderFieldCostCentreLocation NCHAR(1),
 		@ProviderFieldCourseLocation NCHAR(1),
-        @ProviderFieldCourseFormat NVARCHAR(50),
         @OverrideEngFac NVARCHAR(50),
         @OverrideMatFac NVARCHAR(50),
         @OverrideEngTeam NVARCHAR(50),
@@ -96,7 +93,6 @@ EXECUTE sp_executesql
 	@ProviderFieldTeamLocation = @ProviderFieldTeamLocation,
 	@ProviderFieldCostCentreLocation = @ProviderFieldCostCentreLocation,
 	@ProviderFieldCourseLocation = @ProviderFieldCourseLocation,
-    @ProviderFieldCourseFormat = @ProviderFieldCourseFormat,
     @OverrideEngFac = @OverrideEngFac,
     @OverrideMatFac = @OverrideMatFac,
     @OverrideEngTeam = @OverrideEngTeam,

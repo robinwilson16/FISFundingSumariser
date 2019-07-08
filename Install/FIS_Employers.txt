@@ -3,7 +3,7 @@ AS
 	SELECT
 		EmployerEDRS = CASE WHEN ISNUMERIC ( ORG.EDRSRef ) = 1 THEN CAST ( ORG.EDRSRef AS INT ) ELSE NULL END,
 		EmployerName = MIN ( ORG.Name )
-	FROM ProSolution.dbo.Organisation ORG
+	FROM besql03.ProSolution.dbo.Organisation ORG
 	WHERE
 		ORG.Active = 1
 		AND CASE WHEN ISNUMERIC ( ORG.EDRSRef ) = 1 THEN CAST ( ORG.EDRSRef AS INT ) ELSE NULL END IS NOT NULL

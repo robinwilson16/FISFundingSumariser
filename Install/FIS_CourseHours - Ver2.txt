@@ -1,11 +1,11 @@
-CREATE VIEW [dbo].[FIS_CourseHours]
+CREATE VIEW FIS_CourseHours
 AS
 SELECT DISTINCT
     AcademicYear = CRS.AcademicYearID,
-    ProvSpecField = CRS.Code,
+    ProvSpecField = CRS.Code + '-' + GRP.Code,
     CourseCode = CRS.Code,
     PLH = COALESCE ( CRS.PlannedLearningHours1618, 0 ),
     EEP = COALESCE ( CRS.PlannedEEPHours1618, 0 )
-FROM ProSolution.dbo.Offering CRS
-LEFT JOIN ProSolution.dbo.OfferingGroup GRP
+FROM besql03.ProSolution.dbo.Offering CRS
+LEFT JOIN besql03.ProSolution.dbo.OfferingGroup GRP
     ON GRP.OfferingID = CRS.OfferingID

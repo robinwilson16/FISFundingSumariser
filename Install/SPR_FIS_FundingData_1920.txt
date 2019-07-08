@@ -12,7 +12,6 @@ CREATE PROCEDURE SPR_FIS_FundingData_1920
 	@ProviderFieldTeamLocation CHAR(1),
 	@ProviderFieldCostCentreLocation CHAR(1),
 	@ProviderFieldCourseLocation CHAR(1),
-	@ProviderFieldCourseFormat NVARCHAR(50),
 	@OverrideEngFac NVARCHAR(50),
 	@OverrideMatFac NVARCHAR(50),
 	@OverrideEngTeam NVARCHAR(50),
@@ -39,7 +38,6 @@ BEGIN
 	--DECLARE @ProviderFieldTeamLocation NCHAR(1) = 'C'
 	--DECLARE @ProviderFieldCostCentreLocation NCHAR(1) = 'B'
 	--DECLARE @ProviderFieldCourseLocation NCHAR(1) = 'A'
-	--DECLARE @ProviderFieldCourseFormat NVARCHAR(50) = 'CRS.Code + "-" + GRP.Code'
 	--DECLARE @OverrideEngFac NVARCHAR(50) = 'F05'
 	--DECLARE @OverrideMatFac NVARCHAR(50) = 'F05'
 	--DECLARE @OverrideEngTeam NVARCHAR(50) = 'T01'
@@ -52,8 +50,6 @@ BEGIN
 
 	DECLARE @SQLString NVARCHAR(MAX);
     DECLARE @SQLParams NVARCHAR(MAX);
-
-	SET @ProviderFieldCourseFormat = REPLACE ( @ProviderFieldCourseFormat, '"', '''' )
 
 	SET @SQLString = 
         N'
@@ -165,6 +161,7 @@ BEGIN
 		SELECT
 			AcademicYear = @AcademicYear,
             ProviderNumber = SRC.UKPRN,
+			ProviderName = PROV.ProviderName,
 			ILRReturn = 
 				CASE
 					WHEN LEN ( @ILRReturn ) = 1 THEN ''R0'' + @ILRReturn
@@ -3461,7 +3458,9 @@ BEGIN
     
     SET @SQLString += 
         N'
-        LEFT JOIN ' + @FISOutputTableLocation + 'FIS_Faculties FAC
+		LEFT JOIN ' + @FISOutputTableLocation + 'FIS_Providers PROV
+			ON PROV.ProviderID = SRC.UKPRN
+        LEFT JOIN ' + @FISOutputTableLocation + 'FIS_FacultyTitles FAC
             ON FAC.FacCode = 
                 CASE
                     WHEN @ProviderFieldFacLocation = ''A'' THEN
@@ -3476,7 +3475,7 @@ BEGIN
                         PSDMA.ProvSpecDelMon
                 END
             AND FAC.AcademicYear = @AcademicYear
-        LEFT JOIN ' + @FISOutputTableLocation + 'FIS_Teams TEAM
+        LEFT JOIN ' + @FISOutputTableLocation + 'FIS_TeamTitles TEAM
             ON TEAM.TeamCode = 
                 CASE
                     WHEN @ProviderFieldTeamLocation = ''A'' THEN
@@ -3618,7 +3617,6 @@ BEGIN
 		@ProviderFieldTeamLocation CHAR(1),
 		@ProviderFieldCostCentreLocation CHAR(1),
 		@ProviderFieldCourseLocation CHAR(1),
-    	@ProviderFieldCourseFormat NVARCHAR(50),
     	@OverrideEngFac NVARCHAR(50),
     	@OverrideMatFac NVARCHAR(50),
     	@OverrideEngTeam NVARCHAR(50),
@@ -3644,7 +3642,6 @@ BEGIN
 		@ProviderFieldTeamLocation = @ProviderFieldTeamLocation,
 		@ProviderFieldCostCentreLocation = @ProviderFieldCostCentreLocation,
 		@ProviderFieldCourseLocation = @ProviderFieldCourseLocation,
-    	@ProviderFieldCourseFormat = @ProviderFieldCourseFormat,
     	@OverrideEngFac = @OverrideEngFac,
     	@OverrideMatFac = @OverrideMatFac,
     	@OverrideEngTeam = @OverrideEngTeam,

@@ -9,8 +9,8 @@ AS
 		AimTitle = AIM.LEARNING_AIM_TITLE,
 		AimLevel = AIM.NOTIONAL_NVQ_LEVEL_CODE,
 		AwardBodyCode = AIM.AWARDING_BODY_CODE
-	FROM ProSolution.dbo.Learning_Aim AIM
-	LEFT JOIN ProSolution.dbo.SSA1 SSA1
+	FROM besql03.ProSolution.dbo.Learning_Aim AIM
+	LEFT JOIN besql03.ProSolution.dbo.SSA1 SSA1
 		ON SSA1.SSA_Tier1_code = AIM.SSA1ID
-	LEFT JOIN ProSolution.dbo.SSA2 SSA2
+	LEFT JOIN besql03.ProSolution.dbo.SSA2 SSA2
 		ON SSA2.SSA_Tier2_code = AIM.SSA2ID

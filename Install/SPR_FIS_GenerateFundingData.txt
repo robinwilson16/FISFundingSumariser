@@ -388,7 +388,6 @@ BEGIN
 		END
 
 	SET @SQLString = N'
-		INSERT INTO ' + @FISOutputTableLocation + 'FIS_FundingData
 		EXEC SPR_FIS_FundingData_' + REPLACE ( @AcademicYear, '/', '' ) + '
 			@FISDatabase,
 			@AcademicYear,

@@ -158,6 +158,7 @@ BEGIN
 
 	SET @SQLString += 
         N'
+		INSERT INTO ' + @FISOutputTableLocation + 'FIS_FundingData WITH (TABLOCKX)
 		SELECT
 			AcademicYear = @AcademicYear,
             ProviderNumber = SRC.UKPRN,

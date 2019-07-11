@@ -12,7 +12,6 @@ CREATE PROCEDURE SPR_FIS_FundingData_1718
 	@ProviderFieldTeamLocation CHAR(1),
 	@ProviderFieldCostCentreLocation CHAR(1),
 	@ProviderFieldCourseLocation CHAR(1),
-	@ProviderFieldCourseFormat NVARCHAR(50),
 	@OverrideEngFac NVARCHAR(50),
 	@OverrideMatFac NVARCHAR(50),
 	@OverrideEngTeam NVARCHAR(50),
@@ -39,7 +38,6 @@ BEGIN
 	--DECLARE @ProviderFieldTeamLocation NCHAR(1) = 'C'
 	--DECLARE @ProviderFieldCostCentreLocation NCHAR(1) = 'B'
 	--DECLARE @ProviderFieldCourseLocation NCHAR(1) = 'A'
-	--DECLARE @ProviderFieldCourseFormat NVARCHAR(50) = 'CRS.Code + "-" + GRP.Code'
 	--DECLARE @OverrideEngFac NVARCHAR(50) = 'F05'
 	--DECLARE @OverrideMatFac NVARCHAR(50) = 'F05'
 	--DECLARE @OverrideEngTeam NVARCHAR(50) = 'T01'
@@ -52,8 +50,6 @@ BEGIN
 
 	DECLARE @SQLString NVARCHAR(MAX);
     DECLARE @SQLParams NVARCHAR(MAX);
-
-	SET @ProviderFieldCourseFormat = REPLACE ( @ProviderFieldCourseFormat, '"', '''' )
 
 	SET @SQLString = 
         N'
@@ -165,6 +161,7 @@ BEGIN
 		SELECT
 			AcademicYear = @AcademicYear,
             ProviderNumber = SRC.UKPRN,
+			ProviderName = PROV.ProviderName,
 			ILRReturn = 
 				CASE
 					WHEN LEN ( @ILRReturn ) = 1 THEN ''R0'' + @ILRReturn
@@ -225,7 +222,7 @@ BEGIN
 					CASE WHEN LD.FundModel = ''25'' THEN HRS.FundLine END,
 					FM25.FundLine, 
 					CASE WHEN ALB.AdvLoan = 1 AND ALB.FundLine = ''None'' THEN ''Advanced Learner Loan (ALL)'' END,
-					FM36.LearnDelInitialFundLineType,
+					FM36P.FundLineType,
 					FM35.FundLine,
 					CASE WHEN HE.LearnRefNumber IS NOT NULL THEN ''Higher Education'' END,
 					CASE WHEN LD.FundModel = ''99'' THEN ''Full Cost'' END 
@@ -241,7 +238,7 @@ BEGIN
 							CASE WHEN LD.FundModel = ''25'' THEN HRS.FundLine END,
 							FM25.FundLine, 
 							CASE WHEN ALB.AdvLoan = 1 AND ALB.FundLine = ''None'' THEN ''Advanced Learner Loan (ALL)'' END,
-							FM36.LearnDelInitialFundLineType,
+							FM36P.FundLineType,
 							FM35.FundLine,
 							CASE WHEN HE.LearnRefNumber IS NOT NULL THEN ''Higher Education'' END,
 							CASE WHEN LD.FundModel = ''99'' THEN ''Full Cost'' END 
@@ -258,7 +255,7 @@ BEGIN
 							CASE WHEN LD.FundModel = ''25'' THEN HRS.FundLine END,
 							FM25.FundLine, 
 							CASE WHEN ALB.AdvLoan = 1 AND ALB.FundLine = ''None'' THEN ''Advanced Learner Loan (ALL)'' END,
-							FM36.LearnDelInitialFundLineType,
+							FM36P.FundLineType,
 							FM35.FundLine,
 							CASE WHEN HE.LearnRefNumber IS NOT NULL THEN ''Higher Education'' END,
 							CASE WHEN LD.FundModel = ''99'' THEN ''Full Cost'' END 
@@ -267,7 +264,7 @@ BEGIN
 							CASE WHEN LD.FundModel = ''25'' THEN HRS.FundLine END,
 							FM25.FundLine, 
 							CASE WHEN ALB.AdvLoan = 1 AND ALB.FundLine = ''None'' THEN ''Advanced Learner Loan (ALL)'' END,
-							FM36.LearnDelInitialFundLineType,
+							FM36P.FundLineType,
 							FM35.FundLine,
 							CASE WHEN HE.LearnRefNumber IS NOT NULL THEN ''Higher Education'' END,
 							CASE WHEN LD.FundModel = ''99'' THEN ''Full Cost'' END 
@@ -279,7 +276,7 @@ BEGIN
 							CASE WHEN LD.FundModel = ''25'' THEN HRS.FundLine END,
 							FM25.FundLine, 
 							CASE WHEN ALB.AdvLoan = 1 AND ALB.FundLine = ''None'' THEN ''Advanced Learner Loan (ALL)'' END,
-							FM36.LearnDelInitialFundLineType,
+							FM36P.FundLineType,
 							FM35.FundLine,
 							CASE WHEN HE.LearnRefNumber IS NOT NULL THEN ''Higher Education'' END,
 							CASE WHEN LD.FundModel = ''99'' THEN ''Full Cost'' END 
@@ -288,7 +285,7 @@ BEGIN
 							CASE WHEN LD.FundModel = ''25'' THEN HRS.FundLine END,
 							FM25.FundLine, 
 							CASE WHEN ALB.AdvLoan = 1 AND ALB.FundLine = ''None'' THEN ''Advanced Learner Loan (ALL)'' END,
-							FM36.LearnDelInitialFundLineType,
+							FM36P.FundLineType,
 							FM35.FundLine,
 							CASE WHEN HE.LearnRefNumber IS NOT NULL THEN ''Higher Education'' END,
 							CASE WHEN LD.FundModel = ''99'' THEN ''Full Cost'' END 
@@ -300,7 +297,7 @@ BEGIN
 							CASE WHEN LD.FundModel = ''25'' THEN HRS.FundLine END,
 							FM25.FundLine, 
 							CASE WHEN ALB.AdvLoan = 1 AND ALB.FundLine = ''None'' THEN ''Advanced Learner Loan (ALL)'' END,
-							FM36.LearnDelInitialFundLineType,
+							FM36P.FundLineType,
 							FM35.FundLine,
 							CASE WHEN HE.LearnRefNumber IS NOT NULL THEN ''Higher Education'' END,
 							CASE WHEN LD.FundModel = ''99'' THEN ''Full Cost'' END 
@@ -309,7 +306,7 @@ BEGIN
 							CASE WHEN LD.FundModel = ''25'' THEN HRS.FundLine END,
 							FM25.FundLine, 
 							CASE WHEN ALB.AdvLoan = 1 AND ALB.FundLine = ''None'' THEN ''Advanced Learner Loan (ALL)'' END,
-							FM36.LearnDelInitialFundLineType,
+							FM36P.FundLineType,
 							FM35.FundLine,
 							CASE WHEN HE.LearnRefNumber IS NOT NULL THEN ''Higher Education'' END,
 							CASE WHEN LD.FundModel = ''99'' THEN ''Full Cost'' END 
@@ -318,7 +315,7 @@ BEGIN
 							CASE WHEN LD.FundModel = ''25'' THEN HRS.FundLine END,
 							FM25.FundLine, 
 							CASE WHEN ALB.AdvLoan = 1 AND ALB.FundLine = ''None'' THEN ''Advanced Learner Loan (ALL)'' END,
-							FM36.LearnDelInitialFundLineType,
+							FM36P.FundLineType,
 							FM35.FundLine,
 							CASE WHEN HE.LearnRefNumber IS NOT NULL THEN ''Higher Education'' END,
 							CASE WHEN LD.FundModel = ''99'' THEN ''Full Cost'' END 
@@ -333,7 +330,7 @@ BEGIN
 							CASE WHEN LD.FundModel = ''25'' THEN HRS.FundLine END,
 							FM25.FundLine, 
 							CASE WHEN ALB.AdvLoan = 1 AND ALB.FundLine = ''None'' THEN ''Advanced Learner Loan (ALL)'' END,
-							FM36.LearnDelInitialFundLineType,
+							FM36P.FundLineType,
 							FM35.FundLine,
 							CASE WHEN HE.LearnRefNumber IS NOT NULL THEN ''Higher Education'' END,
 							CASE WHEN LD.FundModel = ''99'' THEN ''Full Cost'' END 
@@ -342,7 +339,7 @@ BEGIN
 							CASE WHEN LD.FundModel = ''25'' THEN HRS.FundLine END,
 							FM25.FundLine, 
 							CASE WHEN ALB.AdvLoan = 1 AND ALB.FundLine = ''None'' THEN ''Advanced Learner Loan (ALL)'' END,
-							FM36.LearnDelInitialFundLineType,
+							FM36P.FundLineType,
 							FM35.FundLine,
 							CASE WHEN HE.LearnRefNumber IS NOT NULL THEN ''Higher Education'' END,
 							CASE WHEN LD.FundModel = ''99'' THEN ''Full Cost'' END 
@@ -354,7 +351,7 @@ BEGIN
 							CASE WHEN LD.FundModel = ''25'' THEN HRS.FundLine END,
 							FM25.FundLine, 
 							CASE WHEN ALB.AdvLoan = 1 AND ALB.FundLine = ''None'' THEN ''Advanced Learner Loan (ALL)'' END,
-							FM36.LearnDelInitialFundLineType,
+							FM36P.FundLineType,
 							FM35.FundLine,
 							CASE WHEN HE.LearnRefNumber IS NOT NULL THEN ''Higher Education'' END,
 							CASE WHEN LD.FundModel = ''99'' THEN ''Full Cost'' END 
@@ -363,7 +360,7 @@ BEGIN
 							CASE WHEN LD.FundModel = ''25'' THEN HRS.FundLine END,
 							FM25.FundLine, 
 							CASE WHEN ALB.AdvLoan = 1 AND ALB.FundLine = ''None'' THEN ''Advanced Learner Loan (ALL)'' END,
-							FM36.LearnDelInitialFundLineType,
+							FM36P.FundLineType,
 							FM35.FundLine,
 							CASE WHEN HE.LearnRefNumber IS NOT NULL THEN ''Higher Education'' END,
 							CASE WHEN LD.FundModel = ''99'' THEN ''Full Cost'' END 
@@ -378,7 +375,7 @@ BEGIN
 							CASE WHEN LD.FundModel = ''25'' THEN HRS.FundLine END,
 							FM25.FundLine, 
 							CASE WHEN ALB.AdvLoan = 1 AND ALB.FundLine = ''None'' THEN ''Advanced Learner Loan (ALL)'' END,
-							FM36.LearnDelInitialFundLineType,
+							FM36P.FundLineType,
 							FM35.FundLine,
 							CASE WHEN HE.LearnRefNumber IS NOT NULL THEN ''Higher Education'' END,
 							CASE WHEN LD.FundModel = ''99'' THEN ''Full Cost'' END 
@@ -387,7 +384,7 @@ BEGIN
 							CASE WHEN LD.FundModel = ''25'' THEN HRS.FundLine END,
 							FM25.FundLine, 
 							CASE WHEN ALB.AdvLoan = 1 AND ALB.FundLine = ''None'' THEN ''Advanced Learner Loan (ALL)'' END,
-							FM36.LearnDelInitialFundLineType,
+							FM36P.FundLineType,
 							FM35.FundLine,
 							CASE WHEN HE.LearnRefNumber IS NOT NULL THEN ''Higher Education'' END,
 							CASE WHEN LD.FundModel = ''99'' THEN ''Full Cost'' END 
@@ -396,7 +393,7 @@ BEGIN
 							CASE WHEN LD.FundModel = ''25'' THEN HRS.FundLine END,
 							FM25.FundLine, 
 							CASE WHEN ALB.AdvLoan = 1 AND ALB.FundLine = ''None'' THEN ''Advanced Learner Loan (ALL)'' END,
-							FM36.LearnDelInitialFundLineType,
+							FM36P.FundLineType,
 							FM35.FundLine,
 							CASE WHEN HE.LearnRefNumber IS NOT NULL THEN ''Higher Education'' END,
 							CASE WHEN LD.FundModel = ''99'' THEN ''Full Cost'' END 
@@ -407,7 +404,7 @@ BEGIN
 							CASE WHEN LD.FundModel = ''25'' THEN HRS.FundLine END,
 							FM25.FundLine, 
 							CASE WHEN ALB.AdvLoan = 1 AND ALB.FundLine = ''None'' THEN ''Advanced Learner Loan (ALL)'' END,
-							FM36.LearnDelInitialFundLineType,
+							FM36P.FundLineType,
 							FM35.FundLine,
 							CASE WHEN HE.LearnRefNumber IS NOT NULL THEN ''Higher Education'' END,
 							CASE WHEN LD.FundModel = ''99'' THEN ''Full Cost'' END 
@@ -419,7 +416,7 @@ BEGIN
 							CASE WHEN LD.FundModel = ''25'' THEN HRS.FundLine END,
 							FM25.FundLine, 
 							CASE WHEN ALB.AdvLoan = 1 AND ALB.FundLine = ''None'' THEN ''Advanced Learner Loan (ALL)'' END,
-							FM36.LearnDelInitialFundLineType,
+							FM36P.FundLineType,
 							FM35.FundLine,
 							CASE WHEN HE.LearnRefNumber IS NOT NULL THEN ''Higher Education'' END,
 							CASE WHEN LD.FundModel = ''99'' THEN ''Full Cost'' END 
@@ -431,7 +428,7 @@ BEGIN
 							CASE WHEN LD.FundModel = ''25'' THEN HRS.FundLine END,
 							FM25.FundLine, 
 							CASE WHEN ALB.AdvLoan = 1 AND ALB.FundLine = ''None'' THEN ''Advanced Learner Loan (ALL)'' END,
-							FM36.LearnDelInitialFundLineType,
+							FM36P.FundLineType,
 							FM35.FundLine,
 							CASE WHEN HE.LearnRefNumber IS NOT NULL THEN ''Higher Education'' END,
 							CASE WHEN LD.FundModel = ''99'' THEN ''Full Cost'' END 
@@ -443,7 +440,7 @@ BEGIN
 							CASE WHEN LD.FundModel = ''25'' THEN HRS.FundLine END,
 							FM25.FundLine, 
 							CASE WHEN ALB.AdvLoan = 1 AND ALB.FundLine = ''None'' THEN ''Advanced Learner Loan (ALL)'' END,
-							FM36.LearnDelInitialFundLineType,
+							FM36P.FundLineType,
 							FM35.FundLine,
 							CASE WHEN HE.LearnRefNumber IS NOT NULL THEN ''Higher Education'' END,
 							CASE WHEN LD.FundModel = ''99'' THEN ''Full Cost'' END 
@@ -452,7 +449,7 @@ BEGIN
 							CASE WHEN LD.FundModel = ''25'' THEN HRS.FundLine END,
 							FM25.FundLine, 
 							CASE WHEN ALB.AdvLoan = 1 AND ALB.FundLine = ''None'' THEN ''Advanced Learner Loan (ALL)'' END,
-							FM36.LearnDelInitialFundLineType,
+							FM36P.FundLineType,
 							FM35.FundLine,
 							CASE WHEN HE.LearnRefNumber IS NOT NULL THEN ''Higher Education'' END,
 							CASE WHEN LD.FundModel = ''99'' THEN ''Full Cost'' END 
@@ -464,7 +461,7 @@ BEGIN
 							CASE WHEN LD.FundModel = ''25'' THEN HRS.FundLine END,
 							FM25.FundLine, 
 							CASE WHEN ALB.AdvLoan = 1 AND ALB.FundLine = ''None'' THEN ''Advanced Learner Loan (ALL)'' END,
-							FM36.LearnDelInitialFundLineType,
+							FM36P.FundLineType,
 							FM35.FundLine,
 							CASE WHEN HE.LearnRefNumber IS NOT NULL THEN ''Higher Education'' END,
 							CASE WHEN LD.FundModel = ''99'' THEN ''Full Cost'' END 
@@ -481,7 +478,7 @@ BEGIN
 							CASE WHEN LD.FundModel = ''25'' THEN HRS.FundLine END,
 							FM25.FundLine, 
 							CASE WHEN ALB.AdvLoan = 1 AND ALB.FundLine = ''None'' THEN ''Advanced Learner Loan (ALL)'' END,
-							FM36.LearnDelInitialFundLineType,
+							FM36P.FundLineType,
 							FM35.FundLine,
 							CASE WHEN HE.LearnRefNumber IS NOT NULL THEN ''Higher Education'' END,
 							CASE WHEN LD.FundModel = ''99'' THEN ''Full Cost'' END 
@@ -498,7 +495,7 @@ BEGIN
 							CASE WHEN LD.FundModel = ''25'' THEN HRS.FundLine END,
 							FM25.FundLine, 
 							CASE WHEN ALB.AdvLoan = 1 AND ALB.FundLine = ''None'' THEN ''Advanced Learner Loan (ALL)'' END,
-							FM36.LearnDelInitialFundLineType,
+							FM36P.FundLineType,
 							FM35.FundLine,
 							CASE WHEN HE.LearnRefNumber IS NOT NULL THEN ''Higher Education'' END,
 							CASE WHEN LD.FundModel = ''99'' THEN ''Full Cost'' END 
@@ -507,7 +504,7 @@ BEGIN
 							CASE WHEN LD.FundModel = ''25'' THEN HRS.FundLine END,
 							FM25.FundLine, 
 							CASE WHEN ALB.AdvLoan = 1 AND ALB.FundLine = ''None'' THEN ''Advanced Learner Loan (ALL)'' END,
-							FM36.LearnDelInitialFundLineType,
+							FM36P.FundLineType,
 							FM35.FundLine,
 							CASE WHEN HE.LearnRefNumber IS NOT NULL THEN ''Higher Education'' END,
 							CASE WHEN LD.FundModel = ''99'' THEN ''Full Cost'' END 
@@ -519,7 +516,7 @@ BEGIN
 							CASE WHEN LD.FundModel = ''25'' THEN HRS.FundLine END,
 							FM25.FundLine, 
 							CASE WHEN ALB.AdvLoan = 1 AND ALB.FundLine = ''None'' THEN ''Advanced Learner Loan (ALL)'' END,
-							FM36.LearnDelInitialFundLineType,
+							FM36P.FundLineType,
 							FM35.FundLine,
 							CASE WHEN HE.LearnRefNumber IS NOT NULL THEN ''Higher Education'' END,
 							CASE WHEN LD.FundModel = ''99'' THEN ''Full Cost'' END 
@@ -528,7 +525,7 @@ BEGIN
 							CASE WHEN LD.FundModel = ''25'' THEN HRS.FundLine END,
 							FM25.FundLine, 
 							CASE WHEN ALB.AdvLoan = 1 AND ALB.FundLine = ''None'' THEN ''Advanced Learner Loan (ALL)'' END,
-							FM36.LearnDelInitialFundLineType,
+							FM36P.FundLineType,
 							FM35.FundLine,
 							CASE WHEN HE.LearnRefNumber IS NOT NULL THEN ''Higher Education'' END,
 							CASE WHEN LD.FundModel = ''99'' THEN ''Full Cost'' END 
@@ -540,7 +537,7 @@ BEGIN
 							CASE WHEN LD.FundModel = ''25'' THEN HRS.FundLine END,
 							FM25.FundLine, 
 							CASE WHEN ALB.AdvLoan = 1 AND ALB.FundLine = ''None'' THEN ''Advanced Learner Loan (ALL)'' END,
-							FM36.LearnDelInitialFundLineType,
+							FM36P.FundLineType,
 							FM35.FundLine,
 							CASE WHEN HE.LearnRefNumber IS NOT NULL THEN ''Higher Education'' END,
 							CASE WHEN LD.FundModel = ''99'' THEN ''Full Cost'' END 
@@ -549,7 +546,7 @@ BEGIN
 							CASE WHEN LD.FundModel = ''25'' THEN HRS.FundLine END,
 							FM25.FundLine, 
 							CASE WHEN ALB.AdvLoan = 1 AND ALB.FundLine = ''None'' THEN ''Advanced Learner Loan (ALL)'' END,
-							FM36.LearnDelInitialFundLineType,
+							FM36P.FundLineType,
 							FM35.FundLine,
 							CASE WHEN HE.LearnRefNumber IS NOT NULL THEN ''Higher Education'' END,
 							CASE WHEN LD.FundModel = ''99'' THEN ''Full Cost'' END 
@@ -558,7 +555,7 @@ BEGIN
 							CASE WHEN LD.FundModel = ''25'' THEN HRS.FundLine END,
 							FM25.FundLine, 
 							CASE WHEN ALB.AdvLoan = 1 AND ALB.FundLine = ''None'' THEN ''Advanced Learner Loan (ALL)'' END,
-							FM36.LearnDelInitialFundLineType,
+							FM36P.FundLineType,
 							FM35.FundLine,
 							CASE WHEN HE.LearnRefNumber IS NOT NULL THEN ''Higher Education'' END,
 							CASE WHEN LD.FundModel = ''99'' THEN ''Full Cost'' END 
@@ -573,7 +570,7 @@ BEGIN
 							CASE WHEN LD.FundModel = ''25'' THEN HRS.FundLine END,
 							FM25.FundLine, 
 							CASE WHEN ALB.AdvLoan = 1 AND ALB.FundLine = ''None'' THEN ''Advanced Learner Loan (ALL)'' END,
-							FM36.LearnDelInitialFundLineType,
+							FM36P.FundLineType,
 							FM35.FundLine,
 							CASE WHEN HE.LearnRefNumber IS NOT NULL THEN ''Higher Education'' END,
 							CASE WHEN LD.FundModel = ''99'' THEN ''Full Cost'' END 
@@ -582,7 +579,7 @@ BEGIN
 							CASE WHEN LD.FundModel = ''25'' THEN HRS.FundLine END,
 							FM25.FundLine, 
 							CASE WHEN ALB.AdvLoan = 1 AND ALB.FundLine = ''None'' THEN ''Advanced Learner Loan (ALL)'' END,
-							FM36.LearnDelInitialFundLineType,
+							FM36P.FundLineType,
 							FM35.FundLine,
 							CASE WHEN HE.LearnRefNumber IS NOT NULL THEN ''Higher Education'' END,
 							CASE WHEN LD.FundModel = ''99'' THEN ''Full Cost'' END 
@@ -594,7 +591,7 @@ BEGIN
 							CASE WHEN LD.FundModel = ''25'' THEN HRS.FundLine END,
 							FM25.FundLine, 
 							CASE WHEN ALB.AdvLoan = 1 AND ALB.FundLine = ''None'' THEN ''Advanced Learner Loan (ALL)'' END,
-							FM36.LearnDelInitialFundLineType,
+							FM36P.FundLineType,
 							FM35.FundLine,
 							CASE WHEN HE.LearnRefNumber IS NOT NULL THEN ''Higher Education'' END,
 							CASE WHEN LD.FundModel = ''99'' THEN ''Full Cost'' END 
@@ -603,7 +600,7 @@ BEGIN
 							CASE WHEN LD.FundModel = ''25'' THEN HRS.FundLine END,
 							FM25.FundLine, 
 							CASE WHEN ALB.AdvLoan = 1 AND ALB.FundLine = ''None'' THEN ''Advanced Learner Loan (ALL)'' END,
-							FM36.LearnDelInitialFundLineType,
+							FM36P.FundLineType,
 							FM35.FundLine,
 							CASE WHEN HE.LearnRefNumber IS NOT NULL THEN ''Higher Education'' END,
 							CASE WHEN LD.FundModel = ''99'' THEN ''Full Cost'' END 
@@ -618,7 +615,7 @@ BEGIN
 							CASE WHEN LD.FundModel = ''25'' THEN HRS.FundLine END,
 							FM25.FundLine, 
 							CASE WHEN ALB.AdvLoan = 1 AND ALB.FundLine = ''None'' THEN ''Advanced Learner Loan (ALL)'' END,
-							FM36.LearnDelInitialFundLineType,
+							FM36P.FundLineType,
 							FM35.FundLine,
 							CASE WHEN HE.LearnRefNumber IS NOT NULL THEN ''Higher Education'' END,
 							CASE WHEN LD.FundModel = ''99'' THEN ''Full Cost'' END 
@@ -627,7 +624,7 @@ BEGIN
 							CASE WHEN LD.FundModel = ''25'' THEN HRS.FundLine END,
 							FM25.FundLine, 
 							CASE WHEN ALB.AdvLoan = 1 AND ALB.FundLine = ''None'' THEN ''Advanced Learner Loan (ALL)'' END,
-							FM36.LearnDelInitialFundLineType,
+							FM36P.FundLineType,
 							FM35.FundLine,
 							CASE WHEN HE.LearnRefNumber IS NOT NULL THEN ''Higher Education'' END,
 							CASE WHEN LD.FundModel = ''99'' THEN ''Full Cost'' END 
@@ -636,7 +633,7 @@ BEGIN
 							CASE WHEN LD.FundModel = ''25'' THEN HRS.FundLine END,
 							FM25.FundLine, 
 							CASE WHEN ALB.AdvLoan = 1 AND ALB.FundLine = ''None'' THEN ''Advanced Learner Loan (ALL)'' END,
-							FM36.LearnDelInitialFundLineType,
+							FM36P.FundLineType,
 							FM35.FundLine,
 							CASE WHEN HE.LearnRefNumber IS NOT NULL THEN ''Higher Education'' END,
 							CASE WHEN LD.FundModel = ''99'' THEN ''Full Cost'' END 
@@ -647,7 +644,7 @@ BEGIN
 							CASE WHEN LD.FundModel = ''25'' THEN HRS.FundLine END,
 							FM25.FundLine, 
 							CASE WHEN ALB.AdvLoan = 1 AND ALB.FundLine = ''None'' THEN ''Advanced Learner Loan (ALL)'' END,
-							FM36.LearnDelInitialFundLineType,
+							FM36P.FundLineType,
 							FM35.FundLine,
 							CASE WHEN HE.LearnRefNumber IS NOT NULL THEN ''Higher Education'' END,
 							CASE WHEN LD.FundModel = ''99'' THEN ''Full Cost'' END 
@@ -656,7 +653,7 @@ BEGIN
 							CASE WHEN LD.FundModel = ''25'' THEN HRS.FundLine END,
 							FM25.FundLine, 
 							CASE WHEN ALB.AdvLoan = 1 AND ALB.FundLine = ''None'' THEN ''Advanced Learner Loan (ALL)'' END,
-							FM36.LearnDelInitialFundLineType,
+							FM36P.FundLineType,
 							FM35.FundLine,
 							CASE WHEN HE.LearnRefNumber IS NOT NULL THEN ''Higher Education'' END,
 							CASE WHEN LD.FundModel = ''99'' THEN ''Full Cost'' END 
@@ -668,7 +665,7 @@ BEGIN
 							CASE WHEN LD.FundModel = ''25'' THEN HRS.FundLine END,
 							FM25.FundLine, 
 							CASE WHEN ALB.AdvLoan = 1 AND ALB.FundLine = ''None'' THEN ''Advanced Learner Loan (ALL)'' END,
-							FM36.LearnDelInitialFundLineType,
+							FM36P.FundLineType,
 							FM35.FundLine,
 							CASE WHEN HE.LearnRefNumber IS NOT NULL THEN ''Higher Education'' END,
 							CASE WHEN LD.FundModel = ''99'' THEN ''Full Cost'' END 
@@ -685,7 +682,7 @@ BEGIN
 						CASE WHEN LD.FundModel = ''25'' THEN HRS.FundLine END,
 						FM25.FundLine, 
 						CASE WHEN ALB.AdvLoan = 1 AND ALB.FundLine = ''None'' THEN ''Advanced Learner Loan (ALL)'' END,
-						FM36.LearnDelInitialFundLineType,
+						FM36P.FundLineType,
 						FM35.FundLine,
 						CASE WHEN HE.LearnRefNumber IS NOT NULL THEN ''Higher Education'' END,
 						CASE WHEN LD.FundModel = ''99'' THEN ''Full Cost'' END 
@@ -759,7 +756,8 @@ BEGIN
 					CASE WHEN LD.LearnAimRef IN (''0003'', ''2999'', ''1439'') AND  AIM.AimTitle LIKE ''%Math%'' THEN @OverrideMatFac END,
 					CASE WHEN LD.PartnerUKPRN IS NOT NULL AND LD.FundModel IN ( ''25'', ''35'' ) THEN @OverridePartnerFac END,
 					CS.FacCode,
-					FAC.FacCode
+					FAC.FacCode,
+					''-''
 				),
 			FacName = 
 				COALESCE (
@@ -767,7 +765,8 @@ BEGIN
 					CASE WHEN LD.LearnAimRef IN (''0003'', ''2999'', ''1439'') AND  AIM.AimTitle LIKE ''%Math%'' THEN FMAT.FacName END,
 					CASE WHEN LD.PartnerUKPRN IS NOT NULL AND LD.FundModel IN ( ''25'', ''35'' ) THEN FPAR.FacName END,
 					CS.FacName,
-					FAC.FacName
+					FAC.FacName,
+					''-- Unknown --''
 				),
 			MainFacCode = COALESCE ( CSM.FacCode, MA.FacCode, ''-'' ),
 			MainFacName = COALESCE ( CSM.FacName, ''-- Unknown --'' ),
@@ -777,7 +776,8 @@ BEGIN
 					CASE WHEN LD.LearnAimRef IN (''0003'', ''2999'', ''1439'') AND  AIM.AimTitle LIKE ''%Math%'' THEN @OverrideMatTeam END,
 					CASE WHEN LD.PartnerUKPRN IS NOT NULL AND LD.FundModel IN ( ''25'', ''35'' ) THEN @OverridePartnerTeam END,
 					CS.TeamCode,
-					FAC.TeamCode
+					TEAM.TeamCode,
+					''-''
 				),
 			TeamName = 
 				COALESCE (
@@ -785,7 +785,8 @@ BEGIN
 					CASE WHEN LD.LearnAimRef IN (''0003'', ''2999'', ''1439'') AND  AIM.AimTitle LIKE ''%Math%'' THEN TMAT.TeamName END,
 					CASE WHEN LD.PartnerUKPRN IS NOT NULL AND LD.FundModel IN ( ''25'', ''35'' ) THEN TPAR.TeamName END,
 					CS.TeamName,
-					FAC.TeamName
+					TEAM.TeamName,
+					''-- Unknown --''
 				),
 	'
 
@@ -795,7 +796,8 @@ BEGIN
 				COALESCE (
 					CASE WHEN LD.LearnAimRef IN (''0003'', ''2999'', ''1439'') AND  AIM.AimTitle LIKE ''%English%'' THEN @OverrideEngCostCentre END,
 					CASE WHEN LD.LearnAimRef IN (''0003'', ''2999'', ''1439'') AND  AIM.AimTitle LIKE ''%Math%'' THEN @OverrideMatCostCentre END,
-					CS.CostCentreCode
+					CS.CostCentreCode,
+					''-''
 				),
 			FacCodeOrig = 
 				CASE
@@ -809,7 +811,7 @@ BEGIN
 						PSDMD.ProvSpecDelMon
 					ELSE ''-''
 				END,
-			FacNameOrig = CS.FacName,
+			FacNameOrig = COALESCE ( CS.FacName, ''--Unknown --'' ),
 			TeamCodeOrig = 
 				CASE
 					WHEN @ProviderFieldTeamLocation = ''A'' THEN
@@ -822,7 +824,7 @@ BEGIN
 						PSDMD.ProvSpecDelMon
 					ELSE ''-''
 				END,
-			TeamNameOrig = CS.TeamName,
+			TeamNameOrig = COALESCE ( CS.TeamName, ''--Unknown --'' ),
 			CostCentreOrig = 
 				CASE
 					WHEN @ProviderFieldCostCentreLocation = ''A'' THEN
@@ -961,7 +963,7 @@ BEGIN
 							0
 					END
 				END / 12 ) * @ILRReturn END, FM35P.LearnSuppPaymentToPeriod, FM36P.LearnSuppPaymentToPeriod, 0 ),
-			AchCompPaymentToPeriod = COALESCE ( FM35P.AchievePaymentToPeriod, FM36P.CompletionPaymentToPeriod, 0 ),
+			AchCompPaymentToPeriod = COALESCE ( FM35P.AchCompPaymentToPeriod, FM36P.AchCompPaymentToPeriod, 0 ),
 			BalancePaymentToPeriod = COALESCE ( FM35P.BalancePaymentToPeriod, FM36P.BalancePaymentToPeriod, 0 ),
 			EmpOutcomePayToPeriod = COALESCE ( FM35P.EmpOutcomePayToPeriod, 0 ),
 			OtherPaymentToPeriod = COALESCE ( FM36P.OtherPaymentToPeriod, 0 ),
@@ -1005,7 +1007,7 @@ BEGIN
 							0
 					END
 				END / 12 ) * 6 END, FM35P.LearnSuppPayment6Mon, FM36P.LearnSuppPayment6Mon, 0 ),
-			AchCompPayment6Mon = COALESCE ( FM35P.AchievePayment6Mon, FM36P.CompletionPayment6Mon, 0 ),
+			AchCompPayment6Mon = COALESCE ( FM35P.AchCompPayment6Mon, FM36P.AchCompPayment6Mon, 0 ),
 			BalancePayment6Mon = COALESCE ( FM35P.BalancePayment6Mon, FM36P.BalancePayment6Mon, 0 ),
 			EmpOutcomePay6Mon = COALESCE ( FM35P.EmpOutcomePay6Mon, 0 ),
 			OtherPayment6Mon = COALESCE ( FM36P.OtherPayment6Mon, 0 ),
@@ -1052,7 +1054,7 @@ BEGIN
 							0
 					END
 				END END, FM35P.LearnSuppPaymentYrEnd, FM36P.LearnSuppPaymentYrEnd, 0 ),
-			AchCompPaymentYrEnd = COALESCE ( FM35P.AchievePaymentYrEnd, FM36P.CompletionPaymentYrEnd, 0 ),
+			AchCompPaymentYrEnd = COALESCE ( FM35P.AchCompPaymentYrEnd, FM36P.AchCompPaymentYrEnd, 0 ),
 			BalancePaymentYrEnd = COALESCE ( FM35P.BalancePaymentYrEnd, FM36P.BalancePaymentYrEnd, 0 ),
 			EmpOutcomePayYrEnd = COALESCE ( FM35P.EmpOutcomePayYrEnd, 0 ),
 			OtherPaymentYrEnd = COALESCE ( FM36P.OtherPaymentYrEnd, 0 ),
@@ -1065,18 +1067,18 @@ BEGIN
 					END
 				ELSE FM25.OnProgPayment END END, FM35P.TotFundYrEnd, FM36P.TotFundYrEnd, CASE WHEN @IncludeHEAdvLoanPossIncome = 1 THEN HE.GROSSFEE ELSE 0 END, 0 ),
 
-			FutureAchievePayment = 
+			FutureAchCompPayment = 
 				CASE
 					WHEN LD.CompStatus <> 1 AND NOT ( LD.CompStatus = 2 AND LD.Outcome = 8 ) THEN 0
 					WHEN LD.LearnPlanEndDate NOT BETWEEN ''20'' + LEFT ( @AcademicYear, 2 ) + ''-08-01'' AND ''20'' + RIGHT ( @AcademicYear, 2 ) + ''-07-31'' THEN 0
-					ELSE COALESCE ( FM35.AchieveElement - FM35P.AchievePaymentYrEnd, FM36PE.PriceEpisodeCompletionElement - FM36P.CompletionPaymentYrEnd )
+					ELSE COALESCE ( FM35.AchieveElement - FM35P.AchCompPaymentYrEnd, FM36PE.PriceEpisodeCompletionElement - FM36P.AchCompPaymentYrEnd )
 				END,
 			FutureAchieveWeighting = @FutureAchieveWeighting,
-			FutureAchievePaymentWeighted = 
+			FutureAchCompPaymentWeighted = 
 				CASE
 					WHEN LD.CompStatus <> 1 AND NOT ( LD.CompStatus = 2 AND LD.Outcome = 8 ) THEN 0
 					WHEN LD.LearnPlanEndDate NOT BETWEEN ''20'' + LEFT ( @AcademicYear, 2 ) + ''-08-01'' AND ''20'' + RIGHT ( @AcademicYear, 2 ) + ''-07-31'' THEN 0
-					ELSE COALESCE ( FM35.AchieveElement - FM35P.AchievePaymentYrEnd, FM36PE.PriceEpisodeCompletionElement - FM36P.CompletionPaymentYrEnd ) * @FutureAchieveWeighting
+					ELSE COALESCE ( FM35.AchieveElement - FM35P.AchCompPaymentYrEnd, FM36PE.PriceEpisodeCompletionElement - FM36P.AchCompPaymentYrEnd ) * @FutureAchieveWeighting
 				END,
 
 			EmployerContibutionPMRTot = COALESCE ( FM36PE.PriceEpisodeTotalPMRs, 0 ),
@@ -1116,7 +1118,7 @@ BEGIN
 							0
 					END
 				END / 12 ) END, FM35P.LearnSuppPaymentP01, FM36P.LearnSuppPaymentP01, 0 ),
-			AchCompPaymentP01 = COALESCE ( FM35P.AchievePaymentP01, FM36P.CompletionPaymentP01, 0 ),
+			AchCompPaymentP01 = COALESCE ( FM35P.AchCompPaymentP01, FM36P.AchCompPaymentP01, 0 ),
 			BalancePaymentP01 = COALESCE ( FM35P.BalancePaymentP01, FM36P.BalancePaymentP01, 0 ),
 			EmpOutcomePayP01 = COALESCE ( FM35P.EmpOutcomePayYrEnd, 0 ),
 			OtherPaymentP01 = COALESCE ( FM36P.OtherPaymentP01, 0 ),
@@ -1160,7 +1162,7 @@ BEGIN
 							0
 					END
 				END / 12 ) END, FM35P.LearnSuppPaymentP02, FM36P.LearnSuppPaymentP02, 0 ),
-			AchCompPaymentP02 = COALESCE ( FM35P.AchievePaymentP02, FM36P.CompletionPaymentP02, 0 ),
+			AchCompPaymentP02 = COALESCE ( FM35P.AchCompPaymentP02, FM36P.AchCompPaymentP02, 0 ),
 			BalancePaymentP02 = COALESCE ( FM35P.BalancePaymentP02, FM36P.BalancePaymentP02, 0 ),
 			EmpOutcomePayP02 = COALESCE ( FM35P.EmpOutcomePayYrEnd, 0 ),
 			OtherPaymentP02 = COALESCE ( FM36P.OtherPaymentP02, 0 ),
@@ -1207,7 +1209,7 @@ BEGIN
 							0
 					END
 				END / 12 ) END, FM35P.LearnSuppPaymentP03, FM36P.LearnSuppPaymentP03, 0 ),
-			AchCompPaymentP03 = COALESCE ( FM35P.AchievePaymentP03, FM36P.CompletionPaymentP03, 0 ),
+			AchCompPaymentP03 = COALESCE ( FM35P.AchCompPaymentP03, FM36P.AchCompPaymentP03, 0 ),
 			BalancePaymentP03 = COALESCE ( FM35P.BalancePaymentP03, FM36P.BalancePaymentP03, 0 ),
 			EmpOutcomePayP03 = COALESCE ( FM35P.EmpOutcomePayYrEnd, 0 ),
 			OtherPaymentP03 = COALESCE ( FM36P.OtherPaymentP03, 0 ),
@@ -1251,7 +1253,7 @@ BEGIN
 							0
 					END
 				END / 12 ) END, FM35P.LearnSuppPaymentP04, FM36P.LearnSuppPaymentP04, 0 ),
-			AchCompPaymentP04 = COALESCE ( FM35P.AchievePaymentP04, FM36P.CompletionPaymentP04, 0 ),
+			AchCompPaymentP04 = COALESCE ( FM35P.AchCompPaymentP04, FM36P.AchCompPaymentP04, 0 ),
 			BalancePaymentP04 = COALESCE ( FM35P.BalancePaymentP04, FM36P.BalancePaymentP04, 0 ),
 			EmpOutcomePayP04 = COALESCE ( FM35P.EmpOutcomePayYrEnd, 0 ),
 			OtherPaymentP04 = COALESCE ( FM36P.OtherPaymentP04, 0 ),
@@ -1298,7 +1300,7 @@ BEGIN
 							0
 					END
 				END / 12 ) END, FM35P.LearnSuppPaymentP05, FM36P.LearnSuppPaymentP05, 0 ),
-			AchCompPaymentP05 = COALESCE ( FM35P.AchievePaymentP05, FM36P.CompletionPaymentP05, 0 ),
+			AchCompPaymentP05 = COALESCE ( FM35P.AchCompPaymentP05, FM36P.AchCompPaymentP05, 0 ),
 			BalancePaymentP05 = COALESCE ( FM35P.BalancePaymentP05, FM36P.BalancePaymentP05, 0 ),
 			EmpOutcomePayP05 = COALESCE ( FM35P.EmpOutcomePayYrEnd, 0 ),
 			OtherPaymentP05 = COALESCE ( FM36P.OtherPaymentP05, 0 ),
@@ -1342,7 +1344,7 @@ BEGIN
 							0
 					END
 				END / 12 ) END, FM35P.LearnSuppPaymentP06, FM36P.LearnSuppPaymentP06, 0 ),
-			AchCompPaymentP06 = COALESCE ( FM35P.AchievePaymentP06, FM36P.CompletionPaymentP06, 0 ),
+			AchCompPaymentP06 = COALESCE ( FM35P.AchCompPaymentP06, FM36P.AchCompPaymentP06, 0 ),
 			BalancePaymentP06 = COALESCE ( FM35P.BalancePaymentP06, FM36P.BalancePaymentP06, 0 ),
 			EmpOutcomePayP06 = COALESCE ( FM35P.EmpOutcomePayYrEnd, 0 ),
 			OtherPaymentP06 = COALESCE ( FM36P.OtherPaymentP06, 0 ),
@@ -1389,7 +1391,7 @@ BEGIN
 							0
 					END
 				END / 12 ) END, FM35P.LearnSuppPaymentP07, FM36P.LearnSuppPaymentP07, 0 ),
-			AchCompPaymentP07 = COALESCE ( FM35P.AchievePaymentP07, FM36P.CompletionPaymentP07, 0 ),
+			AchCompPaymentP07 = COALESCE ( FM35P.AchCompPaymentP07, FM36P.AchCompPaymentP07, 0 ),
 			BalancePaymentP07 = COALESCE ( FM35P.BalancePaymentP07, FM36P.BalancePaymentP07, 0 ),
 			EmpOutcomePayP07 = COALESCE ( FM35P.EmpOutcomePayYrEnd, 0 ),
 			OtherPaymentP07 = COALESCE ( FM36P.OtherPaymentP07, 0 ),
@@ -1433,7 +1435,7 @@ BEGIN
 							0
 					END
 				END / 12 ) END, FM35P.LearnSuppPaymentP08, FM36P.LearnSuppPaymentP08, 0 ),
-			AchCompPaymentP08 = COALESCE ( FM35P.AchievePaymentP08, FM36P.CompletionPaymentP08, 0 ),
+			AchCompPaymentP08 = COALESCE ( FM35P.AchCompPaymentP08, FM36P.AchCompPaymentP08, 0 ),
 			BalancePaymentP08 = COALESCE ( FM35P.BalancePaymentP08, FM36P.BalancePaymentP08, 0 ),
 			EmpOutcomePayP08 = COALESCE ( FM35P.EmpOutcomePayYrEnd, 0 ),
 			OtherPaymentP08 = COALESCE ( FM36P.OtherPaymentP08, 0 ),
@@ -1480,7 +1482,7 @@ BEGIN
 							0
 					END
 				END / 12 ) END, FM35P.LearnSuppPaymentP09, FM36P.LearnSuppPaymentP09, 0 ),
-			AchCompPaymentP09 = COALESCE ( FM35P.AchievePaymentP09, FM36P.CompletionPaymentP09, 0 ),
+			AchCompPaymentP09 = COALESCE ( FM35P.AchCompPaymentP09, FM36P.AchCompPaymentP09, 0 ),
 			BalancePaymentP09 = COALESCE ( FM35P.BalancePaymentP09, FM36P.BalancePaymentP09, 0 ),
 			EmpOutcomePayP09 = COALESCE ( FM35P.EmpOutcomePayYrEnd, 0 ),
 			OtherPaymentP09 = COALESCE ( FM36P.OtherPaymentP09, 0 ),
@@ -1524,7 +1526,7 @@ BEGIN
 							0
 					END
 				END / 12 ) END, FM35P.LearnSuppPaymentP10, FM36P.LearnSuppPaymentP10, 0 ),
-			AchCompPaymentP10 = COALESCE ( FM35P.AchievePaymentP10, FM36P.CompletionPaymentP10, 0 ),
+			AchCompPaymentP10 = COALESCE ( FM35P.AchCompPaymentP10, FM36P.AchCompPaymentP10, 0 ),
 			BalancePaymentP10 = COALESCE ( FM35P.BalancePaymentP10, FM36P.BalancePaymentP10, 0 ),
 			EmpOutcomePayP10 = COALESCE ( FM35P.EmpOutcomePayYrEnd, 0 ),
 			OtherPaymentP10 = COALESCE ( FM36P.OtherPaymentP10, 0 ),
@@ -1571,7 +1573,7 @@ BEGIN
 							0
 					END
 				END / 12 ) END, FM35P.LearnSuppPaymentP11, FM36P.LearnSuppPaymentP11, 0 ),
-			AchCompPaymentP11 = COALESCE ( FM35P.AchievePaymentP11, FM36P.CompletionPaymentP11, 0 ),
+			AchCompPaymentP11 = COALESCE ( FM35P.AchCompPaymentP11, FM36P.AchCompPaymentP11, 0 ),
 			BalancePaymentP11 = COALESCE ( FM35P.BalancePaymentP11, FM36P.BalancePaymentP11, 0 ),
 			EmpOutcomePayP11 = COALESCE ( FM35P.EmpOutcomePayYrEnd, 0 ),
 			OtherPaymentP11 = COALESCE ( FM36P.OtherPaymentP11, 0 ),
@@ -1615,7 +1617,7 @@ BEGIN
 							0
 					END
 				END / 12 ) END, FM35P.LearnSuppPaymentP12, FM36P.LearnSuppPaymentP12, 0 ),
-			AchCompPaymentP12 = COALESCE ( FM35P.AchievePaymentP12, FM36P.CompletionPaymentP12, 0 ),
+			AchCompPaymentP12 = COALESCE ( FM35P.AchCompPaymentP12, FM36P.AchCompPaymentP12, 0 ),
 			BalancePaymentP12 = COALESCE ( FM35P.BalancePaymentP12, FM36P.BalancePaymentP12, 0 ),
 			EmpOutcomePayP12 = COALESCE ( FM35P.EmpOutcomePayYrEnd, 0 ),
 			OtherPaymentP12 = COALESCE ( FM36P.OtherPaymentP12, 0 ),
@@ -1709,7 +1711,7 @@ BEGIN
                                 COALESCE ( 
                                     FM25.FundLine, 
                                     CASE WHEN ALB.AdvLoan = 1 AND ALB.FundLine = ''None'' THEN ''Advanced Learner Loan (ALL)'' END,
-                                    FM36.LearnDelInitialFundLineType,
+                                    FM36P.FundLineType,
                                     FM35.FundLine,
                                     CASE WHEN HE.LearnRefNumber IS NOT NULL THEN ''Higher Education'' END,
                                     CASE WHEN LD.FundModel = ''99'' THEN ''Full Cost'' END 
@@ -1754,13 +1756,13 @@ BEGIN
 				AND PSDMD.ProvSpecDelMonOccur = ''D''
 
 			--16-19
-			LEFT JOIN ' + @FISDatabase + '.dbo.Rulebase_FM25_Learner FM25
+			LEFT JOIN ' + @FISDatabase + '.dbo.Rulebase_EFA_Learner FM25
 				ON FM25.LearnRefNumber = LD.LearnRefNumber
 				AND FM25.CoreAimSeqNumber = LD.AimSeqNumber
 				--AND FM25.StartFund = 1
 
 			--AEB and Apps (Legacy)
-			LEFT JOIN ' + @FISDatabase + '.dbo.Rulebase_FM35_LearningDelivery FM35
+			LEFT JOIN ' + @FISDatabase + '.dbo.Rulebase_SFA_LearningDelivery FM35
 				ON FM35.LearnRefNumber = LD.LearnRefNumber
 				AND FM35.AimSeqNumber = LD.AimSeqNumber
 				--AND FM35.FundStart = 1
@@ -1769,6 +1771,21 @@ BEGIN
 			LEFT JOIN ' + @FISDatabase + '.dbo.Rulebase_AEC_LearningDelivery FM36
 				ON FM36.LearnRefNumber = LD.LearnRefNumber
 				AND FM36.AimSeqNumber = LD.AimSeqNumber
+			LEFT JOIN (
+				SELECT
+					FM36P.LearnRefNumber,
+					FM36P.AimSeqNumber,
+					FM36P.FundLineType
+				FROM ' + @FISDatabase + '.dbo.Rulebase_AEC_LearningDelivery_Period FM36P
+				WHERE
+					FM36P.FundLineType <> ''None''
+				GROUP BY
+					FM36P.LearnRefNumber,
+					FM36P.AimSeqNumber,
+					FM36P.FundLineType
+			) FM36P
+				ON FM36P.LearnRefNumber = FM36.LearnRefNumber
+				AND FM36P.AimSeqNumber = FM36.AimSeqNumber
 
 			--Loans and Bursaries
 			LEFT JOIN ' + @FISDatabase + '.dbo.Rulebase_ALB_LearningDelivery ALB
@@ -1850,7 +1867,7 @@ BEGIN
                                 COALESCE ( 
                                     FM25.FundLine, 
                                     CASE WHEN ALB.AdvLoan = 1 AND ALB.FundLine = ''None'' THEN ''Advanced Learner Loan (ALL)'' END,
-                                    FM36.LearnDelInitialFundLineType,
+                                    FM36P.FundLineType,
                                     FM35.FundLine,
                                     CASE WHEN HE.LearnRefNumber IS NOT NULL THEN ''Higher Education'' END,
                                     CASE WHEN LD.FundModel = ''99'' THEN ''Full Cost'' END 
@@ -1910,6 +1927,21 @@ BEGIN
 			LEFT JOIN ' + @FISDatabase + '.dbo.Rulebase_AEC_LearningDelivery FM36
 				ON FM36.LearnRefNumber = LD.LearnRefNumber
 				AND FM36.AimSeqNumber = LD.AimSeqNumber
+			LEFT JOIN (
+				SELECT
+					FM36P.LearnRefNumber,
+					FM36P.AimSeqNumber,
+					FM36P.FundLineType
+				FROM ' + @FISDatabase + '.dbo.Rulebase_AEC_LearningDelivery_Period FM36P
+				WHERE
+					FM36P.FundLineType <> ''None''
+				GROUP BY
+					FM36P.LearnRefNumber,
+					FM36P.AimSeqNumber,
+					FM36P.FundLineType
+			) FM36P
+				ON FM36P.LearnRefNumber = FM36.LearnRefNumber
+				AND FM36P.AimSeqNumber = FM36.AimSeqNumber
 
 			--Loans and Bursaries
 			LEFT JOIN ' + @FISDatabase + '.dbo.Rulebase_ALB_LearningDelivery ALB
@@ -2070,7 +2102,7 @@ BEGIN
 
 				OnProgPaymentToPeriod = SUM ( CASE WHEN FM35P.Period <= @ILRReturn THEN FM35P.OnProgPayment ELSE 0 END ),
 				LearnSuppPaymentToPeriod = SUM ( CASE WHEN FM35P.Period <= @ILRReturn THEN FM35P.LearnSuppFundCash ELSE 0 END ),
-				AchievePaymentToPeriod = SUM ( CASE WHEN FM35P.Period <= @ILRReturn THEN FM35P.AchievePayment ELSE 0 END ),
+				AchCompPaymentToPeriod = SUM ( CASE WHEN FM35P.Period <= @ILRReturn THEN FM35P.AchievePayment ELSE 0 END ),
 				BalancePaymentToPeriod = SUM ( CASE WHEN FM35P.Period <= @ILRReturn THEN FM35P.BalancePayment ELSE 0 END ),
 				EmpOutcomePayToPeriod = SUM ( CASE WHEN FM35P.Period <= @ILRReturn THEN FM35P.EmpOutcomePay ELSE 0 END ),
 				TotFundToPeriod = SUM ( CASE WHEN FM35P.Period <= @ILRReturn THEN 
@@ -2083,7 +2115,7 @@ BEGIN
 
 				OnProgPayment6Mon = SUM ( CASE WHEN FM35P.Period BETWEEN 1 AND 6 THEN FM35P.OnProgPayment ELSE 0 END ),
 				LearnSuppPayment6Mon = SUM ( CASE WHEN FM35P.Period BETWEEN 1 AND 6 THEN FM35P.LearnSuppFundCash ELSE 0 END ),
-				AchievePayment6Mon = SUM ( CASE WHEN FM35P.Period BETWEEN 1 AND 6 THEN FM35P.AchievePayment ELSE 0 END ),
+				AchCompPayment6Mon = SUM ( CASE WHEN FM35P.Period BETWEEN 1 AND 6 THEN FM35P.AchievePayment ELSE 0 END ),
 				BalancePayment6Mon = SUM ( CASE WHEN FM35P.Period BETWEEN 1 AND 6 THEN FM35P.BalancePayment ELSE 0 END ),
 				EmpOutcomePay6Mon = SUM ( CASE WHEN FM35P.Period BETWEEN 1 AND 6 THEN FM35P.EmpOutcomePay ELSE 0 END ),
 				TotFund6Mon = SUM ( CASE WHEN FM35P.Period BETWEEN 1 AND 6 THEN 
@@ -2096,7 +2128,7 @@ BEGIN
 
 				OnProgPaymentYrEnd = SUM ( FM35P.OnProgPayment ),
 				LearnSuppPaymentYrEnd = SUM ( FM35P.LearnSuppFundCash ),
-				AchievePaymentYrEnd = SUM ( FM35P.AchievePayment ),
+				AchCompPaymentYrEnd = SUM ( FM35P.AchievePayment ),
 				BalancePaymentYrEnd = SUM ( FM35P.BalancePayment ),
 				EmpOutcomePayYrEnd = SUM ( FM35P.EmpOutcomePay ),
 				TotFundYrEnd = SUM ( 
@@ -2112,7 +2144,7 @@ BEGIN
         N'
 				OnProgPaymentP01 = SUM ( CASE WHEN FM35P.Period = 1 THEN FM35P.OnProgPayment ELSE 0 END ),
 				LearnSuppPaymentP01 = SUM ( CASE WHEN FM35P.Period = 1 THEN FM35P.LearnSuppFundCash ELSE 0 END ),
-				AchievePaymentP01 = SUM ( CASE WHEN FM35P.Period = 1 THEN FM35P.AchievePayment ELSE 0 END ),
+				AchCompPaymentP01 = SUM ( CASE WHEN FM35P.Period = 1 THEN FM35P.AchievePayment ELSE 0 END ),
 				BalancePaymentP01 = SUM ( CASE WHEN FM35P.Period = 1 THEN FM35P.BalancePayment ELSE 0 END ),
 				EmpOutcomePayP01 = SUM ( CASE WHEN FM35P.Period = 1 THEN FM35P.EmpOutcomePay ELSE 0 END ),
 				TotFundP01 = SUM ( CASE WHEN FM35P.Period = 1 THEN 
@@ -2125,7 +2157,7 @@ BEGIN
 
 				OnProgPaymentP02 = SUM ( CASE WHEN FM35P.Period = 2 THEN FM35P.OnProgPayment ELSE 0 END ),
 				LearnSuppPaymentP02 = SUM ( CASE WHEN FM35P.Period = 2 THEN FM35P.LearnSuppFundCash ELSE 0 END ),
-				AchievePaymentP02 = SUM ( CASE WHEN FM35P.Period = 2 THEN FM35P.AchievePayment ELSE 0 END ),
+				AchCompPaymentP02 = SUM ( CASE WHEN FM35P.Period = 2 THEN FM35P.AchievePayment ELSE 0 END ),
 				BalancePaymentP02 = SUM ( CASE WHEN FM35P.Period = 2 THEN FM35P.BalancePayment ELSE 0 END ),
 				EmpOutcomePayP02 = SUM ( CASE WHEN FM35P.Period = 2 THEN FM35P.EmpOutcomePay ELSE 0 END ),
 				TotFundP02 = SUM ( CASE WHEN FM35P.Period = 2 THEN 
@@ -2141,7 +2173,7 @@ BEGIN
         N'
 				OnProgPaymentP03 = SUM ( CASE WHEN FM35P.Period = 3 THEN FM35P.OnProgPayment ELSE 0 END ),
 				LearnSuppPaymentP03 = SUM ( CASE WHEN FM35P.Period = 3 THEN FM35P.LearnSuppFundCash ELSE 0 END ),
-				AchievePaymentP03 = SUM ( CASE WHEN FM35P.Period = 3 THEN FM35P.AchievePayment ELSE 0 END ),
+				AchCompPaymentP03 = SUM ( CASE WHEN FM35P.Period = 3 THEN FM35P.AchievePayment ELSE 0 END ),
 				BalancePaymentP03 = SUM ( CASE WHEN FM35P.Period = 3 THEN FM35P.BalancePayment ELSE 0 END ),
 				EmpOutcomePayP03 = SUM ( CASE WHEN FM35P.Period = 3 THEN FM35P.EmpOutcomePay ELSE 0 END ),
 				TotFundP03 = SUM ( CASE WHEN FM35P.Period = 3 THEN 
@@ -2154,7 +2186,7 @@ BEGIN
 
 				OnProgPaymentP04 = SUM ( CASE WHEN FM35P.Period = 4 THEN FM35P.OnProgPayment ELSE 0 END ),
 				LearnSuppPaymentP04 = SUM ( CASE WHEN FM35P.Period = 4 THEN FM35P.LearnSuppFundCash ELSE 0 END ),
-				AchievePaymentP04 = SUM ( CASE WHEN FM35P.Period = 4 THEN FM35P.AchievePayment ELSE 0 END ),
+				AchCompPaymentP04 = SUM ( CASE WHEN FM35P.Period = 4 THEN FM35P.AchievePayment ELSE 0 END ),
 				BalancePaymentP04 = SUM ( CASE WHEN FM35P.Period = 4 THEN FM35P.BalancePayment ELSE 0 END ),
 				EmpOutcomePayP04 = SUM ( CASE WHEN FM35P.Period = 4 THEN FM35P.EmpOutcomePay ELSE 0 END ),
 				TotFundP04 = SUM ( CASE WHEN FM35P.Period = 4 THEN 
@@ -2170,7 +2202,7 @@ BEGIN
         N'
 				OnProgPaymentP05 = SUM ( CASE WHEN FM35P.Period = 5 THEN FM35P.OnProgPayment ELSE 0 END ),
 				LearnSuppPaymentP05 = SUM ( CASE WHEN FM35P.Period = 5 THEN FM35P.LearnSuppFundCash ELSE 0 END ),
-				AchievePaymentP05 = SUM ( CASE WHEN FM35P.Period = 5 THEN FM35P.AchievePayment ELSE 0 END ),
+				AchCompPaymentP05 = SUM ( CASE WHEN FM35P.Period = 5 THEN FM35P.AchievePayment ELSE 0 END ),
 				BalancePaymentP05 = SUM ( CASE WHEN FM35P.Period = 5 THEN FM35P.BalancePayment ELSE 0 END ),
 				EmpOutcomePayP05 = SUM ( CASE WHEN FM35P.Period = 5 THEN FM35P.EmpOutcomePay ELSE 0 END ),
 				TotFundP05 = SUM ( CASE WHEN FM35P.Period = 5 THEN 
@@ -2183,7 +2215,7 @@ BEGIN
 
 				OnProgPaymentP06 = SUM ( CASE WHEN FM35P.Period = 6 THEN FM35P.OnProgPayment ELSE 0 END ),
 				LearnSuppPaymentP06 = SUM ( CASE WHEN FM35P.Period = 6 THEN FM35P.LearnSuppFundCash ELSE 0 END ),
-				AchievePaymentP06 = SUM ( CASE WHEN FM35P.Period = 6 THEN FM35P.AchievePayment ELSE 0 END ),
+				AchCompPaymentP06 = SUM ( CASE WHEN FM35P.Period = 6 THEN FM35P.AchievePayment ELSE 0 END ),
 				BalancePaymentP06 = SUM ( CASE WHEN FM35P.Period = 6 THEN FM35P.BalancePayment ELSE 0 END ),
 				EmpOutcomePayP06 = SUM ( CASE WHEN FM35P.Period = 6 THEN FM35P.EmpOutcomePay ELSE 0 END ),
 				TotFundP06 = SUM ( CASE WHEN FM35P.Period = 6 THEN 
@@ -2199,7 +2231,7 @@ BEGIN
         N'
 				OnProgPaymentP07 = SUM ( CASE WHEN FM35P.Period = 7 THEN FM35P.OnProgPayment ELSE 0 END ),
 				LearnSuppPaymentP07 = SUM ( CASE WHEN FM35P.Period = 7 THEN FM35P.LearnSuppFundCash ELSE 0 END ),
-				AchievePaymentP07 = SUM ( CASE WHEN FM35P.Period = 7 THEN FM35P.AchievePayment ELSE 0 END ),
+				AchCompPaymentP07 = SUM ( CASE WHEN FM35P.Period = 7 THEN FM35P.AchievePayment ELSE 0 END ),
 				BalancePaymentP07 = SUM ( CASE WHEN FM35P.Period = 7 THEN FM35P.BalancePayment ELSE 0 END ),
 				EmpOutcomePayP07 = SUM ( CASE WHEN FM35P.Period = 7 THEN FM35P.EmpOutcomePay ELSE 0 END ),
 				TotFundP07 = SUM ( CASE WHEN FM35P.Period = 7 THEN 
@@ -2212,7 +2244,7 @@ BEGIN
 
 				OnProgPaymentP08 = SUM ( CASE WHEN FM35P.Period = 8 THEN FM35P.OnProgPayment ELSE 0 END ),
 				LearnSuppPaymentP08 = SUM ( CASE WHEN FM35P.Period = 8 THEN FM35P.LearnSuppFundCash ELSE 0 END ),
-				AchievePaymentP08 = SUM ( CASE WHEN FM35P.Period = 8 THEN FM35P.AchievePayment ELSE 0 END ),
+				AchCompPaymentP08 = SUM ( CASE WHEN FM35P.Period = 8 THEN FM35P.AchievePayment ELSE 0 END ),
 				BalancePaymentP08 = SUM ( CASE WHEN FM35P.Period = 8 THEN FM35P.BalancePayment ELSE 0 END ),
 				EmpOutcomePayP08 = SUM ( CASE WHEN FM35P.Period = 8 THEN FM35P.EmpOutcomePay ELSE 0 END ),
 				TotFundP08 = SUM ( CASE WHEN FM35P.Period = 8 THEN 
@@ -2228,7 +2260,7 @@ BEGIN
         N'
 				OnProgPaymentP09 = SUM ( CASE WHEN FM35P.Period = 9 THEN FM35P.OnProgPayment ELSE 0 END ),
 				LearnSuppPaymentP09 = SUM ( CASE WHEN FM35P.Period = 9 THEN FM35P.LearnSuppFundCash ELSE 0 END ),
-				AchievePaymentP09 = SUM ( CASE WHEN FM35P.Period = 9 THEN FM35P.AchievePayment ELSE 0 END ),
+				AchCompPaymentP09 = SUM ( CASE WHEN FM35P.Period = 9 THEN FM35P.AchievePayment ELSE 0 END ),
 				BalancePaymentP09 = SUM ( CASE WHEN FM35P.Period = 9 THEN FM35P.BalancePayment ELSE 0 END ),
 				EmpOutcomePayP09 = SUM ( CASE WHEN FM35P.Period = 9 THEN FM35P.EmpOutcomePay ELSE 0 END ),
 				TotFundP09 = SUM ( CASE WHEN FM35P.Period = 9 THEN 
@@ -2241,7 +2273,7 @@ BEGIN
 
 				OnProgPaymentP10 = SUM ( CASE WHEN FM35P.Period = 10 THEN FM35P.OnProgPayment ELSE 0 END ),
 				LearnSuppPaymentP10 = SUM ( CASE WHEN FM35P.Period = 10 THEN FM35P.LearnSuppFundCash ELSE 0 END ),
-				AchievePaymentP10 = SUM ( CASE WHEN FM35P.Period = 10 THEN FM35P.AchievePayment ELSE 0 END ),
+				AchCompPaymentP10 = SUM ( CASE WHEN FM35P.Period = 10 THEN FM35P.AchievePayment ELSE 0 END ),
 				BalancePaymentP10 = SUM ( CASE WHEN FM35P.Period = 10 THEN FM35P.BalancePayment ELSE 0 END ),
 				EmpOutcomePayP10 = SUM ( CASE WHEN FM35P.Period = 10 THEN FM35P.EmpOutcomePay ELSE 0 END ),
 				TotFundP10 = SUM ( CASE WHEN FM35P.Period = 10 THEN 
@@ -2257,7 +2289,7 @@ BEGIN
         N'
 				OnProgPaymentP11 = SUM ( CASE WHEN FM35P.Period = 11 THEN FM35P.OnProgPayment ELSE 0 END ),
 				LearnSuppPaymentP11 = SUM ( CASE WHEN FM35P.Period = 11 THEN FM35P.LearnSuppFundCash ELSE 0 END ),
-				AchievePaymentP11 = SUM ( CASE WHEN FM35P.Period = 11 THEN FM35P.AchievePayment ELSE 0 END ),
+				AchCompPaymentP11 = SUM ( CASE WHEN FM35P.Period = 11 THEN FM35P.AchievePayment ELSE 0 END ),
 				BalancePaymentP11 = SUM ( CASE WHEN FM35P.Period = 11 THEN FM35P.BalancePayment ELSE 0 END ),
 				EmpOutcomePayP11 = SUM ( CASE WHEN FM35P.Period = 11 THEN FM35P.EmpOutcomePay ELSE 0 END ),
 				TotFundP11 = SUM ( CASE WHEN FM35P.Period = 11 THEN 
@@ -2270,7 +2302,7 @@ BEGIN
 
 				OnProgPaymentP12 = SUM ( CASE WHEN FM35P.Period = 12 THEN FM35P.OnProgPayment ELSE 0 END ),
 				LearnSuppPaymentP12 = SUM ( CASE WHEN FM35P.Period = 12 THEN FM35P.LearnSuppFundCash ELSE 0 END ),
-				AchievePaymentP12 = SUM ( CASE WHEN FM35P.Period = 12 THEN FM35P.AchievePayment ELSE 0 END ),
+				AchCompPaymentP12 = SUM ( CASE WHEN FM35P.Period = 12 THEN FM35P.AchievePayment ELSE 0 END ),
 				BalancePaymentP12 = SUM ( CASE WHEN FM35P.Period = 12 THEN FM35P.BalancePayment ELSE 0 END ),
 				EmpOutcomePayP12 = SUM ( CASE WHEN FM35P.Period = 12 THEN FM35P.EmpOutcomePay ELSE 0 END ),
 				TotFundP12 = SUM ( CASE WHEN FM35P.Period = 12 THEN 
@@ -2324,511 +2356,1002 @@ BEGIN
 			SELECT
 				FM36P.LearnRefNumber,
 				FM36P.AimSeqNumber,
+				FM36P.FundLineType,
 
-				OnProgPaymentToPeriod = SUM ( CASE WHEN FM36P.Period <= @ILRReturn THEN FM36P.ProgrammeAimOnProgPayment + FM36P.MathEngOnProgPayment + FM36P.LDApplic1618FrameworkUpliftOnProgPayment ELSE 0 END ),
-				LearnSuppPaymentToPeriod = SUM ( CASE WHEN FM36P.Period <= @ILRReturn THEN FM36P.LearnSuppFundCash ELSE 0 END ),
-				CompletionPaymentToPeriod = SUM ( CASE WHEN FM36P.Period <= @ILRReturn THEN FM36P.ProgrammeAimCompletionPayment + FM36P.LDApplic1618FrameworkUpliftCompletionPayment ELSE 0 END ),
-				BalancePaymentToPeriod = SUM ( CASE WHEN FM36P.Period <= @ILRReturn THEN FM36P.ProgrammeAimBalPayment + FM36P.MathEngBalPayment + FM36P.LDApplic1618FrameworkUpliftBalancingPayment ELSE 0 END ),
-				OtherPaymentToPeriod = SUM ( CASE WHEN FM36P.Period <= @ILRReturn THEN 
-					FM36P.DisadvFirstPayment 
-					+ FM36P.DisadvSecondPayment
-					+ FM36P.LearnDelFirstProv1618Pay 
-					+ FM36P.LearnDelSecondProv1618Pay
-					+ FM36P.LearnDelLearnAddPayment
-					+ FM36P.LearnDelFirstEmp1618Pay
-					+ FM36P.LearnDelSecondEmp1618Pay
-				ELSE 0 END ),
-				TotFundToPeriod = SUM ( CASE WHEN FM36P.Period <= @ILRReturn THEN 
-					FM36P.ProgrammeAimOnProgPayment 
-					+ FM36P.MathEngOnProgPayment 
-					+ FM36P.LDApplic1618FrameworkUpliftOnProgPayment
-					+ FM36P.LearnSuppFundCash 
-					+ FM36P.ProgrammeAimCompletionPayment
-					+ FM36P.LDApplic1618FrameworkUpliftCompletionPayment
-					+ FM36P.ProgrammeAimBalPayment 
-					+ FM36P.MathEngBalPayment 
-					+ FM36P.LDApplic1618FrameworkUpliftBalancingPayment
-					+ FM36P.DisadvFirstPayment 
-					+ FM36P.DisadvSecondPayment
-					+ FM36P.LearnDelFirstProv1618Pay 
-					+ FM36P.LearnDelSecondProv1618Pay
-					+ FM36P.LearnDelLearnAddPayment
-					+ FM36P.LearnDelFirstEmp1618Pay
-					+ FM36P.LearnDelSecondEmp1618Pay
-				ELSE 0 END ),
-
-				OnProgPayment6Mon = SUM ( CASE WHEN FM36P.Period BETWEEN 1 AND 6 THEN FM36P.ProgrammeAimOnProgPayment + FM36P.MathEngOnProgPayment + FM36P.LDApplic1618FrameworkUpliftOnProgPayment ELSE 0 END ),
-				LearnSuppPayment6Mon = SUM ( CASE WHEN FM36P.Period BETWEEN 1 AND 6 THEN FM36P.LearnSuppFundCash ELSE 0 END ),
-				CompletionPayment6Mon = SUM ( CASE WHEN FM36P.Period BETWEEN 1 AND 6 THEN FM36P.ProgrammeAimCompletionPayment + FM36P.LDApplic1618FrameworkUpliftCompletionPayment ELSE 0 END ),
-				BalancePayment6Mon = SUM ( CASE WHEN FM36P.Period BETWEEN 1 AND 6 THEN FM36P.ProgrammeAimBalPayment + FM36P.MathEngBalPayment + FM36P.LDApplic1618FrameworkUpliftBalancingPayment ELSE 0 END ),
-				OtherPayment6Mon = SUM ( CASE WHEN FM36P.Period BETWEEN 1 AND 6 THEN 
-					FM36P.DisadvFirstPayment 
-					+ FM36P.DisadvSecondPayment
-					+ FM36P.LearnDelFirstProv1618Pay 
-					+ FM36P.LearnDelSecondProv1618Pay
-					+ FM36P.LearnDelLearnAddPayment
-					+ FM36P.LearnDelFirstEmp1618Pay
-					+ FM36P.LearnDelSecondEmp1618Pay
-				ELSE 0 END ),
-				TotFund6Mon = SUM ( CASE WHEN FM36P.Period BETWEEN 1 AND 6 THEN 
-					FM36P.ProgrammeAimOnProgPayment 
-					+ FM36P.MathEngOnProgPayment 
-					+ FM36P.LDApplic1618FrameworkUpliftOnProgPayment
-					+ FM36P.LearnSuppFundCash 
-					+ FM36P.ProgrammeAimCompletionPayment
-					+ FM36P.LDApplic1618FrameworkUpliftCompletionPayment
-					+ FM36P.ProgrammeAimBalPayment 
-					+ FM36P.MathEngBalPayment 
-					+ FM36P.LDApplic1618FrameworkUpliftBalancingPayment
-					+ FM36P.DisadvFirstPayment 
-					+ FM36P.DisadvSecondPayment
-					+ FM36P.LearnDelFirstProv1618Pay 
-					+ FM36P.LearnDelSecondProv1618Pay
-					+ FM36P.LearnDelLearnAddPayment
-					+ FM36P.LearnDelFirstEmp1618Pay
-					+ FM36P.LearnDelSecondEmp1618Pay
-				ELSE 0 END ),
-    '
-    
-    SET @SQLString += 
-        N'
-				OnProgPaymentYrEnd = SUM ( FM36P.ProgrammeAimOnProgPayment + FM36P.MathEngOnProgPayment + FM36P.LDApplic1618FrameworkUpliftOnProgPayment ),
-				LearnSuppPaymentYrEnd = SUM ( FM36P.LearnSuppFundCash ),
-				CompletionPaymentYrEnd = SUM ( FM36P.ProgrammeAimCompletionPayment + FM36P.LDApplic1618FrameworkUpliftCompletionPayment ),
-				BalancePaymentYrEnd = SUM ( FM36P.ProgrammeAimBalPayment + FM36P.MathEngBalPayment + FM36P.LDApplic1618FrameworkUpliftBalancingPayment ),
-				OtherPaymentYrEnd = SUM (
-					FM36P.DisadvFirstPayment 
-					+ FM36P.DisadvSecondPayment
-					+ FM36P.LearnDelFirstProv1618Pay 
-					+ FM36P.LearnDelSecondProv1618Pay
-					+ FM36P.LearnDelLearnAddPayment
-					+ FM36P.LearnDelFirstEmp1618Pay
-					+ FM36P.LearnDelSecondEmp1618Pay
-				 ),
-				TotFundYrEnd = SUM ( 
-					FM36P.ProgrammeAimOnProgPayment 
-					+ FM36P.MathEngOnProgPayment 
-					+ FM36P.LDApplic1618FrameworkUpliftOnProgPayment
-					+ FM36P.LearnSuppFundCash 
-					+ FM36P.ProgrammeAimCompletionPayment
-					+ FM36P.LDApplic1618FrameworkUpliftCompletionPayment
-					+ FM36P.ProgrammeAimBalPayment 
-					+ FM36P.MathEngBalPayment 
-					+ FM36P.LDApplic1618FrameworkUpliftBalancingPayment
-					+ FM36P.DisadvFirstPayment 
-					+ FM36P.DisadvSecondPayment
-					+ FM36P.LearnDelFirstProv1618Pay 
-					+ FM36P.LearnDelSecondProv1618Pay
-					+ FM36P.LearnDelLearnAddPayment
-					+ FM36P.LearnDelFirstEmp1618Pay
-					+ FM36P.LearnDelSecondEmp1618Pay
+				OnProgPaymentToPeriod = 
+					SUM ( CASE WHEN FM36P.Period <= @ILRReturn THEN 
+						CASE WHEN FM36P.LearnDelContType = ''Levy Contract'' THEN FM36P.ProgrammeAimOnProgPayment ELSE FM36P.ProgrammeAimProgFundIndMinCoInvest END 
+						+ FM36P.MathEngOnProgPayment 
+						+ FM36P.LDApplic1618FrameworkUpliftOnProgPayment 
+						+ FM36P.LDApplic1618FrameworkUpliftCompletionPayment 
+						+ FM36P.DisadvFirstPayment 
+						+ FM36P.DisadvSecondPayment 
+						+ FM36P.LearnDelFirstProv1618Pay 
+						+ FM36P.LearnDelSecondProv1618Pay
+						ELSE 0 END
 					),
-    '
-
-    SET @SQLString += 
-        N'
-				OnProgPaymentP01 = SUM ( CASE WHEN FM36P.Period = 1 THEN FM36P.ProgrammeAimOnProgPayment + FM36P.MathEngOnProgPayment + FM36P.LDApplic1618FrameworkUpliftOnProgPayment ELSE 0 END ),
-				LearnSuppPaymentP01 = SUM ( CASE WHEN FM36P.Period = 1 THEN FM36P.LearnSuppFundCash ELSE 0 END ),
-				CompletionPaymentP01 = SUM ( CASE WHEN FM36P.Period = 1 THEN FM36P.ProgrammeAimCompletionPayment + FM36P.LDApplic1618FrameworkUpliftCompletionPayment ELSE 0 END ),
-				BalancePaymentP01 = SUM ( CASE WHEN FM36P.Period = 1 THEN FM36P.ProgrammeAimBalPayment + FM36P.MathEngBalPayment + FM36P.LDApplic1618FrameworkUpliftBalancingPayment ELSE 0 END ),
-				OtherPaymentP01 = SUM ( CASE WHEN FM36P.Period = 1 THEN 
-					FM36P.DisadvFirstPayment 
-					+ FM36P.DisadvSecondPayment
-					+ FM36P.LearnDelFirstProv1618Pay 
-					+ FM36P.LearnDelSecondProv1618Pay
-					+ FM36P.LearnDelLearnAddPayment
-					+ FM36P.LearnDelFirstEmp1618Pay
-					+ FM36P.LearnDelSecondEmp1618Pay
-				ELSE 0 END ),
-				TotFundP01 = SUM ( CASE WHEN FM36P.Period = 1 THEN 
-					FM36P.ProgrammeAimOnProgPayment 
-					+ FM36P.MathEngOnProgPayment 
-					+ FM36P.LDApplic1618FrameworkUpliftOnProgPayment
-					+ FM36P.LearnSuppFundCash 
-					+ FM36P.ProgrammeAimCompletionPayment
-					+ FM36P.LDApplic1618FrameworkUpliftCompletionPayment
-					+ FM36P.ProgrammeAimBalPayment 
-					+ FM36P.MathEngBalPayment 
-					+ FM36P.LDApplic1618FrameworkUpliftBalancingPayment
-					+ FM36P.DisadvFirstPayment 
-					+ FM36P.DisadvSecondPayment
-					+ FM36P.LearnDelFirstProv1618Pay 
-					+ FM36P.LearnDelSecondProv1618Pay
-					+ FM36P.LearnDelLearnAddPayment
-					+ FM36P.LearnDelFirstEmp1618Pay
-					+ FM36P.LearnDelSecondEmp1618Pay
-				ELSE 0 END ),
-
-				OnProgPaymentP02 = SUM ( CASE WHEN FM36P.Period = 2 THEN FM36P.ProgrammeAimOnProgPayment + FM36P.MathEngOnProgPayment + FM36P.LDApplic1618FrameworkUpliftOnProgPayment ELSE 0 END ),
-				LearnSuppPaymentP02 = SUM ( CASE WHEN FM36P.Period = 2 THEN FM36P.LearnSuppFundCash ELSE 0 END ),
-				CompletionPaymentP02 = SUM ( CASE WHEN FM36P.Period = 2 THEN FM36P.ProgrammeAimCompletionPayment + FM36P.LDApplic1618FrameworkUpliftCompletionPayment ELSE 0 END ),
-				BalancePaymentP02 = SUM ( CASE WHEN FM36P.Period = 2 THEN FM36P.ProgrammeAimBalPayment + FM36P.MathEngBalPayment + FM36P.LDApplic1618FrameworkUpliftBalancingPayment ELSE 0 END ),
-				OtherPaymentP02 = SUM ( CASE WHEN FM36P.Period = 2 THEN 
-					FM36P.DisadvFirstPayment 
-					+ FM36P.DisadvSecondPayment
-					+ FM36P.LearnDelFirstProv1618Pay 
-					+ FM36P.LearnDelSecondProv1618Pay
-					+ FM36P.LearnDelLearnAddPayment
-					+ FM36P.LearnDelFirstEmp1618Pay
-					+ FM36P.LearnDelSecondEmp1618Pay
-				ELSE 0 END ),
-				TotFundP02 = SUM ( CASE WHEN FM36P.Period = 2 THEN 
-					FM36P.ProgrammeAimOnProgPayment 
-					+ FM36P.MathEngOnProgPayment 
-					+ FM36P.LDApplic1618FrameworkUpliftOnProgPayment
-					+ FM36P.LearnSuppFundCash 
-					+ FM36P.ProgrammeAimCompletionPayment
-					+ FM36P.LDApplic1618FrameworkUpliftCompletionPayment
-					+ FM36P.ProgrammeAimBalPayment 
-					+ FM36P.MathEngBalPayment 
-					+ FM36P.LDApplic1618FrameworkUpliftBalancingPayment
-					+ FM36P.DisadvFirstPayment 
-					+ FM36P.DisadvSecondPayment
-					+ FM36P.LearnDelFirstProv1618Pay 
-					+ FM36P.LearnDelSecondProv1618Pay
-					+ FM36P.LearnDelLearnAddPayment
-					+ FM36P.LearnDelFirstEmp1618Pay
-					+ FM36P.LearnDelSecondEmp1618Pay
-				ELSE 0 END ),
+				LearnSuppPaymentToPeriod = 
+					SUM ( CASE WHEN FM36P.Period <= @ILRReturn THEN 
+						FM36P.LearnSuppFundCash 
+						ELSE 0 END
+					),
+				AchCompPaymentToPeriod = 
+					SUM ( CASE WHEN FM36P.Period <= @ILRReturn THEN 
+						+ CASE 
+							WHEN FM36P.FundLineType LIKE ''16-18 Apprenticeship%Non-Levy%'' THEN 0
+							WHEN FM36P.FundLineType LIKE ''19+ Apprenticeship%Non-Levy%'' THEN 0
+							WHEN FM36P.LearnDelContType = ''Levy Contract'' THEN FM36P.ProgrammeAimCompletionPayment + FM36P.ProgrammeAimBalPayment
+							ELSE 0 
+						END 
+						ELSE 0 END
+					),
+				BalancePaymentToPeriod = 
+					SUM ( CASE WHEN FM36P.Period <= @ILRReturn THEN 
+						+ FM36P.MathEngBalPayment 
+						+ FM36P.LDApplic1618FrameworkUpliftBalancingPayment 
+						ELSE 0 END
+					),
+				OtherPaymentToPeriod = 
+					SUM ( CASE WHEN FM36P.Period <= @ILRReturn THEN 
+						FM36P.LearnDelFirstEmp1618Pay 
+						+ FM36P.LearnDelSecondEmp1618Pay
+						+ FM36P.LearnDelLearnAddPayment
+						ELSE 0 END
+					),
+				TotFundToPeriod = 
+					SUM (  CASE WHEN FM36P.Period <= @ILRReturn THEN 
+						CASE WHEN FM36P.LearnDelContType = ''Levy Contract'' THEN FM36P.ProgrammeAimOnProgPayment ELSE FM36P.ProgrammeAimProgFundIndMinCoInvest END 
+						+ FM36P.MathEngOnProgPayment 
+						+ FM36P.LDApplic1618FrameworkUpliftOnProgPayment 
+						+ FM36P.LDApplic1618FrameworkUpliftCompletionPayment 
+						+ FM36P.DisadvFirstPayment 
+						+ FM36P.DisadvSecondPayment 
+						+ FM36P.LearnDelFirstProv1618Pay 
+						+ FM36P.LearnDelSecondProv1618Pay
+						+ FM36P.LearnSuppFundCash
+						+ CASE 
+							WHEN FM36P.FundLineType LIKE ''16-18 Apprenticeship%Non-Levy%'' THEN 0
+							WHEN FM36P.FundLineType LIKE ''19+ Apprenticeship%Non-Levy%'' THEN 0
+							WHEN FM36P.LearnDelContType = ''Levy Contract'' THEN FM36P.ProgrammeAimCompletionPayment + FM36P.ProgrammeAimBalPayment
+							ELSE 0 
+						END
+						+ FM36P.MathEngBalPayment 
+						+ FM36P.LDApplic1618FrameworkUpliftBalancingPayment 
+						+ FM36P.LearnDelFirstEmp1618Pay 
+						+ FM36P.LearnDelSecondEmp1618Pay
+						+ FM36P.LearnDelLearnAddPayment
+						ELSE 0 END
+					),
 	'
-    
-    SET @SQLString += 
-        N'
-				OnProgPaymentP03 = SUM ( CASE WHEN FM36P.Period = 3 THEN FM36P.ProgrammeAimOnProgPayment + FM36P.MathEngOnProgPayment + FM36P.LDApplic1618FrameworkUpliftOnProgPayment ELSE 0 END ),
-				LearnSuppPaymentP03 = SUM ( CASE WHEN FM36P.Period = 3 THEN FM36P.LearnSuppFundCash ELSE 0 END ),
-				CompletionPaymentP03 = SUM ( CASE WHEN FM36P.Period = 3 THEN FM36P.ProgrammeAimCompletionPayment + FM36P.LDApplic1618FrameworkUpliftCompletionPayment ELSE 0 END ),
-				BalancePaymentP03 = SUM ( CASE WHEN FM36P.Period = 3 THEN FM36P.ProgrammeAimBalPayment + FM36P.MathEngBalPayment + FM36P.LDApplic1618FrameworkUpliftBalancingPayment ELSE 0 END ),
-				OtherPaymentP03 = SUM ( CASE WHEN FM36P.Period = 3 THEN 
-					FM36P.DisadvFirstPayment 
-					+ FM36P.DisadvSecondPayment
-					+ FM36P.LearnDelFirstProv1618Pay 
-					+ FM36P.LearnDelSecondProv1618Pay
-					+ FM36P.LearnDelLearnAddPayment
-					+ FM36P.LearnDelFirstEmp1618Pay
-					+ FM36P.LearnDelSecondEmp1618Pay
-				ELSE 0 END ),
-				TotFundP03 = SUM ( CASE WHEN FM36P.Period = 3 THEN 
-					FM36P.ProgrammeAimOnProgPayment 
-					+ FM36P.MathEngOnProgPayment 
-					+ FM36P.LDApplic1618FrameworkUpliftOnProgPayment
-					+ FM36P.LearnSuppFundCash 
-					+ FM36P.ProgrammeAimCompletionPayment
-					+ FM36P.LDApplic1618FrameworkUpliftCompletionPayment
-					+ FM36P.ProgrammeAimBalPayment 
-					+ FM36P.MathEngBalPayment 
-					+ FM36P.LDApplic1618FrameworkUpliftBalancingPayment
-					+ FM36P.DisadvFirstPayment 
-					+ FM36P.DisadvSecondPayment
-					+ FM36P.LearnDelFirstProv1618Pay 
-					+ FM36P.LearnDelSecondProv1618Pay
-					+ FM36P.LearnDelLearnAddPayment
-					+ FM36P.LearnDelFirstEmp1618Pay
-					+ FM36P.LearnDelSecondEmp1618Pay
-				ELSE 0 END ),
-
-				OnProgPaymentP04 = SUM ( CASE WHEN FM36P.Period = 4 THEN FM36P.ProgrammeAimOnProgPayment + FM36P.MathEngOnProgPayment + FM36P.LDApplic1618FrameworkUpliftOnProgPayment ELSE 0 END ),
-				LearnSuppPaymentP04 = SUM ( CASE WHEN FM36P.Period = 4 THEN FM36P.LearnSuppFundCash ELSE 0 END ),
-				CompletionPaymentP04 = SUM ( CASE WHEN FM36P.Period = 4 THEN FM36P.ProgrammeAimCompletionPayment + FM36P.LDApplic1618FrameworkUpliftCompletionPayment ELSE 0 END ),
-				BalancePaymentP04 = SUM ( CASE WHEN FM36P.Period = 4 THEN FM36P.ProgrammeAimBalPayment + FM36P.MathEngBalPayment + FM36P.LDApplic1618FrameworkUpliftBalancingPayment ELSE 0 END ),
-				OtherPaymentP04 = SUM ( CASE WHEN FM36P.Period = 4 THEN 
-					FM36P.DisadvFirstPayment 
-					+ FM36P.DisadvSecondPayment
-					+ FM36P.LearnDelFirstProv1618Pay 
-					+ FM36P.LearnDelSecondProv1618Pay
-					+ FM36P.LearnDelLearnAddPayment
-					+ FM36P.LearnDelFirstEmp1618Pay
-					+ FM36P.LearnDelSecondEmp1618Pay
-				ELSE 0 END ),
-				TotFundP04 = SUM ( CASE WHEN FM36P.Period = 4 THEN 
-					FM36P.ProgrammeAimOnProgPayment 
-					+ FM36P.MathEngOnProgPayment 
-					+ FM36P.LDApplic1618FrameworkUpliftOnProgPayment
-					+ FM36P.LearnSuppFundCash 
-					+ FM36P.ProgrammeAimCompletionPayment
-					+ FM36P.LDApplic1618FrameworkUpliftCompletionPayment
-					+ FM36P.ProgrammeAimBalPayment 
-					+ FM36P.MathEngBalPayment 
-					+ FM36P.LDApplic1618FrameworkUpliftBalancingPayment
-					+ FM36P.DisadvFirstPayment 
-					+ FM36P.DisadvSecondPayment
-					+ FM36P.LearnDelFirstProv1618Pay 
-					+ FM36P.LearnDelSecondProv1618Pay
-					+ FM36P.LearnDelLearnAddPayment
-					+ FM36P.LearnDelFirstEmp1618Pay
-					+ FM36P.LearnDelSecondEmp1618Pay
-				ELSE 0 END ),
-    '
 
     SET @SQLString += 
-        N'
-				OnProgPaymentP05 = SUM ( CASE WHEN FM36P.Period = 5 THEN FM36P.ProgrammeAimOnProgPayment + FM36P.MathEngOnProgPayment + FM36P.LDApplic1618FrameworkUpliftOnProgPayment ELSE 0 END ),
-				LearnSuppPaymentP05 = SUM ( CASE WHEN FM36P.Period = 5 THEN FM36P.LearnSuppFundCash ELSE 0 END ),
-				CompletionPaymentP05 = SUM ( CASE WHEN FM36P.Period = 5 THEN FM36P.ProgrammeAimCompletionPayment + FM36P.LDApplic1618FrameworkUpliftCompletionPayment ELSE 0 END ),
-				BalancePaymentP05 = SUM ( CASE WHEN FM36P.Period = 5 THEN FM36P.ProgrammeAimBalPayment + FM36P.MathEngBalPayment + FM36P.LDApplic1618FrameworkUpliftBalancingPayment ELSE 0 END ),
-				OtherPaymentP05 = SUM ( CASE WHEN FM36P.Period = 5 THEN 
-					FM36P.DisadvFirstPayment 
-					+ FM36P.DisadvSecondPayment
-					+ FM36P.LearnDelFirstProv1618Pay 
-					+ FM36P.LearnDelSecondProv1618Pay
-					+ FM36P.LearnDelLearnAddPayment
-					+ FM36P.LearnDelFirstEmp1618Pay
-					+ FM36P.LearnDelSecondEmp1618Pay
-				ELSE 0 END ),
-				TotFundP05 = SUM ( CASE WHEN FM36P.Period = 5 THEN 
-					FM36P.ProgrammeAimOnProgPayment 
-					+ FM36P.MathEngOnProgPayment 
-					+ FM36P.LDApplic1618FrameworkUpliftOnProgPayment
-					+ FM36P.LearnSuppFundCash 
-					+ FM36P.ProgrammeAimCompletionPayment
-					+ FM36P.LDApplic1618FrameworkUpliftCompletionPayment
-					+ FM36P.ProgrammeAimBalPayment 
-					+ FM36P.MathEngBalPayment 
-					+ FM36P.LDApplic1618FrameworkUpliftBalancingPayment
-					+ FM36P.DisadvFirstPayment 
-					+ FM36P.DisadvSecondPayment
-					+ FM36P.LearnDelFirstProv1618Pay 
-					+ FM36P.LearnDelSecondProv1618Pay
-					+ FM36P.LearnDelLearnAddPayment
-					+ FM36P.LearnDelFirstEmp1618Pay
-					+ FM36P.LearnDelSecondEmp1618Pay
-				ELSE 0 END ),
+		N'
+				OnProgPayment6Mon = 
+					SUM ( CASE WHEN FM36P.Period <= 6 THEN 
+						CASE WHEN FM36P.LearnDelContType = ''Levy Contract'' THEN FM36P.ProgrammeAimOnProgPayment ELSE FM36P.ProgrammeAimProgFundIndMinCoInvest END 
+						+ FM36P.MathEngOnProgPayment 
+						+ FM36P.LDApplic1618FrameworkUpliftOnProgPayment 
+						+ FM36P.LDApplic1618FrameworkUpliftCompletionPayment 
+						+ FM36P.DisadvFirstPayment 
+						+ FM36P.DisadvSecondPayment 
+						+ FM36P.LearnDelFirstProv1618Pay 
+						+ FM36P.LearnDelSecondProv1618Pay
+						ELSE 0 END
+					),
+				LearnSuppPayment6Mon = 
+					SUM ( CASE WHEN FM36P.Period <= 6 THEN 
+						FM36P.LearnSuppFundCash 
+						ELSE 0 END
+					),
+				AchCompPayment6Mon = 
+					SUM ( CASE WHEN FM36P.Period <= 6 THEN 
+						+ CASE 
+							WHEN FM36P.FundLineType LIKE ''16-18 Apprenticeship%Non-Levy%'' THEN 0
+							WHEN FM36P.FundLineType LIKE ''19+ Apprenticeship%Non-Levy%'' THEN 0
+							WHEN FM36P.LearnDelContType = ''Levy Contract'' THEN FM36P.ProgrammeAimCompletionPayment + FM36P.ProgrammeAimBalPayment
+							ELSE 0 
+						END 
+						ELSE 0 END
+					),
+				BalancePayment6Mon = 
+					SUM ( CASE WHEN FM36P.Period <= 6 THEN 
+						+ FM36P.MathEngBalPayment 
+						+ FM36P.LDApplic1618FrameworkUpliftBalancingPayment 
+						ELSE 0 END
+					),
+				OtherPayment6Mon = 
+					SUM ( CASE WHEN FM36P.Period <= 6 THEN 
+						FM36P.LearnDelFirstEmp1618Pay 
+						+ FM36P.LearnDelSecondEmp1618Pay
+						+ FM36P.LearnDelLearnAddPayment
+						ELSE 0 END
+					),
+				TotFund6Mon = 
+					SUM (  CASE WHEN FM36P.Period <= 6 THEN 
+						CASE WHEN FM36P.LearnDelContType = ''Levy Contract'' THEN FM36P.ProgrammeAimOnProgPayment ELSE FM36P.ProgrammeAimProgFundIndMinCoInvest END 
+						+ FM36P.MathEngOnProgPayment 
+						+ FM36P.LDApplic1618FrameworkUpliftOnProgPayment 
+						+ FM36P.LDApplic1618FrameworkUpliftCompletionPayment 
+						+ FM36P.DisadvFirstPayment 
+						+ FM36P.DisadvSecondPayment 
+						+ FM36P.LearnDelFirstProv1618Pay 
+						+ FM36P.LearnDelSecondProv1618Pay
+						+ FM36P.LearnSuppFundCash
+						+ CASE 
+							WHEN FM36P.FundLineType LIKE ''16-18 Apprenticeship%Non-Levy%'' THEN 0
+							WHEN FM36P.FundLineType LIKE ''19+ Apprenticeship%Non-Levy%'' THEN 0
+							WHEN FM36P.LearnDelContType = ''Levy Contract'' THEN FM36P.ProgrammeAimCompletionPayment + FM36P.ProgrammeAimBalPayment
+							ELSE 0 
+						END
+						+ FM36P.MathEngBalPayment 
+						+ FM36P.LDApplic1618FrameworkUpliftBalancingPayment 
+						+ FM36P.LearnDelFirstEmp1618Pay 
+						+ FM36P.LearnDelSecondEmp1618Pay
+						+ FM36P.LearnDelLearnAddPayment
+						ELSE 0 END
+					),
 
-				OnProgPaymentP06 = SUM ( CASE WHEN FM36P.Period = 6 THEN FM36P.ProgrammeAimOnProgPayment + FM36P.MathEngOnProgPayment + FM36P.LDApplic1618FrameworkUpliftOnProgPayment ELSE 0 END ),
-				LearnSuppPaymentP06 = SUM ( CASE WHEN FM36P.Period = 6 THEN FM36P.LearnSuppFundCash ELSE 0 END ),
-				CompletionPaymentP06 = SUM ( CASE WHEN FM36P.Period = 6 THEN FM36P.ProgrammeAimCompletionPayment + FM36P.LDApplic1618FrameworkUpliftCompletionPayment ELSE 0 END ),
-				BalancePaymentP06 = SUM ( CASE WHEN FM36P.Period = 6 THEN FM36P.ProgrammeAimBalPayment + FM36P.MathEngBalPayment + FM36P.LDApplic1618FrameworkUpliftBalancingPayment ELSE 0 END ),
-				OtherPaymentP06 = SUM ( CASE WHEN FM36P.Period = 6 THEN 
-					FM36P.DisadvFirstPayment 
-					+ FM36P.DisadvSecondPayment
-					+ FM36P.LearnDelFirstProv1618Pay 
-					+ FM36P.LearnDelSecondProv1618Pay
-					+ FM36P.LearnDelLearnAddPayment
-					+ FM36P.LearnDelFirstEmp1618Pay
-					+ FM36P.LearnDelSecondEmp1618Pay
-				ELSE 0 END ),
-				TotFundP06 = SUM ( CASE WHEN FM36P.Period = 6 THEN 
-					FM36P.ProgrammeAimOnProgPayment 
-					+ FM36P.MathEngOnProgPayment 
-					+ FM36P.LDApplic1618FrameworkUpliftOnProgPayment
-					+ FM36P.LearnSuppFundCash 
-					+ FM36P.ProgrammeAimCompletionPayment
-					+ FM36P.LDApplic1618FrameworkUpliftCompletionPayment
-					+ FM36P.ProgrammeAimBalPayment 
-					+ FM36P.MathEngBalPayment 
-					+ FM36P.LDApplic1618FrameworkUpliftBalancingPayment
-					+ FM36P.DisadvFirstPayment 
-					+ FM36P.DisadvSecondPayment
-					+ FM36P.LearnDelFirstProv1618Pay 
-					+ FM36P.LearnDelSecondProv1618Pay
-					+ FM36P.LearnDelLearnAddPayment
-					+ FM36P.LearnDelFirstEmp1618Pay
-					+ FM36P.LearnDelSecondEmp1618Pay
-				ELSE 0 END ),
-    '
-    
-    SET @SQLString += 
-        N'
-				OnProgPaymentP07 = SUM ( CASE WHEN FM36P.Period = 7 THEN FM36P.ProgrammeAimOnProgPayment + FM36P.MathEngOnProgPayment + FM36P.LDApplic1618FrameworkUpliftOnProgPayment ELSE 0 END ),
-				LearnSuppPaymentP07 = SUM ( CASE WHEN FM36P.Period = 7 THEN FM36P.LearnSuppFundCash ELSE 0 END ),
-				CompletionPaymentP07 = SUM ( CASE WHEN FM36P.Period = 7 THEN FM36P.ProgrammeAimCompletionPayment + FM36P.LDApplic1618FrameworkUpliftCompletionPayment ELSE 0 END ),
-				BalancePaymentP07 = SUM ( CASE WHEN FM36P.Period = 7 THEN FM36P.ProgrammeAimBalPayment + FM36P.MathEngBalPayment + FM36P.LDApplic1618FrameworkUpliftBalancingPayment ELSE 0 END ),
-				OtherPaymentP07 = SUM ( CASE WHEN FM36P.Period = 7 THEN 
-					FM36P.DisadvFirstPayment 
-					+ FM36P.DisadvSecondPayment
-					+ FM36P.LearnDelFirstProv1618Pay 
-					+ FM36P.LearnDelSecondProv1618Pay
-					+ FM36P.LearnDelLearnAddPayment
-					+ FM36P.LearnDelFirstEmp1618Pay
-					+ FM36P.LearnDelSecondEmp1618Pay
-				ELSE 0 END ),
-				TotFundP07 = SUM ( CASE WHEN FM36P.Period = 7 THEN 
-					FM36P.ProgrammeAimOnProgPayment 
-					+ FM36P.MathEngOnProgPayment 
-					+ FM36P.LDApplic1618FrameworkUpliftOnProgPayment
-					+ FM36P.LearnSuppFundCash 
-					+ FM36P.ProgrammeAimCompletionPayment
-					+ FM36P.LDApplic1618FrameworkUpliftCompletionPayment
-					+ FM36P.ProgrammeAimBalPayment 
-					+ FM36P.MathEngBalPayment 
-					+ FM36P.LDApplic1618FrameworkUpliftBalancingPayment
-					+ FM36P.DisadvFirstPayment 
-					+ FM36P.DisadvSecondPayment
-					+ FM36P.LearnDelFirstProv1618Pay 
-					+ FM36P.LearnDelSecondProv1618Pay
-					+ FM36P.LearnDelLearnAddPayment
-					+ FM36P.LearnDelFirstEmp1618Pay
-					+ FM36P.LearnDelSecondEmp1618Pay
-				ELSE 0 END ),
-
-				OnProgPaymentP08 = SUM ( CASE WHEN FM36P.Period = 8 THEN FM36P.ProgrammeAimOnProgPayment + FM36P.MathEngOnProgPayment + FM36P.LDApplic1618FrameworkUpliftOnProgPayment ELSE 0 END ),
-				LearnSuppPaymentP08 = SUM ( CASE WHEN FM36P.Period = 8 THEN FM36P.LearnSuppFundCash ELSE 0 END ),
-				CompletionPaymentP08 = SUM ( CASE WHEN FM36P.Period = 8 THEN FM36P.ProgrammeAimCompletionPayment + FM36P.LDApplic1618FrameworkUpliftCompletionPayment ELSE 0 END ),
-				BalancePaymentP08 = SUM ( CASE WHEN FM36P.Period = 8 THEN FM36P.ProgrammeAimBalPayment + FM36P.MathEngBalPayment + FM36P.LDApplic1618FrameworkUpliftBalancingPayment ELSE 0 END ),
-				OtherPaymentP08 = SUM ( CASE WHEN FM36P.Period = 8 THEN 
-					FM36P.DisadvFirstPayment 
-					+ FM36P.DisadvSecondPayment
-					+ FM36P.LearnDelFirstProv1618Pay 
-					+ FM36P.LearnDelSecondProv1618Pay
-					+ FM36P.LearnDelLearnAddPayment
-					+ FM36P.LearnDelFirstEmp1618Pay
-					+ FM36P.LearnDelSecondEmp1618Pay
-				ELSE 0 END ),
-				TotFundP08 = SUM ( CASE WHEN FM36P.Period = 8 THEN 
-					FM36P.ProgrammeAimOnProgPayment 
-					+ FM36P.MathEngOnProgPayment 
-					+ FM36P.LDApplic1618FrameworkUpliftOnProgPayment
-					+ FM36P.LearnSuppFundCash 
-					+ FM36P.ProgrammeAimCompletionPayment
-					+ FM36P.LDApplic1618FrameworkUpliftCompletionPayment
-					+ FM36P.ProgrammeAimBalPayment 
-					+ FM36P.MathEngBalPayment 
-					+ FM36P.LDApplic1618FrameworkUpliftBalancingPayment
-					+ FM36P.DisadvFirstPayment 
-					+ FM36P.DisadvSecondPayment
-					+ FM36P.LearnDelFirstProv1618Pay 
-					+ FM36P.LearnDelSecondProv1618Pay
-					+ FM36P.LearnDelLearnAddPayment
-					+ FM36P.LearnDelFirstEmp1618Pay
-					+ FM36P.LearnDelSecondEmp1618Pay
-				ELSE 0 END ),
+				OnProgPaymentYrEnd = 
+					SUM ( 
+						CASE WHEN FM36P.LearnDelContType = ''Levy Contract'' THEN FM36P.ProgrammeAimOnProgPayment ELSE FM36P.ProgrammeAimProgFundIndMinCoInvest END 
+						+ FM36P.MathEngOnProgPayment 
+						+ FM36P.LDApplic1618FrameworkUpliftOnProgPayment 
+						+ FM36P.LDApplic1618FrameworkUpliftCompletionPayment 
+						+ FM36P.DisadvFirstPayment 
+						+ FM36P.DisadvSecondPayment 
+						+ FM36P.LearnDelFirstProv1618Pay 
+						+ FM36P.LearnDelSecondProv1618Pay
+					),
+				LearnSuppPaymentYrEnd = 
+					SUM ( 
+						FM36P.LearnSuppFundCash 
+					),
+				AchCompPaymentYrEnd = 
+					SUM ( 
+						+ CASE 
+							WHEN FM36P.FundLineType LIKE ''16-18 Apprenticeship%Non-Levy%'' THEN 0
+							WHEN FM36P.FundLineType LIKE ''19+ Apprenticeship%Non-Levy%'' THEN 0
+							WHEN FM36P.LearnDelContType = ''Levy Contract'' THEN FM36P.ProgrammeAimCompletionPayment + FM36P.ProgrammeAimBalPayment
+							ELSE 0 
+						END 
+					),
+				BalancePaymentYrEnd = 
+					SUM ( 
+						+ FM36P.MathEngBalPayment 
+						+ FM36P.LDApplic1618FrameworkUpliftBalancingPayment 
+					),
+				OtherPaymentYrEnd = 
+					SUM ( 
+						FM36P.LearnDelFirstEmp1618Pay 
+						+ FM36P.LearnDelSecondEmp1618Pay
+						+ FM36P.LearnDelLearnAddPayment
+					),
+				TotFundYrEnd = 
+					SUM (  
+						CASE WHEN FM36P.LearnDelContType = ''Levy Contract'' THEN FM36P.ProgrammeAimOnProgPayment ELSE FM36P.ProgrammeAimProgFundIndMinCoInvest END 
+						+ FM36P.MathEngOnProgPayment 
+						+ FM36P.LDApplic1618FrameworkUpliftOnProgPayment 
+						+ FM36P.LDApplic1618FrameworkUpliftCompletionPayment 
+						+ FM36P.DisadvFirstPayment 
+						+ FM36P.DisadvSecondPayment 
+						+ FM36P.LearnDelFirstProv1618Pay 
+						+ FM36P.LearnDelSecondProv1618Pay
+						+ FM36P.LearnSuppFundCash
+						+ CASE 
+							WHEN FM36P.FundLineType LIKE ''16-18 Apprenticeship%Non-Levy%'' THEN 0
+							WHEN FM36P.FundLineType LIKE ''19+ Apprenticeship%Non-Levy%'' THEN 0
+							WHEN FM36P.LearnDelContType = ''Levy Contract'' THEN FM36P.ProgrammeAimCompletionPayment + FM36P.ProgrammeAimBalPayment
+							ELSE 0 
+						END
+						+ FM36P.MathEngBalPayment 
+						+ FM36P.LDApplic1618FrameworkUpliftBalancingPayment 
+						+ FM36P.LearnDelFirstEmp1618Pay 
+						+ FM36P.LearnDelSecondEmp1618Pay
+						+ FM36P.LearnDelLearnAddPayment
+					),
 	'
-    
-    SET @SQLString += 
-        N'
-				OnProgPaymentP09 = SUM ( CASE WHEN FM36P.Period = 9 THEN FM36P.ProgrammeAimOnProgPayment + FM36P.MathEngOnProgPayment + FM36P.LDApplic1618FrameworkUpliftOnProgPayment ELSE 0 END ),
-				LearnSuppPaymentP09 = SUM ( CASE WHEN FM36P.Period = 9 THEN FM36P.LearnSuppFundCash ELSE 0 END ),
-				CompletionPaymentP09 = SUM ( CASE WHEN FM36P.Period = 9 THEN FM36P.ProgrammeAimCompletionPayment + FM36P.LDApplic1618FrameworkUpliftCompletionPayment ELSE 0 END ),
-				BalancePaymentP09 = SUM ( CASE WHEN FM36P.Period = 9 THEN FM36P.ProgrammeAimBalPayment + FM36P.MathEngBalPayment + FM36P.LDApplic1618FrameworkUpliftBalancingPayment ELSE 0 END ),
-				OtherPaymentP09 = SUM ( CASE WHEN FM36P.Period = 9 THEN 
-					FM36P.DisadvFirstPayment 
-					+ FM36P.DisadvSecondPayment
-					+ FM36P.LearnDelFirstProv1618Pay 
-					+ FM36P.LearnDelSecondProv1618Pay
-					+ FM36P.LearnDelLearnAddPayment
-					+ FM36P.LearnDelFirstEmp1618Pay
-					+ FM36P.LearnDelSecondEmp1618Pay
-				ELSE 0 END ),
-				TotFundP09 = SUM ( CASE WHEN FM36P.Period = 9 THEN 
-					FM36P.ProgrammeAimOnProgPayment 
-					+ FM36P.MathEngOnProgPayment 
-					+ FM36P.LDApplic1618FrameworkUpliftOnProgPayment
-					+ FM36P.LearnSuppFundCash 
-					+ FM36P.ProgrammeAimCompletionPayment
-					+ FM36P.LDApplic1618FrameworkUpliftCompletionPayment
-					+ FM36P.ProgrammeAimBalPayment 
-					+ FM36P.MathEngBalPayment 
-					+ FM36P.LDApplic1618FrameworkUpliftBalancingPayment
-					+ FM36P.DisadvFirstPayment 
-					+ FM36P.DisadvSecondPayment
-					+ FM36P.LearnDelFirstProv1618Pay 
-					+ FM36P.LearnDelSecondProv1618Pay
-					+ FM36P.LearnDelLearnAddPayment
-					+ FM36P.LearnDelFirstEmp1618Pay
-					+ FM36P.LearnDelSecondEmp1618Pay
-				ELSE 0 END ),
 
-				OnProgPaymentP10 = SUM ( CASE WHEN FM36P.Period = 10 THEN FM36P.ProgrammeAimOnProgPayment + FM36P.MathEngOnProgPayment + FM36P.LDApplic1618FrameworkUpliftOnProgPayment ELSE 0 END ),
-				LearnSuppPaymentP10 = SUM ( CASE WHEN FM36P.Period = 10 THEN FM36P.LearnSuppFundCash ELSE 0 END ),
-				CompletionPaymentP10 = SUM ( CASE WHEN FM36P.Period = 10 THEN FM36P.ProgrammeAimCompletionPayment + FM36P.LDApplic1618FrameworkUpliftCompletionPayment ELSE 0 END ),
-				BalancePaymentP10 = SUM ( CASE WHEN FM36P.Period = 10 THEN FM36P.ProgrammeAimBalPayment + FM36P.MathEngBalPayment + FM36P.LDApplic1618FrameworkUpliftBalancingPayment ELSE 0 END ),
-				OtherPaymentP10 = SUM ( CASE WHEN FM36P.Period = 10 THEN 
-					FM36P.DisadvFirstPayment 
-					+ FM36P.DisadvSecondPayment
-					+ FM36P.LearnDelFirstProv1618Pay 
-					+ FM36P.LearnDelSecondProv1618Pay
-					+ FM36P.LearnDelLearnAddPayment
-					+ FM36P.LearnDelFirstEmp1618Pay
-					+ FM36P.LearnDelSecondEmp1618Pay
-				ELSE 0 END ),
-				TotFundP10 = SUM ( CASE WHEN FM36P.Period = 10 THEN 
-					FM36P.ProgrammeAimOnProgPayment 
-					+ FM36P.MathEngOnProgPayment 
-					+ FM36P.LDApplic1618FrameworkUpliftOnProgPayment
-					+ FM36P.LearnSuppFundCash 
-					+ FM36P.ProgrammeAimCompletionPayment
-					+ FM36P.LDApplic1618FrameworkUpliftCompletionPayment
-					+ FM36P.ProgrammeAimBalPayment 
-					+ FM36P.MathEngBalPayment 
-					+ FM36P.LDApplic1618FrameworkUpliftBalancingPayment
-					+ FM36P.DisadvFirstPayment 
-					+ FM36P.DisadvSecondPayment
-					+ FM36P.LearnDelFirstProv1618Pay 
-					+ FM36P.LearnDelSecondProv1618Pay
-					+ FM36P.LearnDelLearnAddPayment
-					+ FM36P.LearnDelFirstEmp1618Pay
-					+ FM36P.LearnDelSecondEmp1618Pay
-				ELSE 0 END ),
+    SET @SQLString += 
+		N'
+				OnProgPaymentP01 = 
+					SUM ( CASE WHEN FM36P.Period = 1 THEN 
+						CASE WHEN FM36P.LearnDelContType = ''Levy Contract'' THEN FM36P.ProgrammeAimOnProgPayment ELSE FM36P.ProgrammeAimProgFundIndMinCoInvest END 
+						+ FM36P.MathEngOnProgPayment 
+						+ FM36P.LDApplic1618FrameworkUpliftOnProgPayment 
+						+ FM36P.LDApplic1618FrameworkUpliftCompletionPayment 
+						+ FM36P.DisadvFirstPayment 
+						+ FM36P.DisadvSecondPayment 
+						+ FM36P.LearnDelFirstProv1618Pay 
+						+ FM36P.LearnDelSecondProv1618Pay
+						ELSE 0 END
+					),
+				LearnSuppPaymentP01 = 
+					SUM ( CASE WHEN FM36P.Period = 1 THEN 
+						FM36P.LearnSuppFundCash 
+						ELSE 0 END
+					),
+				AchCompPaymentP01 = 
+					SUM ( CASE WHEN FM36P.Period = 1 THEN 
+						+ CASE 
+							WHEN FM36P.FundLineType LIKE ''16-18 Apprenticeship%Non-Levy%'' THEN 0
+							WHEN FM36P.FundLineType LIKE ''19+ Apprenticeship%Non-Levy%'' THEN 0
+							WHEN FM36P.LearnDelContType = ''Levy Contract'' THEN FM36P.ProgrammeAimCompletionPayment + FM36P.ProgrammeAimBalPayment
+							ELSE 0 
+						END 
+						ELSE 0 END
+					),
+				BalancePaymentP01 = 
+					SUM ( CASE WHEN FM36P.Period = 1 THEN 
+						+ FM36P.MathEngBalPayment 
+						+ FM36P.LDApplic1618FrameworkUpliftBalancingPayment 
+						ELSE 0 END
+					),
+				OtherPaymentP01 = 
+					SUM ( CASE WHEN FM36P.Period = 1 THEN 
+						FM36P.LearnDelFirstEmp1618Pay 
+						+ FM36P.LearnDelSecondEmp1618Pay
+						+ FM36P.LearnDelLearnAddPayment
+						ELSE 0 END
+					),
+				TotFundP01 = 
+					SUM (  CASE WHEN FM36P.Period = 1 THEN 
+						CASE WHEN FM36P.LearnDelContType = ''Levy Contract'' THEN FM36P.ProgrammeAimOnProgPayment ELSE FM36P.ProgrammeAimProgFundIndMinCoInvest END 
+						+ FM36P.MathEngOnProgPayment 
+						+ FM36P.LDApplic1618FrameworkUpliftOnProgPayment 
+						+ FM36P.LDApplic1618FrameworkUpliftCompletionPayment 
+						+ FM36P.DisadvFirstPayment 
+						+ FM36P.DisadvSecondPayment 
+						+ FM36P.LearnDelFirstProv1618Pay 
+						+ FM36P.LearnDelSecondProv1618Pay
+						+ FM36P.LearnSuppFundCash
+						+ CASE 
+							WHEN FM36P.FundLineType LIKE ''16-18 Apprenticeship%Non-Levy%'' THEN 0
+							WHEN FM36P.FundLineType LIKE ''19+ Apprenticeship%Non-Levy%'' THEN 0
+							WHEN FM36P.LearnDelContType = ''Levy Contract'' THEN FM36P.ProgrammeAimCompletionPayment + FM36P.ProgrammeAimBalPayment
+							ELSE 0 
+						END
+						+ FM36P.MathEngBalPayment 
+						+ FM36P.LDApplic1618FrameworkUpliftBalancingPayment 
+						+ FM36P.LearnDelFirstEmp1618Pay 
+						+ FM36P.LearnDelSecondEmp1618Pay
+						+ FM36P.LearnDelLearnAddPayment
+						ELSE 0 END
+					),
+
+				OnProgPaymentP02 = 
+					SUM ( CASE WHEN FM36P.Period = 2 THEN 
+						CASE WHEN FM36P.LearnDelContType = ''Levy Contract'' THEN FM36P.ProgrammeAimOnProgPayment ELSE FM36P.ProgrammeAimProgFundIndMinCoInvest END 
+						+ FM36P.MathEngOnProgPayment 
+						+ FM36P.LDApplic1618FrameworkUpliftOnProgPayment 
+						+ FM36P.LDApplic1618FrameworkUpliftCompletionPayment 
+						+ FM36P.DisadvFirstPayment 
+						+ FM36P.DisadvSecondPayment 
+						+ FM36P.LearnDelFirstProv1618Pay 
+						+ FM36P.LearnDelSecondProv1618Pay
+						ELSE 0 END
+					),
+				LearnSuppPaymentP02 = 
+					SUM ( CASE WHEN FM36P.Period = 2 THEN 
+						FM36P.LearnSuppFundCash 
+						ELSE 0 END
+					),
+				AchCompPaymentP02 = 
+					SUM ( CASE WHEN FM36P.Period = 2 THEN 
+						+ CASE 
+							WHEN FM36P.FundLineType LIKE ''16-18 Apprenticeship%Non-Levy%'' THEN 0
+							WHEN FM36P.FundLineType LIKE ''19+ Apprenticeship%Non-Levy%'' THEN 0
+							WHEN FM36P.LearnDelContType = ''Levy Contract'' THEN FM36P.ProgrammeAimCompletionPayment + FM36P.ProgrammeAimBalPayment
+							ELSE 0 
+						END 
+						ELSE 0 END
+					),
+				BalancePaymentP02 = 
+					SUM ( CASE WHEN FM36P.Period = 2 THEN 
+						+ FM36P.MathEngBalPayment 
+						+ FM36P.LDApplic1618FrameworkUpliftBalancingPayment 
+						ELSE 0 END
+					),
+				OtherPaymentP02 = 
+					SUM ( CASE WHEN FM36P.Period = 2 THEN 
+						FM36P.LearnDelFirstEmp1618Pay 
+						+ FM36P.LearnDelSecondEmp1618Pay
+						+ FM36P.LearnDelLearnAddPayment
+						ELSE 0 END
+					),
+				TotFundP02 = 
+					SUM (  CASE WHEN FM36P.Period = 2 THEN 
+						CASE WHEN FM36P.LearnDelContType = ''Levy Contract'' THEN FM36P.ProgrammeAimOnProgPayment ELSE FM36P.ProgrammeAimProgFundIndMinCoInvest END 
+						+ FM36P.MathEngOnProgPayment 
+						+ FM36P.LDApplic1618FrameworkUpliftOnProgPayment 
+						+ FM36P.LDApplic1618FrameworkUpliftCompletionPayment 
+						+ FM36P.DisadvFirstPayment 
+						+ FM36P.DisadvSecondPayment 
+						+ FM36P.LearnDelFirstProv1618Pay 
+						+ FM36P.LearnDelSecondProv1618Pay
+						+ FM36P.LearnSuppFundCash
+						+ CASE 
+							WHEN FM36P.FundLineType LIKE ''16-18 Apprenticeship%Non-Levy%'' THEN 0
+							WHEN FM36P.FundLineType LIKE ''19+ Apprenticeship%Non-Levy%'' THEN 0
+							WHEN FM36P.LearnDelContType = ''Levy Contract'' THEN FM36P.ProgrammeAimCompletionPayment + FM36P.ProgrammeAimBalPayment
+							ELSE 0 
+						END
+						+ FM36P.MathEngBalPayment 
+						+ FM36P.LDApplic1618FrameworkUpliftBalancingPayment 
+						+ FM36P.LearnDelFirstEmp1618Pay 
+						+ FM36P.LearnDelSecondEmp1618Pay
+						+ FM36P.LearnDelLearnAddPayment
+						ELSE 0 END
+					),
 	'
-    
-    SET @SQLString += 
-        N'
-				OnProgPaymentP11 = SUM ( CASE WHEN FM36P.Period = 11 THEN FM36P.ProgrammeAimOnProgPayment + FM36P.MathEngOnProgPayment + FM36P.LDApplic1618FrameworkUpliftOnProgPayment ELSE 0 END ),
-				LearnSuppPaymentP11 = SUM ( CASE WHEN FM36P.Period = 11 THEN FM36P.LearnSuppFundCash ELSE 0 END ),
-				CompletionPaymentP11 = SUM ( CASE WHEN FM36P.Period = 11 THEN FM36P.ProgrammeAimCompletionPayment + FM36P.LDApplic1618FrameworkUpliftCompletionPayment ELSE 0 END ),
-				BalancePaymentP11 = SUM ( CASE WHEN FM36P.Period = 11 THEN FM36P.ProgrammeAimBalPayment + FM36P.MathEngBalPayment + FM36P.LDApplic1618FrameworkUpliftBalancingPayment ELSE 0 END ),
-				OtherPaymentP11 = SUM ( CASE WHEN FM36P.Period = 11 THEN 
-					FM36P.DisadvFirstPayment 
-					+ FM36P.DisadvSecondPayment
-					+ FM36P.LearnDelFirstProv1618Pay 
-					+ FM36P.LearnDelSecondProv1618Pay
-					+ FM36P.LearnDelLearnAddPayment
-					+ FM36P.LearnDelFirstEmp1618Pay
-					+ FM36P.LearnDelSecondEmp1618Pay
-				ELSE 0 END ),
-				TotFundP11 = SUM ( CASE WHEN FM36P.Period = 11 THEN 
-					FM36P.ProgrammeAimOnProgPayment 
-					+ FM36P.MathEngOnProgPayment 
-					+ FM36P.LDApplic1618FrameworkUpliftOnProgPayment
-					+ FM36P.LearnSuppFundCash 
-					+ FM36P.ProgrammeAimCompletionPayment
-					+ FM36P.LDApplic1618FrameworkUpliftCompletionPayment
-					+ FM36P.ProgrammeAimBalPayment 
-					+ FM36P.MathEngBalPayment 
-					+ FM36P.LDApplic1618FrameworkUpliftBalancingPayment
-					+ FM36P.DisadvFirstPayment 
-					+ FM36P.DisadvSecondPayment
-					+ FM36P.LearnDelFirstProv1618Pay 
-					+ FM36P.LearnDelSecondProv1618Pay
-					+ FM36P.LearnDelLearnAddPayment
-					+ FM36P.LearnDelFirstEmp1618Pay
-					+ FM36P.LearnDelSecondEmp1618Pay
-				ELSE 0 END ),
 
-				OnProgPaymentP12 = SUM ( CASE WHEN FM36P.Period = 12 THEN FM36P.ProgrammeAimOnProgPayment + FM36P.MathEngOnProgPayment + FM36P.LDApplic1618FrameworkUpliftOnProgPayment ELSE 0 END ),
-				LearnSuppPaymentP12 = SUM ( CASE WHEN FM36P.Period = 12 THEN FM36P.LearnSuppFundCash ELSE 0 END ),
-				CompletionPaymentP12 = SUM ( CASE WHEN FM36P.Period = 12 THEN FM36P.ProgrammeAimCompletionPayment + FM36P.LDApplic1618FrameworkUpliftCompletionPayment ELSE 0 END ),
-				BalancePaymentP12 = SUM ( CASE WHEN FM36P.Period = 12 THEN FM36P.ProgrammeAimBalPayment + FM36P.MathEngBalPayment + FM36P.LDApplic1618FrameworkUpliftBalancingPayment ELSE 0 END ),
-				OtherPaymentP12 = SUM ( CASE WHEN FM36P.Period = 12 THEN 
-					FM36P.DisadvFirstPayment 
-					+ FM36P.DisadvSecondPayment
-					+ FM36P.LearnDelFirstProv1618Pay 
-					+ FM36P.LearnDelSecondProv1618Pay
-					+ FM36P.LearnDelLearnAddPayment
-					+ FM36P.LearnDelFirstEmp1618Pay
-					+ FM36P.LearnDelSecondEmp1618Pay
-				ELSE 0 END ),
-				TotFundP12 = SUM ( CASE WHEN FM36P.Period = 12 THEN 
-					FM36P.ProgrammeAimOnProgPayment 
-					+ FM36P.MathEngOnProgPayment 
-					+ FM36P.LDApplic1618FrameworkUpliftOnProgPayment
-					+ FM36P.LearnSuppFundCash 
-					+ FM36P.ProgrammeAimCompletionPayment
-					+ FM36P.LDApplic1618FrameworkUpliftCompletionPayment
-					+ FM36P.ProgrammeAimBalPayment 
-					+ FM36P.MathEngBalPayment 
-					+ FM36P.LDApplic1618FrameworkUpliftBalancingPayment
-					+ FM36P.DisadvFirstPayment 
-					+ FM36P.DisadvSecondPayment
-					+ FM36P.LearnDelFirstProv1618Pay 
-					+ FM36P.LearnDelSecondProv1618Pay
-					+ FM36P.LearnDelLearnAddPayment
-					+ FM36P.LearnDelFirstEmp1618Pay
-					+ FM36P.LearnDelSecondEmp1618Pay
-				ELSE 0 END )
+    SET @SQLString += 
+		N'
+				OnProgPaymentP03 = 
+					SUM ( CASE WHEN FM36P.Period = 3 THEN 
+						CASE WHEN FM36P.LearnDelContType = ''Levy Contract'' THEN FM36P.ProgrammeAimOnProgPayment ELSE FM36P.ProgrammeAimProgFundIndMinCoInvest END 
+						+ FM36P.MathEngOnProgPayment 
+						+ FM36P.LDApplic1618FrameworkUpliftOnProgPayment 
+						+ FM36P.LDApplic1618FrameworkUpliftCompletionPayment 
+						+ FM36P.DisadvFirstPayment 
+						+ FM36P.DisadvSecondPayment 
+						+ FM36P.LearnDelFirstProv1618Pay 
+						+ FM36P.LearnDelSecondProv1618Pay
+						ELSE 0 END
+					),
+				LearnSuppPaymentP03 = 
+					SUM ( CASE WHEN FM36P.Period = 3 THEN 
+						FM36P.LearnSuppFundCash 
+						ELSE 0 END
+					),
+				AchCompPaymentP03 = 
+					SUM ( CASE WHEN FM36P.Period = 3 THEN 
+						+ CASE 
+							WHEN FM36P.FundLineType LIKE ''16-18 Apprenticeship%Non-Levy%'' THEN 0
+							WHEN FM36P.FundLineType LIKE ''19+ Apprenticeship%Non-Levy%'' THEN 0
+							WHEN FM36P.LearnDelContType = ''Levy Contract'' THEN FM36P.ProgrammeAimCompletionPayment + FM36P.ProgrammeAimBalPayment
+							ELSE 0 
+						END 
+						ELSE 0 END
+					),
+				BalancePaymentP03 = 
+					SUM ( CASE WHEN FM36P.Period = 3 THEN 
+						+ FM36P.MathEngBalPayment 
+						+ FM36P.LDApplic1618FrameworkUpliftBalancingPayment 
+						ELSE 0 END
+					),
+				OtherPaymentP03 = 
+					SUM ( CASE WHEN FM36P.Period = 3 THEN 
+						FM36P.LearnDelFirstEmp1618Pay 
+						+ FM36P.LearnDelSecondEmp1618Pay
+						+ FM36P.LearnDelLearnAddPayment
+						ELSE 0 END
+					),
+				TotFundP03 = 
+					SUM (  CASE WHEN FM36P.Period = 3 THEN 
+						CASE WHEN FM36P.LearnDelContType = ''Levy Contract'' THEN FM36P.ProgrammeAimOnProgPayment ELSE FM36P.ProgrammeAimProgFundIndMinCoInvest END 
+						+ FM36P.MathEngOnProgPayment 
+						+ FM36P.LDApplic1618FrameworkUpliftOnProgPayment 
+						+ FM36P.LDApplic1618FrameworkUpliftCompletionPayment 
+						+ FM36P.DisadvFirstPayment 
+						+ FM36P.DisadvSecondPayment 
+						+ FM36P.LearnDelFirstProv1618Pay 
+						+ FM36P.LearnDelSecondProv1618Pay
+						+ FM36P.LearnSuppFundCash
+						+ CASE 
+							WHEN FM36P.FundLineType LIKE ''16-18 Apprenticeship%Non-Levy%'' THEN 0
+							WHEN FM36P.FundLineType LIKE ''19+ Apprenticeship%Non-Levy%'' THEN 0
+							WHEN FM36P.LearnDelContType = ''Levy Contract'' THEN FM36P.ProgrammeAimCompletionPayment + FM36P.ProgrammeAimBalPayment
+							ELSE 0 
+						END
+						+ FM36P.MathEngBalPayment 
+						+ FM36P.LDApplic1618FrameworkUpliftBalancingPayment 
+						+ FM36P.LearnDelFirstEmp1618Pay 
+						+ FM36P.LearnDelSecondEmp1618Pay
+						+ FM36P.LearnDelLearnAddPayment
+						ELSE 0 END
+					),
+
+				OnProgPaymentP04 = 
+					SUM ( CASE WHEN FM36P.Period = 4 THEN 
+						CASE WHEN FM36P.LearnDelContType = ''Levy Contract'' THEN FM36P.ProgrammeAimOnProgPayment ELSE FM36P.ProgrammeAimProgFundIndMinCoInvest END 
+						+ FM36P.MathEngOnProgPayment 
+						+ FM36P.LDApplic1618FrameworkUpliftOnProgPayment 
+						+ FM36P.LDApplic1618FrameworkUpliftCompletionPayment 
+						+ FM36P.DisadvFirstPayment 
+						+ FM36P.DisadvSecondPayment 
+						+ FM36P.LearnDelFirstProv1618Pay 
+						+ FM36P.LearnDelSecondProv1618Pay
+						ELSE 0 END
+					),
+				LearnSuppPaymentP04 = 
+					SUM ( CASE WHEN FM36P.Period = 4 THEN 
+						FM36P.LearnSuppFundCash 
+						ELSE 0 END
+					),
+				AchCompPaymentP04 = 
+					SUM ( CASE WHEN FM36P.Period = 4 THEN 
+						+ CASE 
+							WHEN FM36P.FundLineType LIKE ''16-18 Apprenticeship%Non-Levy%'' THEN 0
+							WHEN FM36P.FundLineType LIKE ''19+ Apprenticeship%Non-Levy%'' THEN 0
+							WHEN FM36P.LearnDelContType = ''Levy Contract'' THEN FM36P.ProgrammeAimCompletionPayment + FM36P.ProgrammeAimBalPayment
+							ELSE 0 
+						END 
+						ELSE 0 END
+					),
+				BalancePaymentP04 = 
+					SUM ( CASE WHEN FM36P.Period = 4 THEN 
+						+ FM36P.MathEngBalPayment 
+						+ FM36P.LDApplic1618FrameworkUpliftBalancingPayment 
+						ELSE 0 END
+					),
+				OtherPaymentP04 = 
+					SUM ( CASE WHEN FM36P.Period = 4 THEN 
+						FM36P.LearnDelFirstEmp1618Pay 
+						+ FM36P.LearnDelSecondEmp1618Pay
+						+ FM36P.LearnDelLearnAddPayment
+						ELSE 0 END
+					),
+				TotFundP04 = 
+					SUM (  CASE WHEN FM36P.Period = 4 THEN 
+						CASE WHEN FM36P.LearnDelContType = ''Levy Contract'' THEN FM36P.ProgrammeAimOnProgPayment ELSE FM36P.ProgrammeAimProgFundIndMinCoInvest END 
+						+ FM36P.MathEngOnProgPayment 
+						+ FM36P.LDApplic1618FrameworkUpliftOnProgPayment 
+						+ FM36P.LDApplic1618FrameworkUpliftCompletionPayment 
+						+ FM36P.DisadvFirstPayment 
+						+ FM36P.DisadvSecondPayment 
+						+ FM36P.LearnDelFirstProv1618Pay 
+						+ FM36P.LearnDelSecondProv1618Pay
+						+ FM36P.LearnSuppFundCash
+						+ CASE 
+							WHEN FM36P.FundLineType LIKE ''16-18 Apprenticeship%Non-Levy%'' THEN 0
+							WHEN FM36P.FundLineType LIKE ''19+ Apprenticeship%Non-Levy%'' THEN 0
+							WHEN FM36P.LearnDelContType = ''Levy Contract'' THEN FM36P.ProgrammeAimCompletionPayment + FM36P.ProgrammeAimBalPayment
+							ELSE 0 
+						END
+						+ FM36P.MathEngBalPayment 
+						+ FM36P.LDApplic1618FrameworkUpliftBalancingPayment 
+						+ FM36P.LearnDelFirstEmp1618Pay 
+						+ FM36P.LearnDelSecondEmp1618Pay
+						+ FM36P.LearnDelLearnAddPayment
+						ELSE 0 END
+					),
+	'
+
+    SET @SQLString += 
+		N'
+				OnProgPaymentP05 = 
+					SUM ( CASE WHEN FM36P.Period = 5 THEN 
+						CASE WHEN FM36P.LearnDelContType = ''Levy Contract'' THEN FM36P.ProgrammeAimOnProgPayment ELSE FM36P.ProgrammeAimProgFundIndMinCoInvest END 
+						+ FM36P.MathEngOnProgPayment 
+						+ FM36P.LDApplic1618FrameworkUpliftOnProgPayment 
+						+ FM36P.LDApplic1618FrameworkUpliftCompletionPayment 
+						+ FM36P.DisadvFirstPayment 
+						+ FM36P.DisadvSecondPayment 
+						+ FM36P.LearnDelFirstProv1618Pay 
+						+ FM36P.LearnDelSecondProv1618Pay
+						ELSE 0 END
+					),
+				LearnSuppPaymentP05 = 
+					SUM ( CASE WHEN FM36P.Period = 5 THEN 
+						FM36P.LearnSuppFundCash 
+						ELSE 0 END
+					),
+				AchCompPaymentP05 = 
+					SUM ( CASE WHEN FM36P.Period = 5 THEN 
+						+ CASE 
+							WHEN FM36P.FundLineType LIKE ''16-18 Apprenticeship%Non-Levy%'' THEN 0
+							WHEN FM36P.FundLineType LIKE ''19+ Apprenticeship%Non-Levy%'' THEN 0
+							WHEN FM36P.LearnDelContType = ''Levy Contract'' THEN FM36P.ProgrammeAimCompletionPayment + FM36P.ProgrammeAimBalPayment
+							ELSE 0 
+						END 
+						ELSE 0 END
+					),
+				BalancePaymentP05 = 
+					SUM ( CASE WHEN FM36P.Period = 5 THEN 
+						+ FM36P.MathEngBalPayment 
+						+ FM36P.LDApplic1618FrameworkUpliftBalancingPayment 
+						ELSE 0 END
+					),
+				OtherPaymentP05 = 
+					SUM ( CASE WHEN FM36P.Period = 5 THEN 
+						FM36P.LearnDelFirstEmp1618Pay 
+						+ FM36P.LearnDelSecondEmp1618Pay
+						+ FM36P.LearnDelLearnAddPayment
+						ELSE 0 END
+					),
+				TotFundP05 = 
+					SUM (  CASE WHEN FM36P.Period = 5 THEN 
+						CASE WHEN FM36P.LearnDelContType = ''Levy Contract'' THEN FM36P.ProgrammeAimOnProgPayment ELSE FM36P.ProgrammeAimProgFundIndMinCoInvest END 
+						+ FM36P.MathEngOnProgPayment 
+						+ FM36P.LDApplic1618FrameworkUpliftOnProgPayment 
+						+ FM36P.LDApplic1618FrameworkUpliftCompletionPayment 
+						+ FM36P.DisadvFirstPayment 
+						+ FM36P.DisadvSecondPayment 
+						+ FM36P.LearnDelFirstProv1618Pay 
+						+ FM36P.LearnDelSecondProv1618Pay
+						+ FM36P.LearnSuppFundCash
+						+ CASE 
+							WHEN FM36P.FundLineType LIKE ''16-18 Apprenticeship%Non-Levy%'' THEN 0
+							WHEN FM36P.FundLineType LIKE ''19+ Apprenticeship%Non-Levy%'' THEN 0
+							WHEN FM36P.LearnDelContType = ''Levy Contract'' THEN FM36P.ProgrammeAimCompletionPayment + FM36P.ProgrammeAimBalPayment
+							ELSE 0 
+						END
+						+ FM36P.MathEngBalPayment 
+						+ FM36P.LDApplic1618FrameworkUpliftBalancingPayment 
+						+ FM36P.LearnDelFirstEmp1618Pay 
+						+ FM36P.LearnDelSecondEmp1618Pay
+						+ FM36P.LearnDelLearnAddPayment
+						ELSE 0 END
+					),
+
+				OnProgPaymentP06 = 
+					SUM ( CASE WHEN FM36P.Period = 6 THEN 
+						CASE WHEN FM36P.LearnDelContType = ''Levy Contract'' THEN FM36P.ProgrammeAimOnProgPayment ELSE FM36P.ProgrammeAimProgFundIndMinCoInvest END 
+						+ FM36P.MathEngOnProgPayment 
+						+ FM36P.LDApplic1618FrameworkUpliftOnProgPayment 
+						+ FM36P.LDApplic1618FrameworkUpliftCompletionPayment 
+						+ FM36P.DisadvFirstPayment 
+						+ FM36P.DisadvSecondPayment 
+						+ FM36P.LearnDelFirstProv1618Pay 
+						+ FM36P.LearnDelSecondProv1618Pay
+						ELSE 0 END
+					),
+				LearnSuppPaymentP06 = 
+					SUM ( CASE WHEN FM36P.Period = 6 THEN 
+						FM36P.LearnSuppFundCash 
+						ELSE 0 END
+					),
+				AchCompPaymentP06 = 
+					SUM ( CASE WHEN FM36P.Period = 6 THEN 
+						+ CASE 
+							WHEN FM36P.FundLineType LIKE ''16-18 Apprenticeship%Non-Levy%'' THEN 0
+							WHEN FM36P.FundLineType LIKE ''19+ Apprenticeship%Non-Levy%'' THEN 0
+							WHEN FM36P.LearnDelContType = ''Levy Contract'' THEN FM36P.ProgrammeAimCompletionPayment + FM36P.ProgrammeAimBalPayment
+							ELSE 0 
+						END 
+						ELSE 0 END
+					),
+				BalancePaymentP06 = 
+					SUM ( CASE WHEN FM36P.Period = 6 THEN 
+						+ FM36P.MathEngBalPayment 
+						+ FM36P.LDApplic1618FrameworkUpliftBalancingPayment 
+						ELSE 0 END
+					),
+				OtherPaymentP06 = 
+					SUM ( CASE WHEN FM36P.Period = 6 THEN 
+						FM36P.LearnDelFirstEmp1618Pay 
+						+ FM36P.LearnDelSecondEmp1618Pay
+						+ FM36P.LearnDelLearnAddPayment
+						ELSE 0 END
+					),
+				TotFundP06 = 
+					SUM (  CASE WHEN FM36P.Period = 6 THEN 
+						CASE WHEN FM36P.LearnDelContType = ''Levy Contract'' THEN FM36P.ProgrammeAimOnProgPayment ELSE FM36P.ProgrammeAimProgFundIndMinCoInvest END 
+						+ FM36P.MathEngOnProgPayment 
+						+ FM36P.LDApplic1618FrameworkUpliftOnProgPayment 
+						+ FM36P.LDApplic1618FrameworkUpliftCompletionPayment 
+						+ FM36P.DisadvFirstPayment 
+						+ FM36P.DisadvSecondPayment 
+						+ FM36P.LearnDelFirstProv1618Pay 
+						+ FM36P.LearnDelSecondProv1618Pay
+						+ FM36P.LearnSuppFundCash
+						+ CASE 
+							WHEN FM36P.FundLineType LIKE ''16-18 Apprenticeship%Non-Levy%'' THEN 0
+							WHEN FM36P.FundLineType LIKE ''19+ Apprenticeship%Non-Levy%'' THEN 0
+							WHEN FM36P.LearnDelContType = ''Levy Contract'' THEN FM36P.ProgrammeAimCompletionPayment + FM36P.ProgrammeAimBalPayment
+							ELSE 0 
+						END
+						+ FM36P.MathEngBalPayment 
+						+ FM36P.LDApplic1618FrameworkUpliftBalancingPayment 
+						+ FM36P.LearnDelFirstEmp1618Pay 
+						+ FM36P.LearnDelSecondEmp1618Pay
+						+ FM36P.LearnDelLearnAddPayment
+						ELSE 0 END
+					),
+	'
+
+    SET @SQLString += 
+		N'
+				OnProgPaymentP07 = 
+					SUM ( CASE WHEN FM36P.Period = 7 THEN 
+						CASE WHEN FM36P.LearnDelContType = ''Levy Contract'' THEN FM36P.ProgrammeAimOnProgPayment ELSE FM36P.ProgrammeAimProgFundIndMinCoInvest END 
+						+ FM36P.MathEngOnProgPayment 
+						+ FM36P.LDApplic1618FrameworkUpliftOnProgPayment 
+						+ FM36P.LDApplic1618FrameworkUpliftCompletionPayment 
+						+ FM36P.DisadvFirstPayment 
+						+ FM36P.DisadvSecondPayment 
+						+ FM36P.LearnDelFirstProv1618Pay 
+						+ FM36P.LearnDelSecondProv1618Pay
+						ELSE 0 END
+					),
+				LearnSuppPaymentP07 = 
+					SUM ( CASE WHEN FM36P.Period = 7 THEN 
+						FM36P.LearnSuppFundCash 
+						ELSE 0 END
+					),
+				AchCompPaymentP07 = 
+					SUM ( CASE WHEN FM36P.Period = 7 THEN 
+						+ CASE 
+							WHEN FM36P.FundLineType LIKE ''16-18 Apprenticeship%Non-Levy%'' THEN 0
+							WHEN FM36P.FundLineType LIKE ''19+ Apprenticeship%Non-Levy%'' THEN 0
+							WHEN FM36P.LearnDelContType = ''Levy Contract'' THEN FM36P.ProgrammeAimCompletionPayment + FM36P.ProgrammeAimBalPayment
+							ELSE 0 
+						END 
+						ELSE 0 END
+					),
+				BalancePaymentP07 = 
+					SUM ( CASE WHEN FM36P.Period = 7 THEN 
+						+ FM36P.MathEngBalPayment 
+						+ FM36P.LDApplic1618FrameworkUpliftBalancingPayment 
+						ELSE 0 END
+					),
+				OtherPaymentP07 = 
+					SUM ( CASE WHEN FM36P.Period = 7 THEN 
+						FM36P.LearnDelFirstEmp1618Pay 
+						+ FM36P.LearnDelSecondEmp1618Pay
+						+ FM36P.LearnDelLearnAddPayment
+						ELSE 0 END
+					),
+				TotFundP07 = 
+					SUM (  CASE WHEN FM36P.Period = 7 THEN 
+						CASE WHEN FM36P.LearnDelContType = ''Levy Contract'' THEN FM36P.ProgrammeAimOnProgPayment ELSE FM36P.ProgrammeAimProgFundIndMinCoInvest END 
+						+ FM36P.MathEngOnProgPayment 
+						+ FM36P.LDApplic1618FrameworkUpliftOnProgPayment 
+						+ FM36P.LDApplic1618FrameworkUpliftCompletionPayment 
+						+ FM36P.DisadvFirstPayment 
+						+ FM36P.DisadvSecondPayment 
+						+ FM36P.LearnDelFirstProv1618Pay 
+						+ FM36P.LearnDelSecondProv1618Pay
+						+ FM36P.LearnSuppFundCash
+						+ CASE 
+							WHEN FM36P.FundLineType LIKE ''16-18 Apprenticeship%Non-Levy%'' THEN 0
+							WHEN FM36P.FundLineType LIKE ''19+ Apprenticeship%Non-Levy%'' THEN 0
+							WHEN FM36P.LearnDelContType = ''Levy Contract'' THEN FM36P.ProgrammeAimCompletionPayment + FM36P.ProgrammeAimBalPayment
+							ELSE 0 
+						END
+						+ FM36P.MathEngBalPayment 
+						+ FM36P.LDApplic1618FrameworkUpliftBalancingPayment 
+						+ FM36P.LearnDelFirstEmp1618Pay 
+						+ FM36P.LearnDelSecondEmp1618Pay
+						+ FM36P.LearnDelLearnAddPayment
+						ELSE 0 END
+					),
+
+				OnProgPaymentP08 = 
+					SUM ( CASE WHEN FM36P.Period = 8 THEN 
+						CASE WHEN FM36P.LearnDelContType = ''Levy Contract'' THEN FM36P.ProgrammeAimOnProgPayment ELSE FM36P.ProgrammeAimProgFundIndMinCoInvest END 
+						+ FM36P.MathEngOnProgPayment 
+						+ FM36P.LDApplic1618FrameworkUpliftOnProgPayment 
+						+ FM36P.LDApplic1618FrameworkUpliftCompletionPayment 
+						+ FM36P.DisadvFirstPayment 
+						+ FM36P.DisadvSecondPayment 
+						+ FM36P.LearnDelFirstProv1618Pay 
+						+ FM36P.LearnDelSecondProv1618Pay
+						ELSE 0 END
+					),
+				LearnSuppPaymentP08 = 
+					SUM ( CASE WHEN FM36P.Period = 8 THEN 
+						FM36P.LearnSuppFundCash 
+						ELSE 0 END
+					),
+				AchCompPaymentP08 = 
+					SUM ( CASE WHEN FM36P.Period = 8 THEN 
+						+ CASE 
+							WHEN FM36P.FundLineType LIKE ''16-18 Apprenticeship%Non-Levy%'' THEN 0
+							WHEN FM36P.FundLineType LIKE ''19+ Apprenticeship%Non-Levy%'' THEN 0
+							WHEN FM36P.LearnDelContType = ''Levy Contract'' THEN FM36P.ProgrammeAimCompletionPayment + FM36P.ProgrammeAimBalPayment
+							ELSE 0 
+						END 
+						ELSE 0 END
+					),
+				BalancePaymentP08 = 
+					SUM ( CASE WHEN FM36P.Period = 8 THEN 
+						+ FM36P.MathEngBalPayment 
+						+ FM36P.LDApplic1618FrameworkUpliftBalancingPayment 
+						ELSE 0 END
+					),
+				OtherPaymentP08 = 
+					SUM ( CASE WHEN FM36P.Period = 8 THEN 
+						FM36P.LearnDelFirstEmp1618Pay 
+						+ FM36P.LearnDelSecondEmp1618Pay
+						+ FM36P.LearnDelLearnAddPayment
+						ELSE 0 END
+					),
+				TotFundP08 = 
+					SUM (  CASE WHEN FM36P.Period = 8 THEN 
+						CASE WHEN FM36P.LearnDelContType = ''Levy Contract'' THEN FM36P.ProgrammeAimOnProgPayment ELSE FM36P.ProgrammeAimProgFundIndMinCoInvest END 
+						+ FM36P.MathEngOnProgPayment 
+						+ FM36P.LDApplic1618FrameworkUpliftOnProgPayment 
+						+ FM36P.LDApplic1618FrameworkUpliftCompletionPayment 
+						+ FM36P.DisadvFirstPayment 
+						+ FM36P.DisadvSecondPayment 
+						+ FM36P.LearnDelFirstProv1618Pay 
+						+ FM36P.LearnDelSecondProv1618Pay
+						+ FM36P.LearnSuppFundCash
+						+ CASE 
+							WHEN FM36P.FundLineType LIKE ''16-18 Apprenticeship%Non-Levy%'' THEN 0
+							WHEN FM36P.FundLineType LIKE ''19+ Apprenticeship%Non-Levy%'' THEN 0
+							WHEN FM36P.LearnDelContType = ''Levy Contract'' THEN FM36P.ProgrammeAimCompletionPayment + FM36P.ProgrammeAimBalPayment
+							ELSE 0 
+						END
+						+ FM36P.MathEngBalPayment 
+						+ FM36P.LDApplic1618FrameworkUpliftBalancingPayment 
+						+ FM36P.LearnDelFirstEmp1618Pay 
+						+ FM36P.LearnDelSecondEmp1618Pay
+						+ FM36P.LearnDelLearnAddPayment
+						ELSE 0 END
+					),
+	'
+
+    SET @SQLString += 
+		N'
+				OnProgPaymentP09 = 
+					SUM ( CASE WHEN FM36P.Period = 9 THEN 
+						CASE WHEN FM36P.LearnDelContType = ''Levy Contract'' THEN FM36P.ProgrammeAimOnProgPayment ELSE FM36P.ProgrammeAimProgFundIndMinCoInvest END 
+						+ FM36P.MathEngOnProgPayment 
+						+ FM36P.LDApplic1618FrameworkUpliftOnProgPayment 
+						+ FM36P.LDApplic1618FrameworkUpliftCompletionPayment 
+						+ FM36P.DisadvFirstPayment 
+						+ FM36P.DisadvSecondPayment 
+						+ FM36P.LearnDelFirstProv1618Pay 
+						+ FM36P.LearnDelSecondProv1618Pay
+						ELSE 0 END
+					),
+				LearnSuppPaymentP09 = 
+					SUM ( CASE WHEN FM36P.Period = 9 THEN 
+						FM36P.LearnSuppFundCash 
+						ELSE 0 END
+					),
+				AchCompPaymentP09 = 
+					SUM ( CASE WHEN FM36P.Period = 9 THEN 
+						+ CASE 
+							WHEN FM36P.FundLineType LIKE ''16-18 Apprenticeship%Non-Levy%'' THEN 0
+							WHEN FM36P.FundLineType LIKE ''19+ Apprenticeship%Non-Levy%'' THEN 0
+							WHEN FM36P.LearnDelContType = ''Levy Contract'' THEN FM36P.ProgrammeAimCompletionPayment + FM36P.ProgrammeAimBalPayment
+							ELSE 0 
+						END 
+						ELSE 0 END
+					),
+				BalancePaymentP09 = 
+					SUM ( CASE WHEN FM36P.Period = 9 THEN 
+						+ FM36P.MathEngBalPayment 
+						+ FM36P.LDApplic1618FrameworkUpliftBalancingPayment 
+						ELSE 0 END
+					),
+				OtherPaymentP09 = 
+					SUM ( CASE WHEN FM36P.Period = 9 THEN 
+						FM36P.LearnDelFirstEmp1618Pay 
+						+ FM36P.LearnDelSecondEmp1618Pay
+						+ FM36P.LearnDelLearnAddPayment
+						ELSE 0 END
+					),
+				TotFundP09 = 
+					SUM (  CASE WHEN FM36P.Period = 9 THEN 
+						CASE WHEN FM36P.LearnDelContType = ''Levy Contract'' THEN FM36P.ProgrammeAimOnProgPayment ELSE FM36P.ProgrammeAimProgFundIndMinCoInvest END 
+						+ FM36P.MathEngOnProgPayment 
+						+ FM36P.LDApplic1618FrameworkUpliftOnProgPayment 
+						+ FM36P.LDApplic1618FrameworkUpliftCompletionPayment 
+						+ FM36P.DisadvFirstPayment 
+						+ FM36P.DisadvSecondPayment 
+						+ FM36P.LearnDelFirstProv1618Pay 
+						+ FM36P.LearnDelSecondProv1618Pay
+						+ FM36P.LearnSuppFundCash
+						+ CASE 
+							WHEN FM36P.FundLineType LIKE ''16-18 Apprenticeship%Non-Levy%'' THEN 0
+							WHEN FM36P.FundLineType LIKE ''19+ Apprenticeship%Non-Levy%'' THEN 0
+							WHEN FM36P.LearnDelContType = ''Levy Contract'' THEN FM36P.ProgrammeAimCompletionPayment + FM36P.ProgrammeAimBalPayment
+							ELSE 0 
+						END
+						+ FM36P.MathEngBalPayment 
+						+ FM36P.LDApplic1618FrameworkUpliftBalancingPayment 
+						+ FM36P.LearnDelFirstEmp1618Pay 
+						+ FM36P.LearnDelSecondEmp1618Pay
+						+ FM36P.LearnDelLearnAddPayment
+						ELSE 0 END
+					),
+
+				OnProgPaymentP10 = 
+					SUM ( CASE WHEN FM36P.Period = 10 THEN 
+						CASE WHEN FM36P.LearnDelContType = ''Levy Contract'' THEN FM36P.ProgrammeAimOnProgPayment ELSE FM36P.ProgrammeAimProgFundIndMinCoInvest END 
+						+ FM36P.MathEngOnProgPayment 
+						+ FM36P.LDApplic1618FrameworkUpliftOnProgPayment 
+						+ FM36P.LDApplic1618FrameworkUpliftCompletionPayment 
+						+ FM36P.DisadvFirstPayment 
+						+ FM36P.DisadvSecondPayment 
+						+ FM36P.LearnDelFirstProv1618Pay 
+						+ FM36P.LearnDelSecondProv1618Pay
+						ELSE 0 END
+					),
+				LearnSuppPaymentP10 = 
+					SUM ( CASE WHEN FM36P.Period = 10 THEN 
+						FM36P.LearnSuppFundCash 
+						ELSE 0 END
+					),
+				AchCompPaymentP10 = 
+					SUM ( CASE WHEN FM36P.Period = 10 THEN 
+						+ CASE 
+							WHEN FM36P.FundLineType LIKE ''16-18 Apprenticeship%Non-Levy%'' THEN 0
+							WHEN FM36P.FundLineType LIKE ''19+ Apprenticeship%Non-Levy%'' THEN 0
+							WHEN FM36P.LearnDelContType = ''Levy Contract'' THEN FM36P.ProgrammeAimCompletionPayment + FM36P.ProgrammeAimBalPayment
+							ELSE 0 
+						END 
+						ELSE 0 END
+					),
+				BalancePaymentP10 = 
+					SUM ( CASE WHEN FM36P.Period = 10 THEN 
+						+ FM36P.MathEngBalPayment 
+						+ FM36P.LDApplic1618FrameworkUpliftBalancingPayment 
+						ELSE 0 END
+					),
+				OtherPaymentP10 = 
+					SUM ( CASE WHEN FM36P.Period = 10 THEN 
+						FM36P.LearnDelFirstEmp1618Pay 
+						+ FM36P.LearnDelSecondEmp1618Pay
+						+ FM36P.LearnDelLearnAddPayment
+						ELSE 0 END
+					),
+				TotFundP10 = 
+					SUM (  CASE WHEN FM36P.Period = 10 THEN 
+						CASE WHEN FM36P.LearnDelContType = ''Levy Contract'' THEN FM36P.ProgrammeAimOnProgPayment ELSE FM36P.ProgrammeAimProgFundIndMinCoInvest END 
+						+ FM36P.MathEngOnProgPayment 
+						+ FM36P.LDApplic1618FrameworkUpliftOnProgPayment 
+						+ FM36P.LDApplic1618FrameworkUpliftCompletionPayment 
+						+ FM36P.DisadvFirstPayment 
+						+ FM36P.DisadvSecondPayment 
+						+ FM36P.LearnDelFirstProv1618Pay 
+						+ FM36P.LearnDelSecondProv1618Pay
+						+ FM36P.LearnSuppFundCash
+						+ CASE 
+							WHEN FM36P.FundLineType LIKE ''16-18 Apprenticeship%Non-Levy%'' THEN 0
+							WHEN FM36P.FundLineType LIKE ''19+ Apprenticeship%Non-Levy%'' THEN 0
+							WHEN FM36P.LearnDelContType = ''Levy Contract'' THEN FM36P.ProgrammeAimCompletionPayment + FM36P.ProgrammeAimBalPayment
+							ELSE 0 
+						END
+						+ FM36P.MathEngBalPayment 
+						+ FM36P.LDApplic1618FrameworkUpliftBalancingPayment 
+						+ FM36P.LearnDelFirstEmp1618Pay 
+						+ FM36P.LearnDelSecondEmp1618Pay
+						+ FM36P.LearnDelLearnAddPayment
+						ELSE 0 END
+					),
+	'
+
+    SET @SQLString += 
+		N'
+				OnProgPaymentP11 = 
+					SUM ( CASE WHEN FM36P.Period = 11 THEN 
+						CASE WHEN FM36P.LearnDelContType = ''Levy Contract'' THEN FM36P.ProgrammeAimOnProgPayment ELSE FM36P.ProgrammeAimProgFundIndMinCoInvest END 
+						+ FM36P.MathEngOnProgPayment 
+						+ FM36P.LDApplic1618FrameworkUpliftOnProgPayment 
+						+ FM36P.LDApplic1618FrameworkUpliftCompletionPayment 
+						+ FM36P.DisadvFirstPayment 
+						+ FM36P.DisadvSecondPayment 
+						+ FM36P.LearnDelFirstProv1618Pay 
+						+ FM36P.LearnDelSecondProv1618Pay
+						ELSE 0 END
+					),
+				LearnSuppPaymentP11 = 
+					SUM ( CASE WHEN FM36P.Period = 11 THEN 
+						FM36P.LearnSuppFundCash 
+						ELSE 0 END
+					),
+				AchCompPaymentP11 = 
+					SUM ( CASE WHEN FM36P.Period = 11 THEN 
+						+ CASE 
+							WHEN FM36P.FundLineType LIKE ''16-18 Apprenticeship%Non-Levy%'' THEN 0
+							WHEN FM36P.FundLineType LIKE ''19+ Apprenticeship%Non-Levy%'' THEN 0
+							WHEN FM36P.LearnDelContType = ''Levy Contract'' THEN FM36P.ProgrammeAimCompletionPayment + FM36P.ProgrammeAimBalPayment
+							ELSE 0 
+						END 
+						ELSE 0 END
+					),
+				BalancePaymentP11 = 
+					SUM ( CASE WHEN FM36P.Period = 11 THEN 
+						+ FM36P.MathEngBalPayment 
+						+ FM36P.LDApplic1618FrameworkUpliftBalancingPayment 
+						ELSE 0 END
+					),
+				OtherPaymentP11 = 
+					SUM ( CASE WHEN FM36P.Period = 11 THEN 
+						FM36P.LearnDelFirstEmp1618Pay 
+						+ FM36P.LearnDelSecondEmp1618Pay
+						+ FM36P.LearnDelLearnAddPayment
+						ELSE 0 END
+					),
+				TotFundP11 = 
+					SUM (  CASE WHEN FM36P.Period = 11 THEN 
+						CASE WHEN FM36P.LearnDelContType = ''Levy Contract'' THEN FM36P.ProgrammeAimOnProgPayment ELSE FM36P.ProgrammeAimProgFundIndMinCoInvest END 
+						+ FM36P.MathEngOnProgPayment 
+						+ FM36P.LDApplic1618FrameworkUpliftOnProgPayment 
+						+ FM36P.LDApplic1618FrameworkUpliftCompletionPayment 
+						+ FM36P.DisadvFirstPayment 
+						+ FM36P.DisadvSecondPayment 
+						+ FM36P.LearnDelFirstProv1618Pay 
+						+ FM36P.LearnDelSecondProv1618Pay
+						+ FM36P.LearnSuppFundCash
+						+ CASE 
+							WHEN FM36P.FundLineType LIKE ''16-18 Apprenticeship%Non-Levy%'' THEN 0
+							WHEN FM36P.FundLineType LIKE ''19+ Apprenticeship%Non-Levy%'' THEN 0
+							WHEN FM36P.LearnDelContType = ''Levy Contract'' THEN FM36P.ProgrammeAimCompletionPayment + FM36P.ProgrammeAimBalPayment
+							ELSE 0 
+						END
+						+ FM36P.MathEngBalPayment 
+						+ FM36P.LDApplic1618FrameworkUpliftBalancingPayment 
+						+ FM36P.LearnDelFirstEmp1618Pay 
+						+ FM36P.LearnDelSecondEmp1618Pay
+						+ FM36P.LearnDelLearnAddPayment
+						ELSE 0 END
+					),
+
+				OnProgPaymentP12 = 
+					SUM ( CASE WHEN FM36P.Period = 12 THEN 
+						CASE WHEN FM36P.LearnDelContType = ''Levy Contract'' THEN FM36P.ProgrammeAimOnProgPayment ELSE FM36P.ProgrammeAimProgFundIndMinCoInvest END 
+						+ FM36P.MathEngOnProgPayment 
+						+ FM36P.LDApplic1618FrameworkUpliftOnProgPayment 
+						+ FM36P.LDApplic1618FrameworkUpliftCompletionPayment 
+						+ FM36P.DisadvFirstPayment 
+						+ FM36P.DisadvSecondPayment 
+						+ FM36P.LearnDelFirstProv1618Pay 
+						+ FM36P.LearnDelSecondProv1618Pay
+						ELSE 0 END
+					),
+				LearnSuppPaymentP12 = 
+					SUM ( CASE WHEN FM36P.Period = 12 THEN 
+						FM36P.LearnSuppFundCash 
+						ELSE 0 END
+					),
+				AchCompPaymentP12 = 
+					SUM ( CASE WHEN FM36P.Period = 12 THEN 
+						+ CASE 
+							WHEN FM36P.FundLineType LIKE ''16-18 Apprenticeship%Non-Levy%'' THEN 0
+							WHEN FM36P.FundLineType LIKE ''19+ Apprenticeship%Non-Levy%'' THEN 0
+							WHEN FM36P.LearnDelContType = ''Levy Contract'' THEN FM36P.ProgrammeAimCompletionPayment + FM36P.ProgrammeAimBalPayment
+							ELSE 0 
+						END 
+						ELSE 0 END
+					),
+				BalancePaymentP12 = 
+					SUM ( CASE WHEN FM36P.Period = 12 THEN 
+						+ FM36P.MathEngBalPayment 
+						+ FM36P.LDApplic1618FrameworkUpliftBalancingPayment 
+						ELSE 0 END
+					),
+				OtherPaymentP12 = 
+					SUM ( CASE WHEN FM36P.Period = 12 THEN 
+						FM36P.LearnDelFirstEmp1618Pay 
+						+ FM36P.LearnDelSecondEmp1618Pay
+						+ FM36P.LearnDelLearnAddPayment
+						ELSE 0 END
+					),
+				TotFundP12 = 
+					SUM (  CASE WHEN FM36P.Period = 12 THEN 
+						CASE WHEN FM36P.LearnDelContType = ''Levy Contract'' THEN FM36P.ProgrammeAimOnProgPayment ELSE FM36P.ProgrammeAimProgFundIndMinCoInvest END 
+						+ FM36P.MathEngOnProgPayment 
+						+ FM36P.LDApplic1618FrameworkUpliftOnProgPayment 
+						+ FM36P.LDApplic1618FrameworkUpliftCompletionPayment 
+						+ FM36P.DisadvFirstPayment 
+						+ FM36P.DisadvSecondPayment 
+						+ FM36P.LearnDelFirstProv1618Pay 
+						+ FM36P.LearnDelSecondProv1618Pay
+						+ FM36P.LearnSuppFundCash
+						+ CASE 
+							WHEN FM36P.FundLineType LIKE ''16-18 Apprenticeship%Non-Levy%'' THEN 0
+							WHEN FM36P.FundLineType LIKE ''19+ Apprenticeship%Non-Levy%'' THEN 0
+							WHEN FM36P.LearnDelContType = ''Levy Contract'' THEN FM36P.ProgrammeAimCompletionPayment + FM36P.ProgrammeAimBalPayment
+							ELSE 0 
+						END
+						+ FM36P.MathEngBalPayment 
+						+ FM36P.LDApplic1618FrameworkUpliftBalancingPayment 
+						+ FM36P.LearnDelFirstEmp1618Pay 
+						+ FM36P.LearnDelSecondEmp1618Pay
+						+ FM36P.LearnDelLearnAddPayment
+						ELSE 0 END
+					)
 			FROM ' + @FISDatabase + '.dbo.Rulebase_AEC_LearningDelivery_Period FM36P
 			GROUP BY
 				FM36P.LearnRefNumber,
-				FM36P.AimSeqNumber
+				FM36P.AimSeqNumber,
+				FM36P.FundLineType
 		) FM36P
 			ON FM36P.LearnRefNumber = FM36.LearnRefNumber
 			AND FM36P.AimSeqNumber = FM36.AimSeqNumber
@@ -2935,7 +3458,9 @@ BEGIN
     
     SET @SQLString += 
         N'
-        LEFT JOIN ' + @FISOutputTableLocation + 'FIS_Faculties FAC
+		LEFT JOIN ' + @FISOutputTableLocation + 'FIS_Providers PROV
+			ON PROV.ProviderID = SRC.UKPRN
+        LEFT JOIN ' + @FISOutputTableLocation + 'FIS_FacultyTitles FAC
             ON FAC.FacCode = 
                 CASE
                     WHEN @ProviderFieldFacLocation = ''A'' THEN
@@ -2950,7 +3475,7 @@ BEGIN
                         PSDMA.ProvSpecDelMon
                 END
             AND FAC.AcademicYear = @AcademicYear
-        LEFT JOIN ' + @FISOutputTableLocation + 'FIS_Teams TEAM
+        LEFT JOIN ' + @FISOutputTableLocation + 'FIS_TeamTitles TEAM
             ON TEAM.TeamCode = 
                 CASE
                     WHEN @ProviderFieldTeamLocation = ''A'' THEN
@@ -3092,7 +3617,6 @@ BEGIN
 		@ProviderFieldTeamLocation CHAR(1),
 		@ProviderFieldCostCentreLocation CHAR(1),
 		@ProviderFieldCourseLocation CHAR(1),
-    	@ProviderFieldCourseFormat NVARCHAR(50),
     	@OverrideEngFac NVARCHAR(50),
     	@OverrideMatFac NVARCHAR(50),
     	@OverrideEngTeam NVARCHAR(50),
@@ -3118,7 +3642,6 @@ BEGIN
 		@ProviderFieldTeamLocation = @ProviderFieldTeamLocation,
 		@ProviderFieldCostCentreLocation = @ProviderFieldCostCentreLocation,
 		@ProviderFieldCourseLocation = @ProviderFieldCourseLocation,
-    	@ProviderFieldCourseFormat = @ProviderFieldCourseFormat,
     	@OverrideEngFac = @OverrideEngFac,
     	@OverrideMatFac = @OverrideMatFac,
     	@OverrideEngTeam = @OverrideEngTeam,

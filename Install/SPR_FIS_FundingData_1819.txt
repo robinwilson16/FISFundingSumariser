@@ -1,3 +1,10 @@
+/*
+Changes since 17/18
+EFA_ and SFA_ tables renamed to FM25_ and FM_35
+LearnDelLearnAddPayment added in FM36 table (Rulebase_AEC_LearningDelivery_Period)
+Campus ID added
+*/
+
 CREATE PROCEDURE SPR_FIS_FundingData_1819
 	@FISDatabase NVARCHAR(50),
 	@AcademicYear NVARCHAR(5),
@@ -158,6 +165,7 @@ BEGIN
 
 	SET @SQLString += 
         N'
+		INSERT INTO ' + @FISOutputTableLocation + 'FIS_FundingData WITH (TABLOCKX)
 		SELECT
 			AcademicYear = @AcademicYear,
             ProviderNumber = SRC.UKPRN,

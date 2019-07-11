@@ -1,6 +1,6 @@
-DECLARE @FISDatabase NVARCHAR(100) = 'FIS_1819_NLAND_R11_F'
-DECLARE @AcademicYear NVARCHAR(5) = '18/19'
-DECLARE @ILRReturn int = 11
+DECLARE @FISDatabase NVARCHAR(100) = 'FIS_1718_NLAND_R14_F'
+DECLARE @AcademicYear NVARCHAR(5) = '17/18'
+DECLARE @ILRReturn int = 14
 DECLARE @IsFinalReturn BIT = 1
 DECLARE @Split1619Funding BIT = 0 --Split the funding into the 12 periods
 DECLARE @1619ALSFundingPercent DECIMAL(3,2) = 0.07 --Deduct this percent from Tot Funding and assign to ALS column

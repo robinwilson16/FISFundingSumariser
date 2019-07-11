@@ -12,5 +12,5 @@ AS
 		UpliftAdult = COALESCE ( PCU.SFA_UPLIFT, 1 ),
 		UpliftApp = COALESCE ( PCU.APP_FUNDING_UPLIFT, 1 )
 	FROM besql05.ProGeneral.dbo.PostCodeWard PCW
-	INNER JOIN besql05.ProGeneral.dbo.PostCodeUplift PCU
+	LEFT JOIN besql05.ProGeneral.dbo.PostCodeUplift PCU
 		ON  PCU.POSTCODE = PCW.Postcode

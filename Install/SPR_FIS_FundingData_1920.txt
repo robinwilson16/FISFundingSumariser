@@ -1,3 +1,9 @@
+/*
+Changes since 18/19
+Tables now generated directly to SQL Server. Schema was always dbo. but now first part of table name is the schema
+e.g. dbo.Valid_Learner in 18/19 to Valid.Learner in 19/20
+*/
+
 CREATE PROCEDURE SPR_FIS_FundingData_1920
 	@FISDatabase NVARCHAR(50),
 	@AcademicYear NVARCHAR(5),
@@ -25,18 +31,19 @@ AS
 BEGIN
 	SET NOCOUNT ON;
 
-	--DECLARE @FISDatabase NVARCHAR(50) = 'FIS_1920_R01_1'
+	--DECLARE @FISDatabase NVARCHAR(100) = 'ILR1920'
 	--DECLARE @AcademicYear NVARCHAR(5) = '19/20'
-	--DECLARE @ILRReturn NVARCHAR(2) = '1'
+	--DECLARE @ILRReturn int = 1
 	--DECLARE @IsFinalReturn BIT = 0
-	--DECLARE @Split1619Funding BIT = 1
-	--DECLARE @1619ALSFundingPercent DECIMAL(3,2) = 0.03
-	--DECLARE @IncludeHEAdvLoanPossIncome BIT = 1,
-	--DECLARE @FutureAchieveWeighting DECIMAL(3,2) = 0.75
-	--DECLARE @FISOutputTableLocation NVARCHAR(200) = 'ProSolutionReports.dbo.'
-	--DECLARE @ProviderFieldFacLocation NCHAR(1) = 'D'
+	--DECLARE @Split1619Funding BIT = 1 --Split the funding into the 12 periods
+	--DECLARE @1619ALSFundingPercent DECIMAL(3,2) = 0.07 --Deduct this percent from Tot Funding and assign to ALS column
+	--DECLARE @IncludeHEAdvLoanPossIncome BIT = 0 --HE gross fee is only achieved if at all 3 SLC census points learners remain current
+	--DECLARE @FutureAchieveWeighting DECIMAL(3,2) = 1 --Future ach weighting factor. If 1 then is 100% of all remaining ach monies
+	--DECLARE @Mode NCHAR(1) = 'I' --I=Insert new ILR return data leaving existing data, R=Replace table
+	--DECLARE @FISOutputTableLocation NVARCHAR(200) = 'StagingArea.dbo.'
+	--DECLARE @ProviderFieldFacLocation NCHAR(1) = 'B'
 	--DECLARE @ProviderFieldTeamLocation NCHAR(1) = 'C'
-	--DECLARE @ProviderFieldCostCentreLocation NCHAR(1) = 'B'
+	--DECLARE @ProviderFieldCostCentreLocation NCHAR(1) = 'D'
 	--DECLARE @ProviderFieldCourseLocation NCHAR(1) = 'A'
 	--DECLARE @OverrideEngFac NVARCHAR(50) = 'F05'
 	--DECLARE @OverrideMatFac NVARCHAR(50) = 'F05'
@@ -46,7 +53,7 @@ BEGIN
 	--DECLARE @OverrideMatCostCentre NVARCHAR(50) = '4462'
 	--DECLARE @OverridePartnerFac NVARCHAR(50) = 'F00'
 	--DECLARE @OverridePartnerTeam NVARCHAR(50) = 'T00'
-	--DECLARE @OverridePartnerCostCentre NVARCHAR(50) = ''
+	--DECLARE @OverridePartnerCostCentre NVARCHAR(50) = 'NULL'
 
 	DECLARE @SQLString NVARCHAR(MAX);
     DECLARE @SQLParams NVARCHAR(MAX);
@@ -1636,15 +1643,15 @@ BEGIN
     
     SET @SQLString += 
         N'
-		FROM ' + @FISDatabase + '.dbo.Valid_Learner L
-		INNER JOIN ' + @FISDatabase + '.dbo.Rulebase_DV_Learner DV
+		FROM ' + @FISDatabase + '.Valid.Learner L
+		INNER JOIN ' + @FISDatabase + '.Rulebase.DV_Learner DV
 			ON DV.LearnRefNumber = L.LearnRefNumber
-		INNER JOIN ' + @FISDatabase + '.dbo.Valid_LearningDelivery LD
+		INNER JOIN ' + @FISDatabase + '.Valid.LearningDelivery LD
 			ON LD.LearnRefNumber = L.LearnRefNumber
-		INNER JOIN ' + @FISDatabase + '.dbo.Rulebase_DV_LearningDelivery LDR
+		INNER JOIN ' + @FISDatabase + '.Rulebase.DV_LearningDelivery LDR
 			ON LDR.LearnRefNumber = LD.LearnRefNumber
 			AND LDR.AimSeqNumber = LD.AimSeqNumber
-		INNER JOIN ' + @FISDatabase + '.dbo.Valid_Source SRC
+		INNER JOIN ' + @FISDatabase + '.Valid.Source SRC
 			ON 1 = 1
 	'
     
@@ -1736,40 +1743,40 @@ BEGIN
     
     SET @SQLString += 
         N'
-			FROM ' + @FISDatabase + '.dbo.Valid_Learner L
-			INNER JOIN ' + @FISDatabase + '.dbo.Valid_LearningDelivery LD
+			FROM ' + @FISDatabase + '.Valid.Learner L
+			INNER JOIN ' + @FISDatabase + '.Valid.LearningDelivery LD
 				ON LD.LearnRefNumber = L.LearnRefNumber
-			LEFT JOIN ' + @FISDatabase + '.dbo.Valid_ProviderSpecDeliveryMonitoring PSDMA
+			LEFT JOIN ' + @FISDatabase + '.Valid.ProviderSpecDeliveryMonitoring PSDMA
 				ON PSDMA.LearnRefNumber = LD.LearnRefNumber
 				AND PSDMA.AimSeqNumber = LD.AimSeqNumber
 				AND PSDMA.ProvSpecDelMonOccur = ''A''
-			LEFT JOIN ' + @FISDatabase + '.dbo.Valid_ProviderSpecDeliveryMonitoring PSDMB
+			LEFT JOIN ' + @FISDatabase + '.Valid.ProviderSpecDeliveryMonitoring PSDMB
 				ON PSDMB.LearnRefNumber = LD.LearnRefNumber
 				AND PSDMB.AimSeqNumber = LD.AimSeqNumber
 				AND PSDMB.ProvSpecDelMonOccur = ''B''
-			LEFT JOIN ' + @FISDatabase + '.dbo.Valid_ProviderSpecDeliveryMonitoring PSDMC
+			LEFT JOIN ' + @FISDatabase + '.Valid.ProviderSpecDeliveryMonitoring PSDMC
 				ON PSDMC.LearnRefNumber = LD.LearnRefNumber
 				AND PSDMC.AimSeqNumber = LD.AimSeqNumber
 				AND PSDMC.ProvSpecDelMonOccur = ''C''
-			LEFT JOIN ' + @FISDatabase + '.dbo.Valid_ProviderSpecDeliveryMonitoring PSDMD
+			LEFT JOIN ' + @FISDatabase + '.Valid.ProviderSpecDeliveryMonitoring PSDMD
 				ON PSDMD.LearnRefNumber = LD.LearnRefNumber
 				AND PSDMD.AimSeqNumber = LD.AimSeqNumber
 				AND PSDMD.ProvSpecDelMonOccur = ''D''
 
 			--16-19
-			LEFT JOIN ' + @FISDatabase + '.dbo.Rulebase_FM25_Learner FM25
+			LEFT JOIN ' + @FISDatabase + '.Rulebase.FM25_Learner FM25
 				ON FM25.LearnRefNumber = LD.LearnRefNumber
 				AND FM25.CoreAimSeqNumber = LD.AimSeqNumber
 				--AND FM25.StartFund = 1
 
 			--AEB and Apps (Legacy)
-			LEFT JOIN ' + @FISDatabase + '.dbo.Rulebase_FM35_LearningDelivery FM35
+			LEFT JOIN ' + @FISDatabase + '.Rulebase.FM35_LearningDelivery FM35
 				ON FM35.LearnRefNumber = LD.LearnRefNumber
 				AND FM35.AimSeqNumber = LD.AimSeqNumber
 				--AND FM35.FundStart = 1
 
 			--Apps (Reformed)
-			LEFT JOIN ' + @FISDatabase + '.dbo.Rulebase_AEC_LearningDelivery FM36
+			LEFT JOIN ' + @FISDatabase + '.Rulebase.AEC_LearningDelivery FM36
 				ON FM36.LearnRefNumber = LD.LearnRefNumber
 				AND FM36.AimSeqNumber = LD.AimSeqNumber
 			LEFT JOIN (
@@ -1777,7 +1784,7 @@ BEGIN
 					FM36P.LearnRefNumber,
 					FM36P.AimSeqNumber,
 					FM36P.FundLineType
-				FROM ' + @FISDatabase + '.dbo.Rulebase_AEC_LearningDelivery_Period FM36P
+				FROM ' + @FISDatabase + '.Rulebase.AEC_LearningDelivery_Period FM36P
 				WHERE
 					FM36P.FundLineType <> ''None''
 				GROUP BY
@@ -1789,12 +1796,12 @@ BEGIN
 				AND FM36P.AimSeqNumber = FM36.AimSeqNumber
 
 			--Loans and Bursaries
-			LEFT JOIN ' + @FISDatabase + '.dbo.Rulebase_ALB_LearningDelivery ALB
+			LEFT JOIN ' + @FISDatabase + '.Rulebase.ALB_LearningDelivery ALB
 				ON ALB.LearnRefNumber = LD.LearnRefNumber
 				AND ALB.AimSeqNumber = LD.AimSeqNumber
 
 			--Higher Education
-			LEFT JOIN ' + @FISDatabase + '.dbo.Valid_LearningDeliveryHE HE
+			LEFT JOIN ' + @FISDatabase + '.Valid.LearningDeliveryHE HE
 				ON HE.LearnRefNumber = LD.LearnRefNumber
 				AND HE.AimSeqNumber = LD.AimSeqNumber
 		) MA
@@ -1892,40 +1899,40 @@ BEGIN
     
     SET @SQLString += 
         N'
-			FROM ' + @FISDatabase + '.dbo.Valid_Learner L
-			INNER JOIN ' + @FISDatabase + '.dbo.Valid_LearningDelivery LD
+			FROM ' + @FISDatabase + '.Valid.Learner L
+			INNER JOIN ' + @FISDatabase + '.Valid.LearningDelivery LD
 				ON LD.LearnRefNumber = L.LearnRefNumber
-			LEFT JOIN ' + @FISDatabase + '.dbo.Valid_ProviderSpecDeliveryMonitoring PSDMA
+			LEFT JOIN ' + @FISDatabase + '.Valid.ProviderSpecDeliveryMonitoring PSDMA
 				ON PSDMA.LearnRefNumber = LD.LearnRefNumber
 				AND PSDMA.AimSeqNumber = LD.AimSeqNumber
 				AND PSDMA.ProvSpecDelMonOccur = ''A''
-			LEFT JOIN ' + @FISDatabase + '.dbo.Valid_ProviderSpecDeliveryMonitoring PSDMB
+			LEFT JOIN ' + @FISDatabase + '.Valid.ProviderSpecDeliveryMonitoring PSDMB
 				ON PSDMB.LearnRefNumber = LD.LearnRefNumber
 				AND PSDMB.AimSeqNumber = LD.AimSeqNumber
 				AND PSDMB.ProvSpecDelMonOccur = ''B''
-			LEFT JOIN ' + @FISDatabase + '.dbo.Valid_ProviderSpecDeliveryMonitoring PSDMC
+			LEFT JOIN ' + @FISDatabase + '.Valid.ProviderSpecDeliveryMonitoring PSDMC
 				ON PSDMC.LearnRefNumber = LD.LearnRefNumber
 				AND PSDMC.AimSeqNumber = LD.AimSeqNumber
 				AND PSDMC.ProvSpecDelMonOccur = ''C''
-			LEFT JOIN ' + @FISDatabase + '.dbo.Valid_ProviderSpecDeliveryMonitoring PSDMD
+			LEFT JOIN ' + @FISDatabase + '.Valid.ProviderSpecDeliveryMonitoring PSDMD
 				ON PSDMD.LearnRefNumber = LD.LearnRefNumber
 				AND PSDMD.AimSeqNumber = LD.AimSeqNumber
 				AND PSDMD.ProvSpecDelMonOccur = ''D''
 
 			--16-19
-			LEFT JOIN ' + @FISDatabase + '.dbo.Rulebase_FM25_Learner FM25
+			LEFT JOIN ' + @FISDatabase + '.Rulebase.FM25_Learner FM25
 				ON FM25.LearnRefNumber = LD.LearnRefNumber
 				AND FM25.CoreAimSeqNumber = LD.AimSeqNumber
 				--AND FM25.StartFund = 1
 
 			--AEB and Apps (Legacy)
-			LEFT JOIN ' + @FISDatabase + '.dbo.Rulebase_FM35_LearningDelivery FM35
+			LEFT JOIN ' + @FISDatabase + '.Rulebase.FM35_LearningDelivery FM35
 				ON FM35.LearnRefNumber = LD.LearnRefNumber
 				AND FM35.AimSeqNumber = LD.AimSeqNumber
 				--AND FM35.FundStart = 1
 
 			--Apps (Reformed)
-			LEFT JOIN ' + @FISDatabase + '.dbo.Rulebase_AEC_LearningDelivery FM36
+			LEFT JOIN ' + @FISDatabase + '.Rulebase.AEC_LearningDelivery FM36
 				ON FM36.LearnRefNumber = LD.LearnRefNumber
 				AND FM36.AimSeqNumber = LD.AimSeqNumber
 			LEFT JOIN (
@@ -1933,7 +1940,7 @@ BEGIN
 					FM36P.LearnRefNumber,
 					FM36P.AimSeqNumber,
 					FM36P.FundLineType
-				FROM ' + @FISDatabase + '.dbo.Rulebase_AEC_LearningDelivery_Period FM36P
+				FROM ' + @FISDatabase + '.Rulebase.AEC_LearningDelivery_Period FM36P
 				WHERE
 					FM36P.FundLineType <> ''None''
 				GROUP BY
@@ -1945,12 +1952,12 @@ BEGIN
 				AND FM36P.AimSeqNumber = FM36.AimSeqNumber
 
 			--Loans and Bursaries
-			LEFT JOIN ' + @FISDatabase + '.dbo.Rulebase_ALB_LearningDelivery ALB
+			LEFT JOIN ' + @FISDatabase + '.Rulebase.ALB_LearningDelivery ALB
 				ON ALB.LearnRefNumber = LD.LearnRefNumber
 				AND ALB.AimSeqNumber = LD.AimSeqNumber
 
 			--Higher Education
-			LEFT JOIN ' + @FISDatabase + '.dbo.Valid_LearningDeliveryHE HE
+			LEFT JOIN ' + @FISDatabase + '.Valid.LearningDeliveryHE HE
 				ON HE.LearnRefNumber = LD.LearnRefNumber
 				AND HE.AimSeqNumber = LD.AimSeqNumber
 		) MAFM
@@ -1961,7 +1968,7 @@ BEGIN
     
     SET @SQLString += 
         N'
-		LEFT JOIN ' + @FISDatabase + '.dbo.Valid_LearningDeliveryFAM FFI
+		LEFT JOIN ' + @FISDatabase + '.Valid.LearningDeliveryFAM FFI
 			ON FFI.LearnRefNumber = LD.LearnRefNumber
 			AND FFI.AimSeqNumber = LD.AimSeqNumber
 			AND FFI.LearnDelFAMType = ''FFI''
@@ -1987,7 +1994,7 @@ BEGIN
 						ORDER BY
 							EMP.DateEmpStatApp DESC
 					)
-			FROM ' + @FISDatabase + '.dbo.Valid_LearnerEmploymentStatus EMP
+			FROM ' + @FISDatabase + '.Valid.LearnerEmploymentStatus EMP
 		) EMP
 			ON EMP.LearnerRef = L.LearnRefNumber
 			AND EMP.RowNum = 1
@@ -2014,7 +2021,7 @@ BEGIN
 					ESM.DateEmpStatApp,
 					ESM.ESMType,
 					ESM.ESMCode
-				FROM ' + @FISDatabase + '.dbo.Valid_EmploymentStatusMonitoring ESM
+				FROM ' + @FISDatabase + '.Valid.EmploymentStatusMonitoring ESM
 			) ESM
 			PIVOT (
 				MAX ( ESMCode )
@@ -2039,26 +2046,26 @@ BEGIN
 						DATEDIFF ( DAY, LD.LearnStartDate, LD.LearnPlanEndDate ) DESC,
 						LD.PartnerUKPRN
 				)
-			FROM ' + @FISDatabase + '.dbo.Valid_LearningDelivery LD
+			FROM ' + @FISDatabase + '.Valid.LearningDelivery LD
 			WHERE
 				LD.PartnerUKPRN IS NOT NULL
 		) PTR
 			ON PTR.LearnRefNumber = L.LearnRefNumber
 			AND PTR.RowNum = 1
 
-		LEFT JOIN ' + @FISDatabase + '.dbo.Valid_ProviderSpecDeliveryMonitoring PSDMA
+		LEFT JOIN ' + @FISDatabase + '.Valid.ProviderSpecDeliveryMonitoring PSDMA
 			ON PSDMA.LearnRefNumber = LD.LearnRefNumber
 			AND PSDMA.AimSeqNumber = LD.AimSeqNumber
 			AND PSDMA.ProvSpecDelMonOccur = ''A''
-		LEFT JOIN ' + @FISDatabase + '.dbo.Valid_ProviderSpecDeliveryMonitoring PSDMB
+		LEFT JOIN ' + @FISDatabase + '.Valid.ProviderSpecDeliveryMonitoring PSDMB
 			ON PSDMB.LearnRefNumber = LD.LearnRefNumber
 			AND PSDMB.AimSeqNumber = LD.AimSeqNumber
 			AND PSDMB.ProvSpecDelMonOccur = ''B''
-		LEFT JOIN ' + @FISDatabase + '.dbo.Valid_ProviderSpecDeliveryMonitoring PSDMC
+		LEFT JOIN ' + @FISDatabase + '.Valid.ProviderSpecDeliveryMonitoring PSDMC
 			ON PSDMC.LearnRefNumber = LD.LearnRefNumber
 			AND PSDMC.AimSeqNumber = LD.AimSeqNumber
 			AND PSDMC.ProvSpecDelMonOccur = ''C''
-		LEFT JOIN ' + @FISDatabase + '.dbo.Valid_ProviderSpecDeliveryMonitoring PSDMD
+		LEFT JOIN ' + @FISDatabase + '.Valid.ProviderSpecDeliveryMonitoring PSDMD
 			ON PSDMD.LearnRefNumber = LD.LearnRefNumber
 			AND PSDMD.AimSeqNumber = LD.AimSeqNumber
 			AND PSDMD.ProvSpecDelMonOccur = ''D''
@@ -2067,29 +2074,29 @@ BEGIN
     SET @SQLString += 
         N'
 		--16-19
-		LEFT JOIN ' + @FISDatabase + '.dbo.Rulebase_FM25_Learner FM25
+		LEFT JOIN ' + @FISDatabase + '.Rulebase.FM25_Learner FM25
 			ON FM25.LearnRefNumber = LD.LearnRefNumber
 			AND FM25.CoreAimSeqNumber = LD.AimSeqNumber
 			--AND FM25.StartFund = 1
 
 		--AEB and Apps (Legacy)
-		LEFT JOIN ' + @FISDatabase + '.dbo.Rulebase_FM35_LearningDelivery FM35
+		LEFT JOIN ' + @FISDatabase + '.Rulebase.FM35_LearningDelivery FM35
 			ON FM35.LearnRefNumber = LD.LearnRefNumber
 			AND FM35.AimSeqNumber = LD.AimSeqNumber
 			--AND FM35.FundStart = 1
 
 		--Apps (Reformed)
-		LEFT JOIN ' + @FISDatabase + '.dbo.Rulebase_AEC_LearningDelivery FM36
+		LEFT JOIN ' + @FISDatabase + '.Rulebase.AEC_LearningDelivery FM36
 			ON FM36.LearnRefNumber = LD.LearnRefNumber
 			AND FM36.AimSeqNumber = LD.AimSeqNumber
-
+		
 		--Loans and Bursaries
-		LEFT JOIN ' + @FISDatabase + '.dbo.Rulebase_ALB_LearningDelivery ALB
+		LEFT JOIN ' + @FISDatabase + '.Rulebase.ALB_LearningDelivery ALB
 			ON ALB.LearnRefNumber = LD.LearnRefNumber
 			AND ALB.AimSeqNumber = LD.AimSeqNumber
 
 		--Higher Education
-		LEFT JOIN ' + @FISDatabase + '.dbo.Valid_LearningDeliveryHE HE
+		LEFT JOIN ' + @FISDatabase + '.Valid.LearningDeliveryHE HE
 			ON HE.LearnRefNumber = LD.LearnRefNumber
 			AND HE.AimSeqNumber = LD.AimSeqNumber
 	'
@@ -2313,7 +2320,7 @@ BEGIN
 					+ FM35P.BalancePayment
 					+ FM35P.EmpOutcomePay
 				ELSE 0 END )
-			FROM ' + @FISDatabase + '.dbo.Rulebase_FM35_LearningDelivery_Period FM35P
+			FROM ' + @FISDatabase + '.Rulebase.FM35_LearningDelivery_Period FM35P
 			GROUP BY
 				FM35P.LearnRefNumber,
 				FM35P.AimSeqNumber
@@ -2341,7 +2348,7 @@ BEGIN
 						ORDER BY
 							FM36PE.EpisodeStartDate DESC
 					)
-			FROM ' + @FISDatabase + '.dbo.Rulebase_AEC_ApprenticeshipPriceEpisode FM36PE
+			FROM ' + @FISDatabase + '.Rulebase.AEC_ApprenticeshipPriceEpisode FM36PE
 				--AND FM36PE.EpisodeStartDate = FM36.AppAdjLearnStartDate
 			WHERE
 				FM36PE.EpisodeStartDate < ''20'' + RIGHT ( @AcademicYear, 2 ) + ''-08-01''
@@ -3348,7 +3355,7 @@ BEGIN
 						+ FM36P.LearnDelLearnAddPayment
 						ELSE 0 END
 					)
-			FROM ' + @FISDatabase + '.dbo.Rulebase_AEC_LearningDelivery_Period FM36P
+			FROM ' + @FISDatabase + '.Rulebase.AEC_LearningDelivery_Period FM36P
 			GROUP BY
 				FM36P.LearnRefNumber,
 				FM36P.AimSeqNumber,
@@ -3364,7 +3371,7 @@ BEGIN
 		LEFT JOIN (
 			SELECT
 				InvalidLearners = COUNT ( L.Learner_Id )
-			FROM ' + @FISDatabase + '.dbo.Invalid_Learner L
+			FROM ' + @FISDatabase + '.Invalid.Learner L
 		) INV
 			ON 1 = 1
 
@@ -3459,9 +3466,9 @@ BEGIN
     
     SET @SQLString += 
         N'
-		LEFT JOIN ' + @FISOutputTableLocation + 'FIS_Providers PROV
+        LEFT JOIN ' + @FISOutputTableLocation + 'FIS_Providers PROV
 			ON PROV.ProviderID = SRC.UKPRN
-        LEFT JOIN ' + @FISOutputTableLocation + 'FIS_FacultyTitles FAC
+		LEFT JOIN ' + @FISOutputTableLocation + 'FIS_FacultyTitles FAC
             ON FAC.FacCode = 
                 CASE
                     WHEN @ProviderFieldFacLocation = ''A'' THEN
@@ -3521,22 +3528,22 @@ BEGIN
 					END,
 				TotFund = MAX ( FM25.OnProgPayment ),
 				IsFunded = MAX ( CAST ( FM25.StartFund AS INT ) )
-			FROM ' + @FISDatabase + '.dbo.Valid_LearningDelivery LD
-			INNER JOIN ' + @FISDatabase + '.dbo.Rulebase_FM25_Learner FM25
+			FROM ' + @FISDatabase + '.Valid.LearningDelivery LD
+			INNER JOIN ' + @FISDatabase + '.Rulebase.FM25_Learner FM25
 				ON FM25.LearnRefNumber = LD.LearnRefNumber
-			LEFT JOIN ' + @FISDatabase + '.dbo.Valid_ProviderSpecDeliveryMonitoring PSDMA
+			LEFT JOIN ' + @FISDatabase + '.Valid.ProviderSpecDeliveryMonitoring PSDMA
 				ON PSDMA.LearnRefNumber = LD.LearnRefNumber
 				AND PSDMA.AimSeqNumber = LD.AimSeqNumber
 				AND PSDMA.ProvSpecDelMonOccur = ''A''
-			LEFT JOIN ' + @FISDatabase + '.dbo.Valid_ProviderSpecDeliveryMonitoring PSDMB
+			LEFT JOIN ' + @FISDatabase + '.Valid.ProviderSpecDeliveryMonitoring PSDMB
 				ON PSDMB.LearnRefNumber = LD.LearnRefNumber
 				AND PSDMB.AimSeqNumber = LD.AimSeqNumber
 				AND PSDMB.ProvSpecDelMonOccur = ''B''
-			LEFT JOIN ' + @FISDatabase + '.dbo.Valid_ProviderSpecDeliveryMonitoring PSDMC
+			LEFT JOIN ' + @FISDatabase + '.Valid.ProviderSpecDeliveryMonitoring PSDMC
 				ON PSDMC.LearnRefNumber = LD.LearnRefNumber
 				AND PSDMC.AimSeqNumber = LD.AimSeqNumber
 				AND PSDMC.ProvSpecDelMonOccur = ''C''
-			LEFT JOIN ' + @FISDatabase + '.dbo.Valid_ProviderSpecDeliveryMonitoring PSDMD
+			LEFT JOIN ' + @FISDatabase + '.Valid.ProviderSpecDeliveryMonitoring PSDMD
 				ON PSDMD.LearnRefNumber = LD.LearnRefNumber
 				AND PSDMD.AimSeqNumber = LD.AimSeqNumber
 				AND PSDMD.ProvSpecDelMonOccur = ''D''
@@ -3556,7 +3563,7 @@ BEGIN
 			LEFT JOIN (
 				SELECT DISTINCT
 					LD.LearnRefNumber
-				FROM ' + @FISDatabase + '.dbo.Valid_LearningDelivery LD
+				FROM ' + @FISDatabase + '.Valid.LearningDelivery LD
 				WHERE
 					LD.FundModel = ''25''
 					AND COALESCE ( LD.WithdrawReason, ''0'' ) <> ''40'' --Exclude transfers

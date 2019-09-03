@@ -38,7 +38,7 @@ BEGIN
 	--DECLARE @IsFinalReturn BIT = 0
 	--DECLARE @Split1619Funding BIT = 1
 	--DECLARE @1619ALSFundingPercent DECIMAL(3,2) = 0.03
-	--DECLARE @IncludeHEAdvLoanPossIncome BIT = 1,
+	--DECLARE @IncludeHEAdvLoanPossIncome BIT = 1
 	--DECLARE @FutureAchieveWeighting DECIMAL(3,2) = 0.75
 	--DECLARE @FISOutputTableLocation NVARCHAR(200) = 'ProSolutionReports.dbo.'
 	--DECLARE @ProviderFieldFacLocation NCHAR(1) = 'D'

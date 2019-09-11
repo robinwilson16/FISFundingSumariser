@@ -1,7 +1,7 @@
 CREATE PROCEDURE SPR_FIS_GenerateFundingData
 	@FISDatabase NVARCHAR(50),
 	@AcademicYear NVARCHAR(5),
-	@ILRReturn NVARCHAR(2),
+	@ILRReturn INT,
 	@IsFinalReturn BIT,
 	@Split1619Funding BIT,
 	@1619ALSFundingPercent DECIMAL(3,2),
@@ -415,7 +415,7 @@ BEGIN
     SET @SQLParams = 
         N'@FISDatabase NVARCHAR(50),
         @AcademicYear NVARCHAR(5),
-    	@ILRReturn NVARCHAR(2),
+    	@ILRReturn INT,
     	@IsFinalReturn BIT,
     	@Split1619Funding BIT,
         @1619ALSFundingPercent DECIMAL(3,2),

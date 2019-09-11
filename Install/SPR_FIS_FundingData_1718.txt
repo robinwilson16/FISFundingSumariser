@@ -1,7 +1,7 @@
 CREATE PROCEDURE SPR_FIS_FundingData_1718
 	@FISDatabase NVARCHAR(50),
 	@AcademicYear NVARCHAR(5),
-	@ILRReturn NVARCHAR(2),
+	@ILRReturn INT,
 	@IsFinalReturn BIT,
 	@Split1619Funding BIT,
 	@1619ALSFundingPercent DECIMAL(3,2),
@@ -163,11 +163,7 @@ BEGIN
 			AcademicYear = @AcademicYear,
             ProviderNumber = SRC.UKPRN,
 			ProviderName = PROV.ProviderName,
-			ILRReturn = 
-				CASE
-					WHEN LEN ( @ILRReturn ) = 1 THEN ''R0'' + @ILRReturn
-					ELSE ''R'' + @ILRReturn
-				END,
+			ILRReturn = ''R'' + FORMAT ( @ILRReturn, ''#00'' ),
 			IsFinalReturn = @IsFinalReturn,
 			ILRReturnDate = SRC.DateTime,
 			SQLDatabase = ''' + @FISDatabase + ''',
@@ -3577,7 +3573,7 @@ BEGIN
 
 	SET @SQLParams = 
         N'@AcademicYear NVARCHAR(5),
-    	@ILRReturn NVARCHAR(2),
+    	@ILRReturn INT,
     	@IsFinalReturn BIT,
     	@Split1619Funding BIT,
 		@1619ALSFundingPercent DECIMAL(3,2),

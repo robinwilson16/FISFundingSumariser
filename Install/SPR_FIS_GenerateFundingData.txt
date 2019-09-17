@@ -133,10 +133,12 @@ BEGIN
 					IsAdvLearnLoan INT NULL,
 					IsAdvLearnLoanBursary INT NULL,
 					RateBand NVARCHAR(50) NULL,
-					CofEnglish NVARCHAR(100) NULL,
+					GCSEMathsGrade NVARCHAR(4) NULL,
+					GCSEEnglishGrade NVARCHAR(4) NULL,
 					CofMaths NVARCHAR(100) NULL,
-					CofEnglishMet INT NULL,
+					CofEnglish NVARCHAR(100) NULL,
 					CofMathsMet INT NULL,
+					CofEnglishMet INT NULL,
 					CofMet INT NULL,
 	'
     

@@ -721,20 +721,22 @@ BEGIN
 			IsAdvLearnLoan = ALB.AdvLoan,
 			IsAdvLearnLoanBursary = CASE WHEN ALB.AdvLoan = 1 AND ALB.FundLine <> ''None'' THEN 1 ELSE 0 END,
 			RateBand = HRS.RateBand,
-			CofEnglish = FM25.ConditionOfFundingEnglish,
+			GCSEMathsGrade = L.MathGrade,
+			GCSEEnglishGrade = L.EngGrade,
 			CofMaths = FM25.ConditionOfFundingMaths,
-			CofEnglishMet = 
-				CASE
-					WHEN FM25.LearnRefNumber IS NULL THEN NULL
-					WHEN FM25.ConditionOfFundingEnglish = ''Doesn''''t have English, Not Studying English'' THEN 0
-                    WHEN FM25.ConditionOfFundingEnglish = ''Has English GCSE Grade D or Grade 3, Not studying GCSE English'' THEN 0
-					ELSE 1
-				END,
+			CofEnglish = FM25.ConditionOfFundingEnglish,
 			CofMathsMet = 
 				CASE
 					WHEN FM25.LearnRefNumber IS NULL THEN NULL
 					WHEN FM25.ConditionOfFundingMaths = ''Doesn''''t have Maths, Not Studying Maths'' THEN 0
                     WHEN FM25.ConditionOfFundingMaths = ''Has Maths GCSE Grade D or Grade 3, Not studying GCSE Maths'' THEN 0
+					ELSE 1
+				END,
+			CofEnglishMet = 
+				CASE
+					WHEN FM25.LearnRefNumber IS NULL THEN NULL
+					WHEN FM25.ConditionOfFundingEnglish = ''Doesn''''t have English, Not Studying English'' THEN 0
+                    WHEN FM25.ConditionOfFundingEnglish = ''Has English GCSE Grade D or Grade 3, Not studying GCSE English'' THEN 0
 					ELSE 1
 				END,
 			CofMet = 

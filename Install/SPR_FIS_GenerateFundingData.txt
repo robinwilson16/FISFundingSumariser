@@ -95,7 +95,7 @@ BEGIN
 					Address2 NVARCHAR(150) NULL,
 					Address3 NVARCHAR(150) NULL,
 					Address4 NVARCHAR(150) NULL,
-					PostCode NVARCHAR(10) NULL,
+					PostCodeLearner NVARCHAR(10) NULL,
 					Tel NVARCHAR(50) NULL,
 					Email NVARCHAR(150) NULL,
 					PostCodeWardCode NVARCHAR(50) NULL,
@@ -144,6 +144,7 @@ BEGIN
     
     SET @SQLString += 
         N'
+					PostCodeDelivery NVARCHAR(10) NULL,
 					CampusID NVARCHAR(20) NULL,
 					SiteCode NVARCHAR(20) NULL,
 					SiteName NVARCHAR(100) NULL,

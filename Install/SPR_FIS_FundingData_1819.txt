@@ -187,7 +187,7 @@ BEGIN
 			Address2 = L.AddLine2,
 			Address3 = L.AddLine3,
 			Address4 = L.AddLine4,
-			PostCode = L.Postcode,
+			PostCodeLearner = L.Postcode,
 			Tel = L.TelNo,
 			Email = L.Email,
 			PostCodeWardCode = PC.WardCode,
@@ -757,7 +757,8 @@ BEGIN
 						THEN 0
 					ELSE 1
 				END,
-
+			
+			PostCodeDelivery = LD.DelLocPostCode,
 			CampusID = L.CampId,
 			SiteCode = COALESCE ( CS.SiteCode, ''-'' ),
 			SiteName = COALESCE ( CS.SiteName, ''-- Unknown --'' ),

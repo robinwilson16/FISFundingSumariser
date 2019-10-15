@@ -196,6 +196,7 @@ BEGIN
 					PartnerCode FLOAT NULL,
 					PartnerName NVARCHAR(100) NULL,
 					
+					AimValue FLOAT NULL,
 					ProgWeightFactor NCHAR(1) NULL,
 					UnweightFundRate FLOAT NULL,
 					WeightFundRate FLOAT NULL,

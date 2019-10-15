@@ -919,6 +919,7 @@ BEGIN
 				END,
 			PartnerName = PAR.PartnerName,
 
+			AimValue = FM35.AimValue,
 			ProgWeightFactor = FM35.ApplicProgWeightFact,
 			UnweightFundRate = FM35.ApplicUnweightFundRate,
 			WeightFundRate = FM35.ApplicWeightFundRate,

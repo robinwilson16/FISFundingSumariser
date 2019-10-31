@@ -3328,6 +3328,8 @@ BEGIN
 						ELSE 0 END
 					)
 			FROM ' + @FISDatabase + '.dbo.Rulebase_AEC_LearningDelivery_Period FM36P
+			WHERE
+				FM36P.FundLineType <> ''None''
 			GROUP BY
 				FM36P.LearnRefNumber,
 				FM36P.AimSeqNumber,

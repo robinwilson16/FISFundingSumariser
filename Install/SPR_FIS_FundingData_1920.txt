@@ -2,6 +2,7 @@
 Changes since 18/19
 Tables now generated directly to SQL Server. Schema was always dbo. but now first part of table name is the schema
 e.g. dbo.Valid_Learner in 18/19 to Valid.Learner in 19/20
+DV_Learner and DV_LearningDelivery tables no longer populated so must calculate age and would need to use LARS for First Full L2/L3 Status
 */
 
 CREATE PROCEDURE SPR_FIS_FundingData_1920
@@ -182,7 +183,11 @@ BEGIN
 			Surname = L.FamilyName,
 			Forename = L.GivenNames,
 			DOB = L.DateOfBirth,
-			AgeSept = DV.Learn_Age31Aug,
+			Age31Aug = 
+				CASE
+					WHEN MONTH ( L.DateOfBirth ) <= 8 THEN ''20'' + LEFT ( @AcademicYear, 2 ) - YEAR ( L.DateOfBirth )
+					ELSE CAST (''20'' + LEFT ( @AcademicYear, 2 ) - 1 AS INT ) - YEAR ( L.DateOfBirth )
+				END,
 			Address1 = L.AddLine1,
 			Address2 = L.AddLine2,
 			Address3 = L.AddLine3,
@@ -218,8 +223,8 @@ BEGIN
 			SmallEmployer = ESM.SEM,
 			SelfEmployInd = ESM.SEI,
 			EmployIntensityInd = ESM.EII,
-			IsFirstFullLevel2 = DV.Learn_FirstFullLevel2,
-			IsFirstFullLevel3 = DV.Learn_FirstFullLevel3,
+			IsFirstFullLevel2 = NULL,
+			IsFirstFullLevel3 = NULL,
 
 			FundLine = 
 				COALESCE ( 
@@ -913,11 +918,7 @@ BEGIN
 
 			FrameworkCode = LD.FworkCode,
 			FrameworkName = COALESCE ( FW.FrameworkName, ''-- Unknown --'' ),
-			EmployerID = 
-				CASE
-					WHEN LDR.LearnDel_EmpID = -1 THEN NULL
-					ELSE LDR.LearnDel_EmpID
-				END,
+			EmployerID = EMP.EmployerID,
 			EmployerName = EMPN.EmployerName,
 			PartnerCode = 
 				CASE
@@ -1653,13 +1654,8 @@ BEGIN
     SET @SQLString += 
         N'
 		FROM ' + @FISDatabase + '.Valid.Learner L
-		INNER JOIN ' + @FISDatabase + '.Rulebase.DV_Learner DV
-			ON DV.LearnRefNumber = L.LearnRefNumber
 		INNER JOIN ' + @FISDatabase + '.Valid.LearningDelivery LD
 			ON LD.LearnRefNumber = L.LearnRefNumber
-		INNER JOIN ' + @FISDatabase + '.Rulebase.DV_LearningDelivery LDR
-			ON LDR.LearnRefNumber = LD.LearnRefNumber
-			AND LDR.AimSeqNumber = LD.AimSeqNumber
 		INNER JOIN ' + @FISDatabase + '.Valid.Source SRC
 			ON 1 = 1
 	'
@@ -3608,7 +3604,7 @@ BEGIN
     SET @SQLString += 
         N'
 		LEFT JOIN #Employers EMPN
-			ON EMPN.EmployerEDRS = LDR.LearnDel_EmpID
+			ON EMPN.EmployerEDRS = EMP.EmployerID
 		LEFT JOIN #Partners PAR
 			ON PAR.PartnerUKPRN = 
 				CASE

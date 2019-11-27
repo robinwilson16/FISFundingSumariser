@@ -944,6 +944,16 @@ BEGIN
 					WHEN CAST ( LD.LearnStartDate AS DATE ) <= ''20'' + LEFT ( @AcademicYear, 2) + ''-08-01'' THEN 1
 					ELSE 0
 				END,
+			HEQualEnt3 = HE.QUALENT3,
+			HESoc2000 = HE.SOC2000,
+			HESec = HE.SEC,
+			HEUCASAppID = HE.UCASAPPID,
+			HETypeYr = HE.TYPEYR,
+			HEModeStu = HE.MODESTUD,
+			HEFundLev = HE.FUNDLEV,
+			HEFundComp = HE.FUNDCOMP,
+			HEStuLoad = HE.STULOAD,
+			HEYearStu = HE.YEARSTU,
 			EnrolmentID = PSDMC.ProvSpecDelMon,
 			FM25TotFund = COALESCE ( HRS.OnProgPayment, 0 ),
 	'

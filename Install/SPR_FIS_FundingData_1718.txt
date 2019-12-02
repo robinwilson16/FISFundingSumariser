@@ -779,6 +779,8 @@ BEGIN
 				),
 			MainFacCode = COALESCE ( CSM.FacCode, MA.FacCode, ''-'' ),
 			MainFacName = COALESCE ( CSM.FacName, ''-- Unknown --'' ),
+			MainTeamCode = COALESCE ( CSM.TeamCode, MA.TeamCode, ''-'' ),
+			MainTeamName = COALESCE ( CSM.TeamName, ''-- Unknown --'' ),
 			TeamCode = 
 				COALESCE (
 					CASE WHEN LD.LearnAimRef IN (''0003'', ''2999'', ''1439'') AND  AIM.AimTitle LIKE ''%English%'' THEN @OverrideEngTeam END,

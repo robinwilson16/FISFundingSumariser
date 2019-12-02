@@ -152,6 +152,8 @@ BEGIN
 					FacName NVARCHAR(150) NULL,
 					MainFacCode NVARCHAR(20) NULL,
 					MainFacName NVARCHAR(150) NULL,
+					MainTeamCode NVARCHAR(20) NULL,
+					MainTeamName NVARCHAR(150) NULL,
 					TeamCode NVARCHAR(20) NULL,
 					TeamName NVARCHAR(150) NULL,
 					CostCentre NVARCHAR(20) NULL,
@@ -393,7 +395,8 @@ BEGIN
 							AND FD.SQLDatabase = @FISDatabase';
 
                     SET @SQLParams = 
-						N'@AcademicYear NVARCHAR(5)';
+						N'@AcademicYear NVARCHAR(5),
+						@FISDatabase NVARCHAR(50)';
 
                     EXECUTE sp_executesql 
                         @SQLString, 

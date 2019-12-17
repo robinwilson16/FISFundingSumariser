@@ -6,6 +6,8 @@ CREATE PROCEDURE SPR_FIS_GenerateFundingData
 	@Split1619Funding BIT,
 	@1619ALSFundingPercent DECIMAL(3,2),
 	@IncludeHEAdvLoanPossIncome BIT,
+	@IncludeAdvLoanBursaryIncome BIT,
+	@AEBCombinedAuthorityName NVARCHAR(200),
 	@FutureAchieveWeighting DECIMAL(3,2),
 	@Mode NCHAR(1),
 	@FISOutputTableLocation NVARCHAR(200),
@@ -38,6 +40,8 @@ BEGIN
 	--DECLARE @Split1619Funding BIT = 0 --Split the funding into the 12 periods
 	--DECLARE @1619ALSFundingPercent DECIMAL(3,2) = 0.07 --Deduct this percent from Tot Funding and assign to ALS column
 	--DECLARE @IncludeHEAdvLoanPossIncome BIT = 1 --HE gross fee is only achieved if at all 3 SLC census points learners remain current
+	--DECLARE @IncludeAdvLoanBursaryIncome BIT = 0 --Adv loan bursary income is not income as goes to learners so may want to exclude
+	--DECLARE @AEBCombinedAuthorityName NVARCHAR(200) = 'AEB - Tees Valley Combined Authority'
 	--DECLARE @FutureAchieveWeighting DECIMAL(3,2) = 1 --Future ach weighting factor. If 1 then is 100% of all remaining ach monies
 	--DECLARE @Mode NCHAR(1) = 'R' --I=Insert new ILR return data leaving existing data, R=Replace table
 	--DECLARE @FISOutputTableLocation NVARCHAR(200) = 'wlc.dbo.'
@@ -389,7 +393,8 @@ BEGIN
 			IF @NumExistingRecords > 0
 				BEGIN
                     SET @SQLString = N'
-                        DELETE FROM ' + @FISOutputTableLocation + 'FIS_FundingData
+                        DELETE FD
+						FROM ' + @FISOutputTableLocation + 'FIS_FundingData FD
 						WHERE
 							FD.AcademicYear = @AcademicYear
 							AND FD.SQLDatabase = @FISDatabase';
@@ -415,6 +420,8 @@ BEGIN
 			@Split1619Funding,
             @1619ALSFundingPercent,
 			@IncludeHEAdvLoanPossIncome,
+			@IncludeAdvLoanBursaryIncome,
+			@AEBCombinedAuthorityName,
 			@FutureAchieveWeighting,
             @FISOutputTableLocation,
 			@ProviderFieldFacLocation,
@@ -439,6 +446,8 @@ BEGIN
     	@Split1619Funding BIT,
         @1619ALSFundingPercent DECIMAL(3,2),
 		@IncludeHEAdvLoanPossIncome BIT,
+		@IncludeAdvLoanBursaryIncome BIT,
+		@AEBCombinedAuthorityName NVARCHAR(200),
     	@FutureAchieveWeighting DECIMAL(3,2),
         @FISOutputTableLocation NVARCHAR(200),
     	@ProviderFieldFacLocation CHAR(1),
@@ -467,6 +476,8 @@ BEGIN
     	@Split1619Funding = @Split1619Funding,
         @1619ALSFundingPercent = @1619ALSFundingPercent,
 		@IncludeHEAdvLoanPossIncome = @IncludeHEAdvLoanPossIncome,
+		@IncludeAdvLoanBursaryIncome = @IncludeAdvLoanBursaryIncome,
+		@AEBCombinedAuthorityName = @AEBCombinedAuthorityName,
     	@FutureAchieveWeighting = @FutureAchieveWeighting,
         @FISOutputTableLocation = @FISOutputTableLocation,
     	@ProviderFieldFacLocation = @ProviderFieldFacLocation,

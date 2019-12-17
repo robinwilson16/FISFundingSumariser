@@ -11,7 +11,11 @@ AS
         CostCentreCode = CRS.LedgerCode,
 		CourseCode = CRS.Code,
 		CourseTitle = CRS.Name,
-        ProvSpecField = CRS.Code + '-' + GRP.Code
+        ProvSpecField = 
+			CASE
+				WHEN CRS.AcademicYearID >= '19/20' THEN CRS.Code
+				ELSE CRS.Code + '-' + GRP.Code
+			END
     FROM besql03.ProSolution.dbo.Offering CRS
 	INNER JOIN besql03.ProSolution.dbo.Site STE
 		ON STE.SiteID = CRS.SiteID

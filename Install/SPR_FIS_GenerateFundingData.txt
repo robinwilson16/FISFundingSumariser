@@ -28,6 +28,7 @@ AS
 BEGIN
 	SET NOCOUNT ON;
 	DECLARE @TableExists BIT = 1;
+	DECLARE @FileDate DATETIME;
 	DECLARE @NumExistingRecords INT = 0;
 	
 	DECLARE @SQLString NVARCHAR(MAX);
@@ -59,7 +60,22 @@ BEGIN
 	--DECLARE @OverridePartnerTeam NVARCHAR(50) = NULL
 	--DECLARE @OverridePartnerCostCentre NVARCHAR(50) = NULL
 
+	--Get date of new ILR Return to be imported
+	SET @SQLString = N'
+		SELECT
+			@FileDateOUT = SRC.DateTime
+		FROM ' + @FISDatabase + '.Valid.Source SRC';
+
+    SET @SQLParams = 
+        N'@FileDateOUT DATETIME OUTPUT';
+
+    EXECUTE sp_executesql 
+        @SQLString, 
+        @SQLParams, 
+        @FileDateOUT = @FileDate OUTPUT;
+
 	IF @Mode = 'R'
+		--If mode is to replace then drop the table
 		IF OBJECT_ID('dbo.FIS_FundingData', 'U') IS NOT NULL 
 			BEGIN
 				SET @SQLString = N'
@@ -72,10 +88,12 @@ BEGIN
                     @SQLParams;
 			END
 	ELSE
+		--Confirm table exists already
 		IF OBJECT_ID('dbo.FIS_FundingData', 'U') IS NULL 
 			SET @TableExists = 0;
 
 	IF @Mode = 'R' OR @TableExists = 0
+		--If mode is to replace or table does not exist then create it
 		BEGIN
 			SET @SQLString = N'
 				CREATE TABLE ' + @FISOutputTableLocation + 'FIS_FundingData (
@@ -369,6 +387,7 @@ BEGIN
                 @SQLParams;
 		END
 	ELSE
+		--If mode is to insert instead of replace then see if this ILR has already been imported
 		BEGIN
 			SET @SQLString = N'
 				SELECT
@@ -376,41 +395,43 @@ BEGIN
 				FROM ' + @FISOutputTableLocation + 'FIS_FundingData FD
 				WHERE
 					FD.AcademicYear = @AcademicYear
-					AND FD.SQLDatabase = @FISDatabase';
+					AND FD.ILRReturnDate = @FileDate';
 
-            SET @SQLParams = 
-                N'@AcademicYear NVARCHAR(5),
-                @FISDatabase NVARCHAR(50),
-                @NumExistingRecordsOUT INT OUTPUT';
+			SET @SQLParams = 
+				N'@AcademicYear NVARCHAR(5),
+				@FileDate DATETIME,
+				@NumExistingRecordsOUT INT OUTPUT';
 
-            EXECUTE sp_executesql 
-                @SQLString, 
-                @SQLParams, 
-                @AcademicYear = @AcademicYear, 
-                @FISDatabase = @FISDatabase,
-                @NumExistingRecordsOUT = @NumExistingRecords OUTPUT;
+			EXECUTE sp_executesql 
+				@SQLString, 
+				@SQLParams, 
+				@AcademicYear = @AcademicYear, 
+				@FileDate = @FileDate,
+				@NumExistingRecordsOUT = @NumExistingRecords OUTPUT;
 
 			IF @NumExistingRecords > 0
+				--If same ILR has already been imported then delete it
 				BEGIN
                     SET @SQLString = N'
                         DELETE FD
 						FROM ' + @FISOutputTableLocation + 'FIS_FundingData FD
 						WHERE
 							FD.AcademicYear = @AcademicYear
-							AND FD.SQLDatabase = @FISDatabase';
+							AND FD.ILRReturnDate = @FileDate';
 
                     SET @SQLParams = 
 						N'@AcademicYear NVARCHAR(5),
-						@FISDatabase NVARCHAR(50)';
+						@FileDate DATETIME';
 
                     EXECUTE sp_executesql 
                         @SQLString, 
                         @SQLParams,
 						@AcademicYear = @AcademicYear,
-						@FISDatabase = @FISDatabase;
+						@FileDate = @FileDate;
 				END
 		END
 
+	--Finally insert new data into table
 	SET @SQLString = N'
 		EXEC SPR_FIS_FundingData_' + REPLACE ( @AcademicYear, '/', '' ) + '
 			@FISDatabase,

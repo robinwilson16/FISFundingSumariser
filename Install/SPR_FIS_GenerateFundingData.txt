@@ -61,10 +61,20 @@ BEGIN
 	--DECLARE @OverridePartnerCostCentre NVARCHAR(50) = NULL
 
 	--Get date of new ILR Return to be imported
-	SET @SQLString = N'
-		SELECT
-			@FileDateOUT = SRC.DateTime
-		FROM ' + @FISDatabase + '.Valid.Source SRC';
+	IF @AcademicYear >= '19/20'
+	BEGIN
+		SET @SQLString = N'
+			SELECT
+				@FileDateOUT = SRC.DateTime
+			FROM ' + @FISDatabase + '.Valid.Source SRC';
+	END
+	ELSE
+	BEGIN
+		SET @SQLString = N'
+			SELECT
+				@FileDateOUT = SRC.DateTime
+			FROM ' + @FISDatabase + '.dbo.Valid_Source SRC';
+	END
 
     SET @SQLParams = 
         N'@FileDateOUT DATETIME OUTPUT';
@@ -113,6 +123,7 @@ BEGIN
 					Forename NVARCHAR(100) NULL,
 					DOB DATETIME2 NULL,
 					Age31Aug FLOAT NULL,
+					ULN BIGINT NULL,
 					Address1 NVARCHAR(150) NULL,
 					Address2 NVARCHAR(150) NULL,
 					Address3 NVARCHAR(150) NULL,
@@ -142,6 +153,12 @@ BEGIN
 					EmployIntensityInd INT NULL,
 					IsFirstFullLevel2 INT NULL,
 					IsFirstFullLevel3 INT NULL,
+					PrimaryLLDDHealthProblem INT NULL,
+					DPOutcomeType NVARCHAR(3) NULL,
+					DPOutcomeCode INT NULL,
+					DPOutcomeStartDate DATETIME2 NULL,
+					DPOutcomeEndDate DATETIME2 NULL,
+					DPOutcomeCollectionDate DATETIME2 NULL,
 
 					FundLine NVARCHAR(100) NULL,
 					FundLineSummary NVARCHAR(100) NULL,

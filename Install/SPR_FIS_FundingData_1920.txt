@@ -191,6 +191,7 @@ BEGIN
 					WHEN MONTH ( L.DateOfBirth ) <= 8 THEN ''20'' + LEFT ( @AcademicYear, 2 ) - YEAR ( L.DateOfBirth )
 					ELSE CAST (''20'' + LEFT ( @AcademicYear, 2 ) - 1 AS INT ) - YEAR ( L.DateOfBirth )
 				END,
+			ULN = L.ULN,
 			Address1 = L.AddLine1,
 			Address2 = L.AddLine2,
 			Address3 = L.AddLine3,
@@ -228,6 +229,12 @@ BEGIN
 			EmployIntensityInd = ESM.EII,
 			IsFirstFullLevel2 = NULL,
 			IsFirstFullLevel3 = NULL,
+			PrimaryLLDDHealthProblem = LLDD.LLDDCat,
+			DPOutcomeType = OC.DPOutcomeType,
+			DPOutcomeCode = OC.DPOutcomeCode,
+			DPOutcomeStartDate = OC.DPOutcomeStartDate,
+			DPOutcomeEndDate = OC.DPOutcomeEndDate,
+			DPOutcomeCollectionDate = OC.DPOutcomeCollectionDate,
 
 			FundLine = 
 				COALESCE ( 
@@ -2097,6 +2104,9 @@ BEGIN
 		) EMP
 			ON EMP.LearnerRef = L.LearnRefNumber
 			AND EMP.RowNum = 1
+		LEFT JOIN ' + @FISDatabase + '.Valid.LLDDandHealthProblem LLDD
+			ON LLDD.LearnRefNumber = L.LearnRefNumber
+			AND LLDD.PrimaryLLDD = 1
 		LEFT JOIN (
 			SELECT
 				PVT.LearnRefNumber,
@@ -2133,6 +2143,26 @@ BEGIN
 
     SET @SQLString += 
         N'
+		LEFT JOIN (
+			SELECT
+				LearnRefNumber = OC.LearnRefNumber,
+				DPOutcomeType = OC.OutType,
+				DPOutcomeCode = OC.OutCode,
+				DPOutcomeStartDate = OC.OutStartDate,
+				DPOutcomeEndDate = OC.OutEndDate,
+				DPOutcomeCollectionDate = OC.OutCollDate,
+				RowNum = 
+					ROW_NUMBER () OVER (
+						PARTITION BY
+							OC.LearnRefNumber
+						ORDER BY
+							OC.OutCollDate DESC,
+							OC.OutStartDate DESC
+					)
+			FROM ' + @FISDatabase + '.Valid.DPOutcome OC
+		) OC
+			ON OC.LearnRefNumber = L.LearnRefNumber
+			AND OC.RowNum = 1
 		LEFT JOIN ( --Partner UKPRN not against prog aim so get this here
 			SELECT
 				LD.LearnRefNumber,

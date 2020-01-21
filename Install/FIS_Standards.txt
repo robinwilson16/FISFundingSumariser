@@ -1,6 +1,6 @@
-CREATE VIEW FIS_Standards
+CREATE VIEW [dbo].[FIS_Standards]
 AS
 	SELECT
 		StandardCode = STD.StandardCode,
 		StandardName = STD.StandardName
-	FROM ussql01.ProGeneral.dbo.Standard_QSR STD
+	FROM besql05.ProGeneral.dbo.Standard_QSR STD

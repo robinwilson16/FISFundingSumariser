@@ -1,0 +1,6 @@
+CREATE VIEW FIS_Ethnicities
+AS
+	SELECT
+		Code = ETH.EthnicGroupID,
+		Description = ETH.Description
+	FROM besql03.ProSolution.dbo.EthnicGroup ETH

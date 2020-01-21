@@ -88,6 +88,15 @@ BEGIN
 		IF OBJECT_ID(''tempdb.dbo.#PostCodes'', ''U'') IS NOT NULL
 			DROP TABLE #PostCodes; 
 
+		IF OBJECT_ID(''tempdb.dbo.#Ethnicities'', ''U'') IS NOT NULL
+			DROP TABLE #Ethnicities; 
+
+		IF OBJECT_ID(''tempdb.dbo.#Disabilities'', ''U'') IS NOT NULL
+			DROP TABLE #Disabilities; 
+
+		IF OBJECT_ID(''tempdb.dbo.#DestinationProgressionOutcomes'', ''U'') IS NOT NULL
+			DROP TABLE #DestinationProgressionOutcomes; 
+
 		SELECT
 			AIM.SSA1Code,
 			AIM.SSA1Name,
@@ -165,6 +174,26 @@ BEGIN
 			PC.UpliftApp
 		INTO #PostCodes
 		FROM FIS_PostCodes PC
+
+		SELECT
+			ETH.Code,
+			ETH.Description
+		INTO #Ethnicities
+		FROM FIS_Ethnicities ETH
+
+		SELECT
+			DIS.Code,
+			DIS.Description
+		INTO #Disabilities
+		FROM FIS_Disabilities DIS
+
+		SELECT
+			OC.OutcomeCode,
+			OC.OutcomeType,
+			OC.Code,
+			OC.Description
+		INTO #DestinationProgressionOutcomes
+		FROM FIS_DestinationProgressionOutcomes OC
 	'
 
 	SET @SQLString += 
@@ -185,6 +214,7 @@ BEGIN
 			LearnerRef = L.LearnRefNumber,
 			Surname = L.FamilyName,
 			Forename = L.GivenNames,
+			Sex = L.Sex,
 			DOB = L.DateOfBirth,
 			Age31Aug = DV.Learn_Age31Aug,
 			ULN = L.ULN,
@@ -225,12 +255,17 @@ BEGIN
 			EmployIntensityInd = ESM.EII,
 			IsFirstFullLevel2 = DV.Learn_FirstFullLevel2,
 			IsFirstFullLevel3 = DV.Learn_FirstFullLevel3,
-			PrimaryLLDDHealthProblem = LLDD.LLDDCat,
-			DPOutcomeType = OC.DPOutcomeType,
-			DPOutcomeCode = OC.DPOutcomeCode,
-			DPOutcomeStartDate = OC.DPOutcomeStartDate,
-			DPOutcomeEndDate = OC.DPOutcomeEndDate,
-			DPOutcomeCollectionDate = OC.DPOutcomeCollectionDate,
+			EthnicityCode = L.Ethnicity,
+			EthnicityName = ETH.Description,
+			PrimaryLLDDHealthProblemCode = LLDD.LLDDCat,
+			PrimaryLLDDHealthProblemName = DIS.Description,
+			DestinationProgressionType = OC.DPOutcomeType,
+			DestinationProgressionNumber = OC.DPOutcomeCode,
+			DestinationProgressionCode = DES.Code,
+			DestinationProgressionName = DES.Description,
+			DestinationProgressionStartDate = OC.DPOutcomeStartDate,
+			DestinationProgressionEndDate = OC.DPOutcomeEndDate,
+			DestinationProgressionCollectionDate = OC.DPOutcomeCollectionDate,
 
 			FundLine = 
 				COALESCE ( 
@@ -3797,7 +3832,13 @@ BEGIN
 					WHEN LD.LearnAimRef = ''ZPROG001'' THEN PTR.PartnerUKPRN
 					ELSE LD.PartnerUKPRN
 				END 
-					
+		LEFT JOIN #Ethnicities ETH
+			ON ETH.Code = L.Ethnicity
+		LEFT JOIN #Disabilities DIS
+			ON DIS.Code = LLDD.LLDDCat
+		LEFT JOIN #DestinationProgressionOutcomes DES
+			ON DES.OutcomeType = OC.DPOutcomeType
+			AND DES.OutcomeCode = OC.DPOutcomeCode
 
 		--WHERE
 			--L.LearnRefNumber = ''11024003''

@@ -207,6 +207,7 @@ BEGIN
 			LearnerRef = L.LearnRefNumber,
 			Surname = L.FamilyName,
 			Forename = L.GivenNames,
+			Sex = L.Sex,
 			DOB = L.DateOfBirth,
 			Age31Aug = DV.Learn_Age31Aug,
 			ULN = L.ULN,

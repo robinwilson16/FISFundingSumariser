@@ -104,6 +104,8 @@ BEGIN
 
 		SELECT
 			CS.AcademicYear,
+			CS.CollegeCode,
+			CS.CollegeName,
 			CS.SiteCode,
 			CS.SiteName,
 			CS.FacCode,
@@ -217,7 +219,7 @@ BEGIN
 			Address4 = L.AddLine4,
 			PostCodeCurrent = L.Postcode,
 			PostCodePriorToEnrol = L.PostcodePrior,
-			PostCodeLearningStartDate = LD.LSDPostcode,
+			PostCodeLearningStartDate = NULL,
 			Tel = L.TelNo,
 			Email = L.Email,
 			PostCodeWardCode = PC.WardCode,
@@ -880,6 +882,8 @@ BEGIN
 
 			PostCodeDelivery = LD.DelLocPostCode,
 			CampusID = NULL,
+			CollegeCode = COALESCE ( CS.CollegeCode, ''-'' ),
+			CollegeName = COALESCE ( CS.CollegeName, ''-- Unknown --'' ),
 			SiteCode = COALESCE ( CS.SiteCode, ''-'' ),
 			SiteName = COALESCE ( CS.SiteName, ''-- Unknown --'' ),
     '

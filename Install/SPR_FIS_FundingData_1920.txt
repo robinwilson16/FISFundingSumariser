@@ -111,6 +111,8 @@ BEGIN
 
 		SELECT
 			CS.AcademicYear,
+			CS.CollegeCode,
+			CS.CollegeName,
 			CS.SiteCode,
 			CS.SiteName,
 			CS.FacCode,
@@ -891,6 +893,8 @@ BEGIN
 			
 			PostCodeDelivery = LD.DelLocPostCode,
 			CampusID = L.CampId,
+			CollegeCode = COALESCE ( CS.CollegeCode, ''-'' ),
+			CollegeName = COALESCE ( CS.CollegeName, ''-- Unknown --'' ),
 			SiteCode = COALESCE ( CS.SiteCode, ''-'' ),
 			SiteName = COALESCE ( CS.SiteName, ''-- Unknown --'' ),
     '

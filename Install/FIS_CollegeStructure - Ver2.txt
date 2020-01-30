@@ -1,13 +1,15 @@
-CREATE VIEW FIS_CollegeStructure
+CREATE VIEW [dbo].[FIS_CollegeStructure]
 AS
     SELECT DISTINCT
         AcademicYear = CRS.AcademicYearID,
+		CollegeCode = RTRIM ( CGRP.Code ),
+		CollegeName = CGRP.Name,
 		SiteCode = STE.Code,
 		SiteName = STE.Description,
-        FacCode = FAC.Code,
-        FacName = FAC.Name,
-        TeamCode = TEAM.Code,
-        TeamName = TEAM.Name,
+        FacCode = RTRIM ( FAC.Code ),
+		FacName = FAC.Name,
+		TeamCode = RTRIM ( TEAM.Code ),
+		TeamName = TEAM.Name,
         CostCentreCode = CRS.LedgerCode,
 		CourseCode = CRS.Code,
 		CourseTitle = CRS.Name,
@@ -19,17 +21,23 @@ AS
     FROM besql03.ProSolution.dbo.Offering CRS
 	INNER JOIN besql03.ProSolution.dbo.Site STE
 		ON STE.SiteID = CRS.SiteID
-    INNER JOIN besql03.ProSolution.dbo.CollegeLevel TEAM
-        ON TEAM.SID = CRS.SID
-    INNER JOIN besql03.ProSolution.dbo.CollegeLevel FAC
-        ON FAC.SID = TEAM.ParentSID
-    LEFT JOIN besql03.ProSolution.dbo.OfferingGroup GRP
+	INNER JOIN besql03.ProSolution.dbo.CollegeLevel TEAM
+		ON TEAM.SID = CRS.SID
+	INNER JOIN besql03.ProSolution.dbo.CollegeLevel FAC
+		ON FAC.SID = TEAM.ParentSID
+	INNER JOIN besql03.ProSolution.dbo.CollegeLevel EXE
+		ON EXE.SID = FAC.ParentSID
+	INNER JOIN besql03.ProSolution.dbo.CollegeLevel CGRP
+		ON CGRP.SID = EXE.ParentSID
+	LEFT JOIN besql03.ProSolution.dbo.OfferingGroup GRP
         ON GRP.OfferingID = CRS.OfferingID
 
 	UNION ALL
 	
 	SELECT
 		AcademicYear = YR.AcademicYearID,
+		CollegeCode = NULL,
+		CollegeName = NULL,
 		SiteCode = NULL,
 		SiteName = NULL,
         FacCode = NULL,

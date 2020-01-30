@@ -193,6 +193,8 @@ BEGIN
         N'
 					PostCodeDelivery NVARCHAR(10) NULL,
 					CampusID NVARCHAR(20) NULL,
+					CollegeCode NVARCHAR(20) NULL,
+					CollegeName NVARCHAR(150) NULL,
 					SiteCode NVARCHAR(20) NULL,
 					SiteName NVARCHAR(100) NULL,
 					FacCode NVARCHAR(20) NULL,

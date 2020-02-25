@@ -1,3 +1,6 @@
+DECLARE @ILRReturn INT = 4
+DECLARE @IsFinalReturn BIT = 1
+
 DECLARE @BackupPath NVARCHAR(400);
 DECLARE @DatabaseName NVARCHAR(50);
 DECLARE @DatabaseName_log NVARCHAR(50);
@@ -12,7 +15,13 @@ SET @DatabaseName_log = @DatabaseName + '_log'
 SET @BackupPath = 'D:\MSSQL\Backup\' + @DatabaseName + '.bak'
 SET @DatabaseFolder = 'L:\MSSQL\DATA\'
 SET @LogFolder = 'M:\MSSQL\DATA\'
-SET @NewDatabaseName = 'ILR1920_R06F'
+SET @NewDatabaseName = 'ILR1920_' + 
+	'R' + FORMAT ( @ILRReturn, '#00' )
+	+ CASE
+		WHEN @IsFinalReturn = 1 THEN 'F'
+		ELSE ''
+	END
+
 SET @NewMDF = @DatabaseFolder + @NewDatabaseName + '.mdf'
 SET @NewLDF = @LogFolder + @NewDatabaseName + '' + '.ldf'
 
@@ -22,3 +31,5 @@ RESTORE DATABASE @NewDatabaseName FROM DISK = @BackupPath
 WITH REPLACE,
    MOVE @DatabaseName TO @NewMDF,
    MOVE @DatabaseName_log TO @NewLDF
+
+PRINT 'R' + FORMAT ( @ILRReturn, '#00' ) + ' database created as ' + @NewDatabaseName

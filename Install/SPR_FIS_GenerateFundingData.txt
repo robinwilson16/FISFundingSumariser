@@ -222,6 +222,7 @@ BEGIN
 					AimType FLOAT NULL,
 					AimCode NVARCHAR(8) NULL,
 					AimTitle NVARCHAR(150) NULL,
+					AimTypeCode NVARCHAR(4) NULL,
 					StartDate DATETIME2 NULL,
 					ExpEndDate DATETIME2 NULL,
 					ActEndDate DATETIME2 NULL,

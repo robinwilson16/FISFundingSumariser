@@ -104,6 +104,7 @@ BEGIN
 			AIM.SSA2Name,
 			AIM.AimCode,
 			AIM.AimTitle,
+			AIM.AimTypeCode,
 			AIM.AimLevel,
 			AIM.AwardBodyCode
 		INTO #LearningAims
@@ -899,8 +900,8 @@ BEGIN
         N'
 			FacCode = 
 				COALESCE (
-					CASE WHEN LD.LearnAimRef IN (''0003'', ''2999'', ''1439'') AND  AIM.AimTitle LIKE ''%English%'' THEN @OverrideEngFac END,
-					CASE WHEN LD.LearnAimRef IN (''0003'', ''2999'', ''1439'') AND  AIM.AimTitle LIKE ''%Math%'' THEN @OverrideMatFac END,
+					CASE WHEN AIM.AimTypeCode IN (''0003'', ''2999'', ''1439'') AND  AIM.AimTitle LIKE ''%English%'' THEN @OverrideEngFac END,
+					CASE WHEN AIM.AimTypeCode IN (''0003'', ''2999'', ''1439'') AND  AIM.AimTitle LIKE ''%Math%'' THEN @OverrideMatFac END,
 					CASE WHEN LD.PartnerUKPRN IS NOT NULL AND LD.FundModel IN ( ''25'', ''35'' ) THEN @OverridePartnerFac END,
 					CS.FacCode,
 					FAC.FacCode,
@@ -908,8 +909,8 @@ BEGIN
 				),
 			FacName = 
 				COALESCE (
-					CASE WHEN LD.LearnAimRef IN (''0003'', ''2999'', ''1439'') AND  AIM.AimTitle LIKE ''%English%'' THEN FENG.FacName END,
-					CASE WHEN LD.LearnAimRef IN (''0003'', ''2999'', ''1439'') AND  AIM.AimTitle LIKE ''%Math%'' THEN FMAT.FacName END,
+					CASE WHEN AIM.AimTypeCode IN (''0003'', ''2999'', ''1439'') AND  AIM.AimTitle LIKE ''%English%'' THEN FENG.FacName END,
+					CASE WHEN AIM.AimTypeCode IN (''0003'', ''2999'', ''1439'') AND  AIM.AimTitle LIKE ''%Math%'' THEN FMAT.FacName END,
 					CASE WHEN LD.PartnerUKPRN IS NOT NULL AND LD.FundModel IN ( ''25'', ''35'' ) THEN FPAR.FacName END,
 					CS.FacName,
 					FAC.FacName,
@@ -921,8 +922,8 @@ BEGIN
 			MainTeamName = COALESCE ( CSM.TeamName, ''-- Unknown --'' ),
 			TeamCode = 
 				COALESCE (
-					CASE WHEN LD.LearnAimRef IN (''0003'', ''2999'', ''1439'') AND  AIM.AimTitle LIKE ''%English%'' THEN @OverrideEngTeam END,
-					CASE WHEN LD.LearnAimRef IN (''0003'', ''2999'', ''1439'') AND  AIM.AimTitle LIKE ''%Math%'' THEN @OverrideMatTeam END,
+					CASE WHEN AIM.AimTypeCode IN (''0003'', ''2999'', ''1439'') AND  AIM.AimTitle LIKE ''%English%'' THEN @OverrideEngTeam END,
+					CASE WHEN AIM.AimTypeCode IN (''0003'', ''2999'', ''1439'') AND  AIM.AimTitle LIKE ''%Math%'' THEN @OverrideMatTeam END,
 					CASE WHEN LD.PartnerUKPRN IS NOT NULL AND LD.FundModel IN ( ''25'', ''35'' ) THEN @OverridePartnerTeam END,
 					CS.TeamCode,
 					TEAM.TeamCode,
@@ -930,8 +931,8 @@ BEGIN
 				),
 			TeamName = 
 				COALESCE (
-					CASE WHEN LD.LearnAimRef IN (''0003'', ''2999'', ''1439'') AND  AIM.AimTitle LIKE ''%English%'' THEN TENG.TeamName END,
-					CASE WHEN LD.LearnAimRef IN (''0003'', ''2999'', ''1439'') AND  AIM.AimTitle LIKE ''%Math%'' THEN TMAT.TeamName END,
+					CASE WHEN AIM.AimTypeCode IN (''0003'', ''2999'', ''1439'') AND  AIM.AimTitle LIKE ''%English%'' THEN TENG.TeamName END,
+					CASE WHEN AIM.AimTypeCode IN (''0003'', ''2999'', ''1439'') AND  AIM.AimTitle LIKE ''%Math%'' THEN TMAT.TeamName END,
 					CASE WHEN LD.PartnerUKPRN IS NOT NULL AND LD.FundModel IN ( ''25'', ''35'' ) THEN TPAR.TeamName END,
 					CS.TeamName,
 					TEAM.TeamName,
@@ -943,8 +944,8 @@ BEGIN
         N'
 			CostCentre = 
 				COALESCE (
-					CASE WHEN LD.LearnAimRef IN (''0003'', ''2999'', ''1439'') AND  AIM.AimTitle LIKE ''%English%'' THEN @OverrideEngCostCentre END,
-					CASE WHEN LD.LearnAimRef IN (''0003'', ''2999'', ''1439'') AND  AIM.AimTitle LIKE ''%Math%'' THEN @OverrideMatCostCentre END,
+					CASE WHEN AIM.AimTypeCode IN (''0003'', ''2999'', ''1439'') AND  AIM.AimTitle LIKE ''%English%'' THEN @OverrideEngCostCentre END,
+					CASE WHEN AIM.AimTypeCode IN (''0003'', ''2999'', ''1439'') AND  AIM.AimTitle LIKE ''%Math%'' THEN @OverrideMatCostCentre END,
 					CS.CostCentreCode,
 					''-''
 				),
@@ -1008,6 +1009,7 @@ BEGIN
 			AimType = LD.AimType,
 			AimCode = LD.LearnAimRef,
 			AimTitle = AIM.AimTitle,
+			AimTypeCode = AIM.AimTypeCode,
 			StartDate = LD.LearnStartDate,
 			ExpEndDate = LD.LearnPlanEndDate,
 			ActEndDate = LD.LearnActEndDate,

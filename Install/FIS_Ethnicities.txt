@@ -3,4 +3,4 @@ AS
 	SELECT
 		Code = ETH.EthnicGroupID,
 		Description = ETH.Description
-	FROM besql03.ProSolution.dbo.EthnicGroup ETH
+	FROM ProSolution.dbo.EthnicGroup ETH

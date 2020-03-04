@@ -17,9 +17,10 @@ SET @DatabaseFolder = 'L:\MSSQL\DATA\'
 SET @LogFolder = 'M:\MSSQL\DATA\'
 SET @NewDatabaseName = 'ILR1920_' + 
 	'R' + FORMAT ( @ILRReturn, '#00' )
+	+ '_'
 	+ CASE
 		WHEN @IsFinalReturn = 1 THEN 'F'
-		ELSE ''
+		ELSE '1'
 	END
 
 SET @NewMDF = @DatabaseFolder + @NewDatabaseName + '.mdf'

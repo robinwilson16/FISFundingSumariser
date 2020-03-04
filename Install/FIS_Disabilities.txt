@@ -3,4 +3,4 @@ AS
 	SELECT
 		Code = DISC.DisabilityCategoryID,
 		Description = DISC.Description
-	FROM besql03.ProSolution.dbo.DisabilityCategory DISC
+	FROM ProSolution.dbo.DisabilityCategory DISC

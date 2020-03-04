@@ -1,4 +1,4 @@
-DECLARE @FISDatabase NVARCHAR(100) = 'FIS_1718_NLAND_R14_F'
+DECLARE @FISDatabase NVARCHAR(100) = 'ILR1718_NLAND_R14_F'
 DECLARE @AcademicYear NVARCHAR(5) = '17/18'
 DECLARE @ILRReturn int = 14
 DECLARE @IsFinalReturn BIT = 1
@@ -9,7 +9,7 @@ DECLARE @IncludeAdvLoanBursaryIncome BIT = 0 --Adv loan bursary income is not in
 DECLARE @AEBCombinedAuthorityName NVARCHAR(200) = 'AEB - Tees Valley Combined Authority'
 DECLARE @FutureAchieveWeighting DECIMAL(3,2) = 1 --Future ach weighting factor. If 1 then is 100% of all remaining ach monies
 DECLARE @Mode NCHAR(1) = 'I' --I=Insert new ILR return data leaving existing data, R=Replace table
-DECLARE @FISOutputTableLocation NVARCHAR(200) = 'StagingArea.dbo.'
+DECLARE @FISOutputTableLocation NVARCHAR(200) = 'EPNE.dbo.'
 DECLARE @ProviderFieldFacLocation NCHAR(1) = 'D'
 DECLARE @ProviderFieldTeamLocation NCHAR(1) = 'C'
 DECLARE @ProviderFieldCostCentreLocation NCHAR(1) = 'B'

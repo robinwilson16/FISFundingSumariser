@@ -5,6 +5,6 @@ AS
 		OutcomeType = LEFT ( DES.Code, 3 ),
 		Code = RTRIM ( DES.Code ),
 		Description = DES.Description
-	FROM besql03.ProSolution.dbo.LocalDestination DES
+	FROM ProSolution.dbo.LocalDestination DES
 	WHERE
 		LEN ( DES.Code ) = 4

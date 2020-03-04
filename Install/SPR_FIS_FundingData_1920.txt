@@ -208,7 +208,7 @@ BEGIN
 			ProviderName = PROV.ProviderName,
 			ILRReturn = ''R'' + FORMAT ( @ILRReturn, ''#00'' ),
 			IsFinalReturn = @IsFinalReturn,
-			ILRReturnDate = SRC.DateTime,
+			ILRReturnDate = FORMAT ( SRC.DateTime, ''yyyy-MM-dd HH:mm:ss'' ),
 			SQLDatabase = ''' + @FISDatabase + ''',
 			Is1619FundingSplit = CASE WHEN LD.FundModel = ''25'' AND @Split1619Funding = 1 AND COALESCE ( HRS.PLH, 0 ) > 0 THEN 1 ELSE 0 END,
 			ALS1619FundingPercent = @1619ALSFundingPercent,
@@ -1958,163 +1958,6 @@ BEGIN
 			AND MA.RowNum = 1
 	'
 
-	SET @SQLString += 
-		N'
-		INNER JOIN (
-			SELECT
-				LD.LearnRefNumber,
-				LD.FundModel,
-				LD.AimSeqNumber,
-				FacCode = 
-					CASE
-						WHEN @ProviderFieldFacLocation = ''A'' THEN
-							PSDMA.ProvSpecDelMon
-						WHEN @ProviderFieldFacLocation = ''B'' THEN
-							PSDMB.ProvSpecDelMon
-						WHEN @ProviderFieldFacLocation = ''C'' THEN
-							PSDMC.ProvSpecDelMon
-						WHEN @ProviderFieldFacLocation = ''D'' THEN
-							PSDMD.ProvSpecDelMon
-						ELSE ''-''
-					END,
-				TeamCode = 
-					CASE
-						WHEN @ProviderFieldTeamLocation = ''A'' THEN
-							PSDMA.ProvSpecDelMon
-						WHEN @ProviderFieldTeamLocation = ''B'' THEN
-							PSDMB.ProvSpecDelMon
-						WHEN @ProviderFieldTeamLocation = ''C'' THEN
-							PSDMC.ProvSpecDelMon
-						WHEN @ProviderFieldTeamLocation = ''D'' THEN
-							PSDMD.ProvSpecDelMon
-						ELSE ''-''
-					END,
-				CostCentreCode = 
-					CASE
-						WHEN @ProviderFieldCostCentreLocation = ''A'' THEN
-							PSDMA.ProvSpecDelMon
-						WHEN @ProviderFieldCostCentreLocation = ''B'' THEN
-							PSDMB.ProvSpecDelMon
-						WHEN @ProviderFieldCostCentreLocation = ''C'' THEN
-							PSDMC.ProvSpecDelMon
-						WHEN @ProviderFieldCostCentreLocation = ''D'' THEN
-							PSDMD.ProvSpecDelMon
-						ELSE ''-''
-					END,
-				CourseCode = 
-					CASE
-						WHEN @ProviderFieldCourseLocation = ''A'' THEN
-							PSDMA.ProvSpecDelMon
-						WHEN @ProviderFieldCourseLocation = ''B'' THEN
-							PSDMB.ProvSpecDelMon
-						WHEN @ProviderFieldCourseLocation = ''C'' THEN
-							PSDMC.ProvSpecDelMon
-						WHEN @ProviderFieldCourseLocation = ''D'' THEN
-							PSDMD.ProvSpecDelMon
-						ELSE ''-''
-					END,
-				RowNum = 
-					ROW_NUMBER () OVER ( 
-						PARTITION BY
-							LD.LearnRefNumber,
-							LD.FundModel
-						ORDER BY
-							COALESCE ( FM25.StartFund, ALB.FundStart, FM35.FundStart, FM36.FundStart, 0 ) DESC,
-                            CASE
-                                COALESCE ( 
-                                    FM25.FundLine, 
-                                    CASE WHEN ALB.AdvLoan = 1 AND ALB.FundLine = ''None'' THEN ''Advanced Learner Loan (ALL)'' END,
-                                    FM36P.FundLineType,
-                                    FM35.FundLine,
-                                    CASE WHEN HE.LearnRefNumber IS NOT NULL THEN ''Higher Education'' END,
-                                    CASE WHEN LD.FundModel = ''99'' THEN ''Full Cost'' END 
-                                ) 
-                                WHEN ''16-19 Students (inc. High Needs)'' THEN 1
-                                WHEN ''None'' THEN 9
-                                ELSE 2
-                            END,
-							COALESCE ( LD.ProgType, ''99'' ),
-							CASE
-								WHEN LD.AimType = 2 THEN 4.5
-								ELSE LD.AimType
-							END DESC,
-							LD.CompStatus,
-							DATEDIFF ( DAY, LD.LearnStartDate, COALESCE ( LD.LearnActEndDate, LD.LearnPlanEndDate ) ) DESC,
-							COALESCE ( L.PlanLearnHours, 0 ) + COALESCE ( L.PlanEEPHours, 0 ) DESC,
-							LD.LearnStartDate,
-							LD.AimSeqNumber
-					)
-	'
-    
-    SET @SQLString += 
-        N'
-			FROM ' + @FISDatabase + '.Valid.Learner L
-			INNER JOIN ' + @FISDatabase + '.Valid.LearningDelivery LD
-				ON LD.LearnRefNumber = L.LearnRefNumber
-			LEFT JOIN ' + @FISDatabase + '.Valid.ProviderSpecDeliveryMonitoring PSDMA
-				ON PSDMA.LearnRefNumber = LD.LearnRefNumber
-				AND PSDMA.AimSeqNumber = LD.AimSeqNumber
-				AND PSDMA.ProvSpecDelMonOccur = ''A''
-			LEFT JOIN ' + @FISDatabase + '.Valid.ProviderSpecDeliveryMonitoring PSDMB
-				ON PSDMB.LearnRefNumber = LD.LearnRefNumber
-				AND PSDMB.AimSeqNumber = LD.AimSeqNumber
-				AND PSDMB.ProvSpecDelMonOccur = ''B''
-			LEFT JOIN ' + @FISDatabase + '.Valid.ProviderSpecDeliveryMonitoring PSDMC
-				ON PSDMC.LearnRefNumber = LD.LearnRefNumber
-				AND PSDMC.AimSeqNumber = LD.AimSeqNumber
-				AND PSDMC.ProvSpecDelMonOccur = ''C''
-			LEFT JOIN ' + @FISDatabase + '.Valid.ProviderSpecDeliveryMonitoring PSDMD
-				ON PSDMD.LearnRefNumber = LD.LearnRefNumber
-				AND PSDMD.AimSeqNumber = LD.AimSeqNumber
-				AND PSDMD.ProvSpecDelMonOccur = ''D''
-
-			--16-19
-			LEFT JOIN ' + @FISDatabase + '.Rulebase.FM25_Learner FM25
-				ON FM25.LearnRefNumber = LD.LearnRefNumber
-				AND FM25.CoreAimSeqNumber = LD.AimSeqNumber
-				--AND FM25.StartFund = 1
-
-			--AEB and Apps (Legacy)
-			LEFT JOIN ' + @FISDatabase + '.Rulebase.FM35_LearningDelivery FM35
-				ON FM35.LearnRefNumber = LD.LearnRefNumber
-				AND FM35.AimSeqNumber = LD.AimSeqNumber
-				--AND FM35.FundStart = 1
-
-			--Apps (Reformed)
-			LEFT JOIN ' + @FISDatabase + '.Rulebase.AEC_LearningDelivery FM36
-				ON FM36.LearnRefNumber = LD.LearnRefNumber
-				AND FM36.AimSeqNumber = LD.AimSeqNumber
-			LEFT JOIN (
-				SELECT
-					FM36P.LearnRefNumber,
-					FM36P.AimSeqNumber,
-					FM36P.FundLineType
-				FROM ' + @FISDatabase + '.Rulebase.AEC_LearningDelivery_Period FM36P
-				WHERE
-					FM36P.FundLineType <> ''None''
-				GROUP BY
-					FM36P.LearnRefNumber,
-					FM36P.AimSeqNumber,
-					FM36P.FundLineType
-			) FM36P
-				ON FM36P.LearnRefNumber = FM36.LearnRefNumber
-				AND FM36P.AimSeqNumber = FM36.AimSeqNumber
-
-			--Loans and Bursaries
-			LEFT JOIN ' + @FISDatabase + '.Rulebase.ALB_LearningDelivery ALB
-				ON ALB.LearnRefNumber = LD.LearnRefNumber
-				AND ALB.AimSeqNumber = LD.AimSeqNumber
-
-			--Higher Education
-			LEFT JOIN ' + @FISDatabase + '.Valid.LearningDeliveryHE HE
-				ON HE.LearnRefNumber = LD.LearnRefNumber
-				AND HE.AimSeqNumber = LD.AimSeqNumber
-		) MAFM
-			ON MAFM.LearnRefNumber = LD.LearnRefNumber
-			AND MAFM.FundModel = LD.FundModel
-			AND MAFM.RowNum = 1
-	'
-    
     SET @SQLString += 
         N'
 		LEFT JOIN ' + @FISDatabase + '.Valid.LearningDeliveryFAM FFI
@@ -3825,6 +3668,286 @@ BEGIN
 		) HRS
 			ON HRS.LearnRefNumber = L.LearnRefNumber
     '
+
+	SET @SQLString += 
+		N'
+		LEFT JOIN (
+			SELECT
+				LD.LearnRefNumber,
+				FundLine = 
+					COALESCE ( 
+						CASE WHEN LD.FundModel = ''25'' THEN HRS.FundLine END,
+						FM25.FundLine, 
+						CASE WHEN ALB.AdvLoan = 1 AND ALB.FundLine = ''None'' THEN ''Advanced Learner Loan (ALL)'' END,
+						CASE WHEN ALB.AdvLoan = 1 AND ALB.FundLine <> ''None'' THEN ALB.FundLine END,
+						FM36P.FundLineType,
+						FM35.FundLine,
+						CASE WHEN HE.LearnRefNumber IS NOT NULL THEN ''Higher Education'' END,
+						CASE WHEN LD.FundModel = ''99'' THEN ''Full Cost'' END 
+					),
+				LD.FundModel,
+				LD.AimSeqNumber,
+				FacCode = 
+					CASE
+						WHEN @ProviderFieldFacLocation = ''A'' THEN
+							PSDMA.ProvSpecDelMon
+						WHEN @ProviderFieldFacLocation = ''B'' THEN
+							PSDMB.ProvSpecDelMon
+						WHEN @ProviderFieldFacLocation = ''C'' THEN
+							PSDMC.ProvSpecDelMon
+						WHEN @ProviderFieldFacLocation = ''D'' THEN
+							PSDMD.ProvSpecDelMon
+						ELSE ''-''
+					END,
+				TeamCode = 
+					CASE
+						WHEN @ProviderFieldTeamLocation = ''A'' THEN
+							PSDMA.ProvSpecDelMon
+						WHEN @ProviderFieldTeamLocation = ''B'' THEN
+							PSDMB.ProvSpecDelMon
+						WHEN @ProviderFieldTeamLocation = ''C'' THEN
+							PSDMC.ProvSpecDelMon
+						WHEN @ProviderFieldTeamLocation = ''D'' THEN
+							PSDMD.ProvSpecDelMon
+						ELSE ''-''
+					END,
+				CostCentreCode = 
+					CASE
+						WHEN @ProviderFieldCostCentreLocation = ''A'' THEN
+							PSDMA.ProvSpecDelMon
+						WHEN @ProviderFieldCostCentreLocation = ''B'' THEN
+							PSDMB.ProvSpecDelMon
+						WHEN @ProviderFieldCostCentreLocation = ''C'' THEN
+							PSDMC.ProvSpecDelMon
+						WHEN @ProviderFieldCostCentreLocation = ''D'' THEN
+							PSDMD.ProvSpecDelMon
+						ELSE ''-''
+					END,
+				CourseCode = 
+					CASE
+						WHEN @ProviderFieldCourseLocation = ''A'' THEN
+							PSDMA.ProvSpecDelMon
+						WHEN @ProviderFieldCourseLocation = ''B'' THEN
+							PSDMB.ProvSpecDelMon
+						WHEN @ProviderFieldCourseLocation = ''C'' THEN
+							PSDMC.ProvSpecDelMon
+						WHEN @ProviderFieldCourseLocation = ''D'' THEN
+							PSDMD.ProvSpecDelMon
+						ELSE ''-''
+					END,
+				RowNum = 
+					ROW_NUMBER () OVER ( 
+						PARTITION BY
+							LD.LearnRefNumber,
+							COALESCE ( 
+								CASE WHEN LD.FundModel = ''25'' THEN HRS.FundLine END,
+								FM25.FundLine, 
+								CASE WHEN ALB.AdvLoan = 1 AND ALB.FundLine = ''None'' THEN ''Advanced Learner Loan (ALL)'' END,
+								CASE WHEN ALB.AdvLoan = 1 AND ALB.FundLine <> ''None'' THEN ALB.FundLine END,
+								FM36P.FundLineType,
+								FM35.FundLine,
+								CASE WHEN HE.LearnRefNumber IS NOT NULL THEN ''Higher Education'' END,
+								CASE WHEN LD.FundModel = ''99'' THEN ''Full Cost'' END 
+							)
+						ORDER BY
+							COALESCE ( FM25.StartFund, ALB.FundStart, FM35.FundStart, FM36.FundStart, 0 ) DESC,
+                            CASE
+                                COALESCE ( 
+                                    FM25.FundLine, 
+                                    CASE WHEN ALB.AdvLoan = 1 AND ALB.FundLine = ''None'' THEN ''Advanced Learner Loan (ALL)'' END,
+                                    FM36P.FundLineType,
+                                    FM35.FundLine,
+                                    CASE WHEN HE.LearnRefNumber IS NOT NULL THEN ''Higher Education'' END,
+                                    CASE WHEN LD.FundModel = ''99'' THEN ''Full Cost'' END 
+                                ) 
+                                WHEN ''16-19 Students (inc. High Needs)'' THEN 1
+                                WHEN ''None'' THEN 9
+                                ELSE 2
+                            END,
+							COALESCE ( LD.ProgType, ''99'' ),
+							CASE
+								WHEN LD.AimType = 2 THEN 4.5
+								ELSE LD.AimType
+							END DESC,
+							LD.CompStatus,
+							DATEDIFF ( DAY, LD.LearnStartDate, COALESCE ( LD.LearnActEndDate, LD.LearnPlanEndDate ) ) DESC,
+							COALESCE ( L.PlanLearnHours, 0 ) + COALESCE ( L.PlanEEPHours, 0 ) DESC,
+							LD.LearnStartDate,
+							LD.AimSeqNumber
+					)
+	'
+    
+    SET @SQLString += 
+        N'
+			FROM ' + @FISDatabase + '.Valid.Learner L
+			INNER JOIN ' + @FISDatabase + '.Valid.LearningDelivery LD
+				ON LD.LearnRefNumber = L.LearnRefNumber
+			LEFT JOIN ' + @FISDatabase + '.Valid.ProviderSpecDeliveryMonitoring PSDMA
+				ON PSDMA.LearnRefNumber = LD.LearnRefNumber
+				AND PSDMA.AimSeqNumber = LD.AimSeqNumber
+				AND PSDMA.ProvSpecDelMonOccur = ''A''
+			LEFT JOIN ' + @FISDatabase + '.Valid.ProviderSpecDeliveryMonitoring PSDMB
+				ON PSDMB.LearnRefNumber = LD.LearnRefNumber
+				AND PSDMB.AimSeqNumber = LD.AimSeqNumber
+				AND PSDMB.ProvSpecDelMonOccur = ''B''
+			LEFT JOIN ' + @FISDatabase + '.Valid.ProviderSpecDeliveryMonitoring PSDMC
+				ON PSDMC.LearnRefNumber = LD.LearnRefNumber
+				AND PSDMC.AimSeqNumber = LD.AimSeqNumber
+				AND PSDMC.ProvSpecDelMonOccur = ''C''
+			LEFT JOIN ' + @FISDatabase + '.Valid.ProviderSpecDeliveryMonitoring PSDMD
+				ON PSDMD.LearnRefNumber = LD.LearnRefNumber
+				AND PSDMD.AimSeqNumber = LD.AimSeqNumber
+				AND PSDMD.ProvSpecDelMonOccur = ''D''
+
+			--16-19
+			LEFT JOIN ' + @FISDatabase + '.Rulebase.FM25_Learner FM25
+				ON FM25.LearnRefNumber = LD.LearnRefNumber
+				AND FM25.CoreAimSeqNumber = LD.AimSeqNumber
+				--AND FM25.StartFund = 1
+
+			--AEB and Apps (Legacy)
+			LEFT JOIN ' + @FISDatabase + '.Rulebase.FM35_LearningDelivery FM35
+				ON FM35.LearnRefNumber = LD.LearnRefNumber
+				AND FM35.AimSeqNumber = LD.AimSeqNumber
+				--AND FM35.FundStart = 1
+
+			--Apps (Reformed)
+			LEFT JOIN ' + @FISDatabase + '.Rulebase.AEC_LearningDelivery FM36
+				ON FM36.LearnRefNumber = LD.LearnRefNumber
+				AND FM36.AimSeqNumber = LD.AimSeqNumber
+			LEFT JOIN (
+				SELECT
+					FM36P.LearnRefNumber,
+					FM36P.AimSeqNumber,
+					FM36P.FundLineType
+				FROM ' + @FISDatabase + '.Rulebase.AEC_LearningDelivery_Period FM36P
+				WHERE
+					FM36P.FundLineType <> ''None''
+				GROUP BY
+					FM36P.LearnRefNumber,
+					FM36P.AimSeqNumber,
+					FM36P.FundLineType
+			) FM36P
+				ON FM36P.LearnRefNumber = FM36.LearnRefNumber
+				AND FM36P.AimSeqNumber = FM36.AimSeqNumber
+
+			--Loans and Bursaries
+			LEFT JOIN ' + @FISDatabase + '.Rulebase.ALB_LearningDelivery ALB
+				ON ALB.LearnRefNumber = LD.LearnRefNumber
+				AND ALB.AimSeqNumber = LD.AimSeqNumber
+
+			--Higher Education
+			LEFT JOIN ' + @FISDatabase + '.Valid.LearningDeliveryHE HE
+				ON HE.LearnRefNumber = LD.LearnRefNumber
+				AND HE.AimSeqNumber = LD.AimSeqNumber
+	'
+    
+    SET @SQLString += 
+        N'
+			--FM25 Hours
+			LEFT JOIN (
+				SELECT
+					LD.LearnRefNumber,
+					FM25.FundLine,
+					FM25.RateBand,
+					TFerOnly = CASE WHEN ACT.LearnRefNumber IS NULL THEN 1 ELSE 0 END,
+					PLH = COALESCE ( SUM ( CH.PLH ), 0 ),
+					EEP = COALESCE ( SUM ( CH.EEP ), 0 ),
+					OnProgPayment = 
+						MAX ( FM25.OnProgPayment )
+						- CASE 
+							WHEN @1619ALSFundingPercent > 0 THEN
+								( MAX ( FM25.OnProgPayment ) / 100 ) * ( 0.07 * 100 )
+							ELSE
+								0
+						END,
+					LearnSuppPayment = 
+						CASE 
+							WHEN @1619ALSFundingPercent > 0 THEN
+								( MAX ( FM25.OnProgPayment ) / 100 ) * ( 0.07 * 100 )
+							ELSE
+								0
+						END,
+					TotFund = MAX ( FM25.OnProgPayment ),
+					IsFunded = MAX ( CAST ( FM25.StartFund AS INT ) )
+				FROM ' + @FISDatabase + '.Valid.LearningDelivery LD
+				INNER JOIN ' + @FISDatabase + '.Rulebase.FM25_Learner FM25
+					ON FM25.LearnRefNumber = LD.LearnRefNumber
+				LEFT JOIN ' + @FISDatabase + '.Valid.ProviderSpecDeliveryMonitoring PSDMA
+					ON PSDMA.LearnRefNumber = LD.LearnRefNumber
+					AND PSDMA.AimSeqNumber = LD.AimSeqNumber
+					AND PSDMA.ProvSpecDelMonOccur = ''A''
+				LEFT JOIN ' + @FISDatabase + '.Valid.ProviderSpecDeliveryMonitoring PSDMB
+					ON PSDMB.LearnRefNumber = LD.LearnRefNumber
+					AND PSDMB.AimSeqNumber = LD.AimSeqNumber
+					AND PSDMB.ProvSpecDelMonOccur = ''B''
+				LEFT JOIN ' + @FISDatabase + '.Valid.ProviderSpecDeliveryMonitoring PSDMC
+					ON PSDMC.LearnRefNumber = LD.LearnRefNumber
+					AND PSDMC.AimSeqNumber = LD.AimSeqNumber
+					AND PSDMC.ProvSpecDelMonOccur = ''C''
+				LEFT JOIN ' + @FISDatabase + '.Valid.ProviderSpecDeliveryMonitoring PSDMD
+					ON PSDMD.LearnRefNumber = LD.LearnRefNumber
+					AND PSDMD.AimSeqNumber = LD.AimSeqNumber
+					AND PSDMD.ProvSpecDelMonOccur = ''D''
+				LEFT JOIN #CourseHours CH
+					ON CH.AcademicYear = @AcademicYear
+					AND CH.ProvSpecField =
+						CASE
+							WHEN @ProviderFieldCourseLocation = ''A'' THEN
+								PSDMA.ProvSpecDelMon
+							WHEN @ProviderFieldCourseLocation = ''B'' THEN
+								PSDMB.ProvSpecDelMon
+							WHEN @ProviderFieldCourseLocation = ''C'' THEN
+								PSDMC.ProvSpecDelMon
+							WHEN @ProviderFieldCourseLocation = ''D'' THEN
+								PSDMD.ProvSpecDelMon
+						END
+				LEFT JOIN (
+					SELECT DISTINCT
+						LD.LearnRefNumber
+					FROM ' + @FISDatabase + '.Valid.LearningDelivery LD
+					WHERE
+						LD.FundModel = ''25''
+						AND COALESCE ( LD.WithdrawReason, ''0'' ) <> ''40'' --Exclude transfers
+						--AND LD.LearnRefNumber = ''17002435''
+					GROUP BY
+						LD.LearnRefNumber
+				) ACT
+					ON ACT.LearnRefNumber = LD.LearnRefNumber
+				WHERE
+					LD.FundModel = ''25''
+					AND 
+						CASE --If lrn has no active aims then count tfer instead
+							WHEN ACT.LearnRefNumber IS NOT NULL THEN
+								CASE
+									WHEN COALESCE ( LD.WithdrawReason, ''0'' ) <> ''40'' THEN 1
+									ELSE 0
+								END
+							ELSE
+								1
+							END = 1
+				GROUP BY
+					LD.LearnRefNumber,
+					FM25.FundLine,
+					FM25.RateBand,
+					ACT.LearnRefNumber
+			) HRS
+				ON HRS.LearnRefNumber = L.LearnRefNumber
+		) MAFM
+			ON MAFM.LearnRefNumber = LD.LearnRefNumber
+			AND MAFM.FundLine = 
+				COALESCE ( 
+					CASE WHEN LD.FundModel = ''25'' THEN HRS.FundLine END,
+					FM25.FundLine, 
+					CASE WHEN ALB.AdvLoan = 1 AND ALB.FundLine = ''None'' THEN ''Advanced Learner Loan (ALL)'' END,
+					CASE WHEN ALB.AdvLoan = 1 AND ALB.FundLine <> ''None'' THEN ALB.FundLine END,
+					FM36P.FundLineType,
+					FM35.FundLine,
+					CASE WHEN HE.LearnRefNumber IS NOT NULL THEN ''Higher Education'' END,
+					CASE WHEN LD.FundModel = ''99'' THEN ''Full Cost'' END 
+				)
+			AND MAFM.RowNum = 1
+	'
 
     SET @SQLString += 
         N'

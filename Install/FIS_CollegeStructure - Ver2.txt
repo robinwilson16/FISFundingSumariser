@@ -44,7 +44,7 @@ AS
         FacName = NULL,
         TeamCode = 'T00',
         TeamName = 'Subcontractors',
-        CostCentreCode = NULL,
+        CostCentreCode = '9800',
 		CourseCode = NULL,
 		CourseTitle = NULL,
         ProvSpecField = NULL
@@ -118,6 +118,7 @@ AS
 			ON CGRP.SID = EXE.ParentSID
 		INNER JOIN ProSolution.dbo.AcademicYear AY
 			ON AY.AcademicYearID >= '14/15'
+			AND AY.AcademicYearID <= '18/19'
 		WHERE
 			TEAM.LevelNum = 4
 			AND TEAM.Code IS NOT NULL
@@ -155,6 +156,7 @@ AS
 			ON CGRP.SID = EXE.ParentSID
 		INNER JOIN ProSolution.dbo.AcademicYear AY
 			ON AY.AcademicYearID >= '14/15'
+			AND AY.AcademicYearID <= '18/19'
 		WHERE
 			TEAM.LevelNum = 4
 			AND TEAM.Code IS NOT NULL

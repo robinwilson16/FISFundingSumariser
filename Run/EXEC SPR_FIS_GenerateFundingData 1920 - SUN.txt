@@ -1,7 +1,7 @@
 DECLARE @FISDatabase NVARCHAR(100) = 'ILR1920'
 DECLARE @AcademicYear NVARCHAR(5) = '19/20'
 DECLARE @ILRReturn int = 7
-DECLARE @IsFinalReturn BIT = 0
+DECLARE @IsFinalReturn BIT = 1
 DECLARE @Split1619Funding BIT = 1 --Split the funding into the 12 periods
 DECLARE @1619ALSFundingPercent DECIMAL(3,2) = 0.07 --Deduct this percent from Tot Funding and assign to ALS column
 DECLARE @IncludeHEAdvLoanPossIncome BIT = 0 --HE gross fee is only achieved if at all 3 SLC census points learners remain current
@@ -22,7 +22,7 @@ DECLARE @OverrideEngCostCentre NVARCHAR(50) = '4461'
 DECLARE @OverrideMatCostCentre NVARCHAR(50) = '4462'
 DECLARE @OverridePartnerFac NVARCHAR(50) = 'F00'
 DECLARE @OverridePartnerTeam NVARCHAR(50) = 'T00'
-DECLARE @OverridePartnerCostCentre NVARCHAR(50) = 'NULL'
+DECLARE @OverridePartnerCostCentre NVARCHAR(50) = '9800'
 
 DECLARE @SQLString NVARCHAR(MAX);
 DECLARE @SQLParams NVARCHAR(MAX);

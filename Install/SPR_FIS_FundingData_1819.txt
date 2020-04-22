@@ -11,11 +11,11 @@ CREATE PROCEDURE SPR_FIS_FundingData_1819
 	@ILRReturn INT,
 	@IsFinalReturn BIT,
 	@Split1619Funding BIT,
-	@1619ALSFundingPercent DECIMAL(3,2),
+	@1619ALSFundingPercent DECIMAL(5,2),
 	@IncludeHEAdvLoanPossIncome BIT,
 	@IncludeAdvLoanBursaryIncome BIT,
 	@AEBCombinedAuthorityName NVARCHAR(200),
-	@FutureAchieveWeighting DECIMAL(3,2),
+	@FutureAchieveWeighting DECIMAL(5,2),
     @FISOutputTableLocation NVARCHAR(200),
 	@ProviderFieldFacLocation CHAR(1),
 	@ProviderFieldTeamLocation CHAR(1),
@@ -39,11 +39,11 @@ BEGIN
 	--DECLARE @ILRReturn NVARCHAR(2) = '10'
 	--DECLARE @IsFinalReturn BIT = 0
 	--DECLARE @Split1619Funding BIT = 1
-	--DECLARE @1619ALSFundingPercent DECIMAL(3,2) = 0.03
+	--DECLARE @1619ALSFundingPercent DECIMAL(5,2) = 9
 	--DECLARE @IncludeHEAdvLoanPossIncome BIT = 1
 	--DECLARE @IncludeAdvLoanBursaryIncome BIT = 1
 	--DECLARE @AEBCombinedAuthorityName NVARCHAR(200) = 'AEB'
-	--DECLARE @FutureAchieveWeighting DECIMAL(3,2) = 0.75
+	--DECLARE @FutureAchieveWeighting DECIMAL(5,2) = 0.75
 	--DECLARE @FISOutputTableLocation NVARCHAR(200) = 'ProSolutionReports.dbo.'
 	--DECLARE @ProviderFieldFacLocation NCHAR(1) = 'D'
 	--DECLARE @ProviderFieldTeamLocation NCHAR(1) = 'C'
@@ -1106,7 +1106,7 @@ BEGIN
 					FM25.OnProgPayment
 					- CASE 
 						WHEN @1619ALSFundingPercent > 0 THEN
-							( FM25.OnProgPayment / 100 ) * ( 0.07 * 100 )
+							( FM25.OnProgPayment / 100 ) * @1619ALSFundingPercent
 						ELSE
 							0
 					END
@@ -1121,7 +1121,7 @@ BEGIN
 				ELSE 
 					CASE 
 						WHEN @1619ALSFundingPercent > 0 THEN
-							( FM25.OnProgPayment / 100 ) * ( 0.07 * 100 )
+							( FM25.OnProgPayment / 100 ) * @1619ALSFundingPercent
 						ELSE
 							0
 					END
@@ -1150,7 +1150,7 @@ BEGIN
 					FM25.OnProgPayment
 					- CASE 
 						WHEN @1619ALSFundingPercent > 0 THEN
-							( FM25.OnProgPayment / 100 ) * ( 0.07 * 100 )
+							( FM25.OnProgPayment / 100 ) * @1619ALSFundingPercent
 						ELSE
 							0
 					END
@@ -1165,7 +1165,7 @@ BEGIN
 				ELSE 
 					CASE 
 						WHEN @1619ALSFundingPercent > 0 THEN
-							( FM25.OnProgPayment / 100 ) * ( 0.07 * 100 )
+							( FM25.OnProgPayment / 100 ) * @1619ALSFundingPercent
 						ELSE
 							0
 					END
@@ -1197,7 +1197,7 @@ BEGIN
 					FM25.OnProgPayment
 					- CASE 
 						WHEN @1619ALSFundingPercent > 0 THEN
-							( FM25.OnProgPayment / 100 ) * ( 0.07 * 100 )
+							( FM25.OnProgPayment / 100 ) * @1619ALSFundingPercent
 						ELSE
 							0
 					END
@@ -1212,7 +1212,7 @@ BEGIN
 				ELSE 
 					CASE 
 						WHEN @1619ALSFundingPercent > 0 THEN
-							( FM25.OnProgPayment / 100 ) * ( 0.07 * 100 )
+							( FM25.OnProgPayment / 100 ) * @1619ALSFundingPercent
 						ELSE
 							0
 					END
@@ -1261,7 +1261,7 @@ BEGIN
 					FM25.OnProgPayment
 					- CASE 
 						WHEN @1619ALSFundingPercent > 0 THEN
-							( FM25.OnProgPayment / 100 ) * ( 0.07 * 100 )
+							( FM25.OnProgPayment / 100 ) * @1619ALSFundingPercent
 						ELSE
 							0
 					END
@@ -1276,7 +1276,7 @@ BEGIN
 				ELSE 
 					CASE 
 						WHEN @1619ALSFundingPercent > 0 THEN
-							( FM25.OnProgPayment / 100 ) * ( 0.07 * 100 )
+							( FM25.OnProgPayment / 100 ) * @1619ALSFundingPercent
 						ELSE
 							0
 					END
@@ -1305,7 +1305,7 @@ BEGIN
 					FM25.OnProgPayment
 					- CASE 
 						WHEN @1619ALSFundingPercent > 0 THEN
-							( FM25.OnProgPayment / 100 ) * ( 0.07 * 100 )
+							( FM25.OnProgPayment / 100 ) * @1619ALSFundingPercent
 						ELSE
 							0
 					END
@@ -1320,7 +1320,7 @@ BEGIN
 				ELSE 
 					CASE 
 						WHEN @1619ALSFundingPercent > 0 THEN
-							( FM25.OnProgPayment / 100 ) * ( 0.07 * 100 )
+							( FM25.OnProgPayment / 100 ) * @1619ALSFundingPercent
 						ELSE
 							0
 					END
@@ -1352,7 +1352,7 @@ BEGIN
 					FM25.OnProgPayment
 					- CASE 
 						WHEN @1619ALSFundingPercent > 0 THEN
-							( FM25.OnProgPayment / 100 ) * ( 0.07 * 100 )
+							( FM25.OnProgPayment / 100 ) * @1619ALSFundingPercent
 						ELSE
 							0
 					END
@@ -1367,7 +1367,7 @@ BEGIN
 				ELSE 
 					CASE 
 						WHEN @1619ALSFundingPercent > 0 THEN
-							( FM25.OnProgPayment / 100 ) * ( 0.07 * 100 )
+							( FM25.OnProgPayment / 100 ) * @1619ALSFundingPercent
 						ELSE
 							0
 					END
@@ -1396,7 +1396,7 @@ BEGIN
 					FM25.OnProgPayment
 					- CASE 
 						WHEN @1619ALSFundingPercent > 0 THEN
-							( FM25.OnProgPayment / 100 ) * ( 0.07 * 100 )
+							( FM25.OnProgPayment / 100 ) * @1619ALSFundingPercent
 						ELSE
 							0
 					END
@@ -1411,7 +1411,7 @@ BEGIN
 				ELSE 
 					CASE 
 						WHEN @1619ALSFundingPercent > 0 THEN
-							( FM25.OnProgPayment / 100 ) * ( 0.07 * 100 )
+							( FM25.OnProgPayment / 100 ) * @1619ALSFundingPercent
 						ELSE
 							0
 					END
@@ -1443,7 +1443,7 @@ BEGIN
 					FM25.OnProgPayment
 					- CASE 
 						WHEN @1619ALSFundingPercent > 0 THEN
-							( FM25.OnProgPayment / 100 ) * ( 0.07 * 100 )
+							( FM25.OnProgPayment / 100 ) * @1619ALSFundingPercent
 						ELSE
 							0
 					END
@@ -1458,7 +1458,7 @@ BEGIN
 				ELSE 
 					CASE 
 						WHEN @1619ALSFundingPercent > 0 THEN
-							( FM25.OnProgPayment / 100 ) * ( 0.07 * 100 )
+							( FM25.OnProgPayment / 100 ) * @1619ALSFundingPercent
 						ELSE
 							0
 					END
@@ -1487,7 +1487,7 @@ BEGIN
 					FM25.OnProgPayment
 					- CASE 
 						WHEN @1619ALSFundingPercent > 0 THEN
-							( FM25.OnProgPayment / 100 ) * ( 0.07 * 100 )
+							( FM25.OnProgPayment / 100 ) * @1619ALSFundingPercent
 						ELSE
 							0
 					END
@@ -1502,7 +1502,7 @@ BEGIN
 				ELSE 
 					CASE 
 						WHEN @1619ALSFundingPercent > 0 THEN
-							( FM25.OnProgPayment / 100 ) * ( 0.07 * 100 )
+							( FM25.OnProgPayment / 100 ) * @1619ALSFundingPercent
 						ELSE
 							0
 					END
@@ -1534,7 +1534,7 @@ BEGIN
 					FM25.OnProgPayment
 					- CASE 
 						WHEN @1619ALSFundingPercent > 0 THEN
-							( FM25.OnProgPayment / 100 ) * ( 0.07 * 100 )
+							( FM25.OnProgPayment / 100 ) * @1619ALSFundingPercent
 						ELSE
 							0
 					END
@@ -1549,7 +1549,7 @@ BEGIN
 				ELSE 
 					CASE 
 						WHEN @1619ALSFundingPercent > 0 THEN
-							( FM25.OnProgPayment / 100 ) * ( 0.07 * 100 )
+							( FM25.OnProgPayment / 100 ) * @1619ALSFundingPercent
 						ELSE
 							0
 					END
@@ -1578,7 +1578,7 @@ BEGIN
 					FM25.OnProgPayment
 					- CASE 
 						WHEN @1619ALSFundingPercent > 0 THEN
-							( FM25.OnProgPayment / 100 ) * ( 0.07 * 100 )
+							( FM25.OnProgPayment / 100 ) * @1619ALSFundingPercent
 						ELSE
 							0
 					END
@@ -1593,7 +1593,7 @@ BEGIN
 				ELSE 
 					CASE 
 						WHEN @1619ALSFundingPercent > 0 THEN
-							( FM25.OnProgPayment / 100 ) * ( 0.07 * 100 )
+							( FM25.OnProgPayment / 100 ) * @1619ALSFundingPercent
 						ELSE
 							0
 					END
@@ -1625,7 +1625,7 @@ BEGIN
 					FM25.OnProgPayment
 					- CASE 
 						WHEN @1619ALSFundingPercent > 0 THEN
-							( FM25.OnProgPayment / 100 ) * ( 0.07 * 100 )
+							( FM25.OnProgPayment / 100 ) * @1619ALSFundingPercent
 						ELSE
 							0
 					END
@@ -1640,7 +1640,7 @@ BEGIN
 				ELSE 
 					CASE 
 						WHEN @1619ALSFundingPercent > 0 THEN
-							( FM25.OnProgPayment / 100 ) * ( 0.07 * 100 )
+							( FM25.OnProgPayment / 100 ) * @1619ALSFundingPercent
 						ELSE
 							0
 					END
@@ -1669,7 +1669,7 @@ BEGIN
 					FM25.OnProgPayment
 					- CASE 
 						WHEN @1619ALSFundingPercent > 0 THEN
-							( FM25.OnProgPayment / 100 ) * ( 0.07 * 100 )
+							( FM25.OnProgPayment / 100 ) * @1619ALSFundingPercent
 						ELSE
 							0
 					END
@@ -1684,7 +1684,7 @@ BEGIN
 				ELSE 
 					CASE 
 						WHEN @1619ALSFundingPercent > 0 THEN
-							( FM25.OnProgPayment / 100 ) * ( 0.07 * 100 )
+							( FM25.OnProgPayment / 100 ) * @1619ALSFundingPercent
 						ELSE
 							0
 					END
@@ -1716,7 +1716,7 @@ BEGIN
 					FM25.OnProgPayment
 					- CASE 
 						WHEN @1619ALSFundingPercent > 0 THEN
-							( FM25.OnProgPayment / 100 ) * ( 0.07 * 100 )
+							( FM25.OnProgPayment / 100 ) * @1619ALSFundingPercent
 						ELSE
 							0
 					END
@@ -1731,7 +1731,7 @@ BEGIN
 				ELSE 
 					CASE 
 						WHEN @1619ALSFundingPercent > 0 THEN
-							( FM25.OnProgPayment / 100 ) * ( 0.07 * 100 )
+							( FM25.OnProgPayment / 100 ) * @1619ALSFundingPercent
 						ELSE
 							0
 					END
@@ -1760,7 +1760,7 @@ BEGIN
 					FM25.OnProgPayment
 					- CASE 
 						WHEN @1619ALSFundingPercent > 0 THEN
-							( FM25.OnProgPayment / 100 ) * ( 0.07 * 100 )
+							( FM25.OnProgPayment / 100 ) * @1619ALSFundingPercent
 						ELSE
 							0
 					END
@@ -1775,7 +1775,7 @@ BEGIN
 				ELSE 
 					CASE 
 						WHEN @1619ALSFundingPercent > 0 THEN
-							( FM25.OnProgPayment / 100 ) * ( 0.07 * 100 )
+							( FM25.OnProgPayment / 100 ) * @1619ALSFundingPercent
 						ELSE
 							0
 					END
@@ -3595,14 +3595,14 @@ BEGIN
 					MAX ( FM25.OnProgPayment )
 					- CASE 
 						WHEN @1619ALSFundingPercent > 0 THEN
-							( MAX ( FM25.OnProgPayment ) / 100 ) * ( 0.07 * 100 )
+							( MAX ( FM25.OnProgPayment ) / 100 ) * @1619ALSFundingPercent
 						ELSE
 							0
 					END,
 				LearnSuppPayment = 
 					CASE 
 						WHEN @1619ALSFundingPercent > 0 THEN
-							( MAX ( FM25.OnProgPayment ) / 100 ) * ( 0.07 * 100 )
+							( MAX ( FM25.OnProgPayment ) / 100 ) * @1619ALSFundingPercent
 						ELSE
 							0
 					END,
@@ -3744,17 +3744,16 @@ BEGIN
 					ROW_NUMBER () OVER ( 
 						PARTITION BY
 							LD.LearnRefNumber,
-							FundLine = 
-								COALESCE ( 
-									CASE WHEN LD.FundModel = ''25'' THEN HRS.FundLine END,
-									FM25.FundLine, 
-									CASE WHEN ALB.AdvLoan = 1 AND ALB.FundLine = ''None'' THEN ''Advanced Learner Loan (ALL)'' END,
-									CASE WHEN ALB.AdvLoan = 1 AND ALB.FundLine <> ''None'' THEN ALB.FundLine END,
-									FM36P.FundLineType,
-									FM35.FundLine,
-									CASE WHEN HE.LearnRefNumber IS NOT NULL THEN ''Higher Education'' END,
-									CASE WHEN LD.FundModel = ''99'' THEN ''Full Cost'' END 
-								)
+							COALESCE ( 
+								CASE WHEN LD.FundModel = ''25'' THEN HRS.FundLine END,
+								FM25.FundLine, 
+								CASE WHEN ALB.AdvLoan = 1 AND ALB.FundLine = ''None'' THEN ''Advanced Learner Loan (ALL)'' END,
+								CASE WHEN ALB.AdvLoan = 1 AND ALB.FundLine <> ''None'' THEN ALB.FundLine END,
+								FM36P.FundLineType,
+								FM35.FundLine,
+								CASE WHEN HE.LearnRefNumber IS NOT NULL THEN ''Higher Education'' END,
+								CASE WHEN LD.FundModel = ''99'' THEN ''Full Cost'' END 
+							)
 						ORDER BY
 							COALESCE ( FM25.StartFund, ALB.FundStart, FM35.FundStart, FM36.FundStart, 0 ) DESC,
                             CASE
@@ -3864,21 +3863,21 @@ BEGIN
 						MAX ( FM25.OnProgPayment )
 						- CASE 
 							WHEN @1619ALSFundingPercent > 0 THEN
-								( MAX ( FM25.OnProgPayment ) / 100 ) * ( 0.07 * 100 )
+								( MAX ( FM25.OnProgPayment ) / 100 ) * @1619ALSFundingPercent
 							ELSE
 								0
 						END,
 					LearnSuppPayment = 
 						CASE 
 							WHEN @1619ALSFundingPercent > 0 THEN
-								( MAX ( FM25.OnProgPayment ) / 100 ) * ( 0.07 * 100 )
+								( MAX ( FM25.OnProgPayment ) / 100 ) * @1619ALSFundingPercent
 							ELSE
 								0
 						END,
 					TotFund = MAX ( FM25.OnProgPayment ),
 					IsFunded = MAX ( CAST ( FM25.StartFund AS INT ) )
 				FROM ' + @FISDatabase + '.dbo.Valid_LearningDelivery LD
-				INNER JOIN ' + @FISDatabase + '.Rulebase.FM25_Learner FM25
+				INNER JOIN ' + @FISDatabase + '.dbo.Rulebase_FM25_Learner FM25
 					ON FM25.LearnRefNumber = LD.LearnRefNumber
 				LEFT JOIN ' + @FISDatabase + '.dbo.Valid_ProviderSpecDeliveryMonitoring PSDMA
 					ON PSDMA.LearnRefNumber = LD.LearnRefNumber
@@ -3985,11 +3984,11 @@ BEGIN
     	@ILRReturn INT,
     	@IsFinalReturn BIT,
     	@Split1619Funding BIT,
-		@1619ALSFundingPercent DECIMAL(3,2),
+		@1619ALSFundingPercent DECIMAL(5,2),
 		@IncludeHEAdvLoanPossIncome BIT,
 		@IncludeAdvLoanBursaryIncome BIT,
 		@AEBCombinedAuthorityName NVARCHAR(200),
-    	@FutureAchieveWeighting DECIMAL(3,2),
+    	@FutureAchieveWeighting DECIMAL(5,2),
         @FISOutputTableLocation NVARCHAR(200),
     	@ProviderFieldFacLocation CHAR(1),
 		@ProviderFieldTeamLocation CHAR(1),

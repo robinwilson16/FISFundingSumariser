@@ -3,7 +3,8 @@ SET
 	FD.FacCode = TEAMME.FacCode,
 	FD.FacName = TEAMME.FacName,
 	FD.TeamCode = TEAMME.TeamCode,
-	FD.TeamName = TEAMME.TeamName
+	FD.TeamName = TEAMME.TeamName,
+	FD.CostCentre = TEAMME.CostCentreCode
 FROM FIS_FundingData FD
 INNER JOIN (
 	SELECT DISTINCT
@@ -11,7 +12,8 @@ INNER JOIN (
 		CS.FacCode,
 		CS.FacName,
 		CS.TeamCode,
-		CS.TeamName
+		CS.TeamName,
+		CS.CostCentreCode
 	FROM FIS_CollegeStructure CS
 ) TEAMME
 	ON TEAMME.AcademicYear = FD.AcademicYear

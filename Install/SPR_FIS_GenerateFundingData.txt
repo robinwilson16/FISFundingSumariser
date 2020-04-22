@@ -4,11 +4,11 @@ CREATE PROCEDURE SPR_FIS_GenerateFundingData
 	@ILRReturn INT,
 	@IsFinalReturn BIT,
 	@Split1619Funding BIT,
-	@1619ALSFundingPercent DECIMAL(3,2),
+	@1619ALSFundingPercent DECIMAL(5,2),
 	@IncludeHEAdvLoanPossIncome BIT,
 	@IncludeAdvLoanBursaryIncome BIT,
 	@AEBCombinedAuthorityName NVARCHAR(200),
-	@FutureAchieveWeighting DECIMAL(3,2),
+	@FutureAchieveWeighting DECIMAL(5,2),
 	@Mode NCHAR(1),
 	@FISOutputTableLocation NVARCHAR(200),
 	@ProviderFieldFacLocation NCHAR(1),
@@ -39,11 +39,11 @@ BEGIN
 	--DECLARE @ILRReturn int = 11
 	--DECLARE @IsFinalReturn BIT = 1
 	--DECLARE @Split1619Funding BIT = 0 --Split the funding into the 12 periods
-	--DECLARE @1619ALSFundingPercent DECIMAL(3,2) = 0.07 --Deduct this percent from Tot Funding and assign to ALS column
+	--DECLARE @1619ALSFundingPercent DECIMAL(5,2) = 0.07 --Deduct this percent from Tot Funding and assign to ALS column
 	--DECLARE @IncludeHEAdvLoanPossIncome BIT = 1 --HE gross fee is only achieved if at all 3 SLC census points learners remain current
 	--DECLARE @IncludeAdvLoanBursaryIncome BIT = 0 --Adv loan bursary income is not income as goes to learners so may want to exclude
 	--DECLARE @AEBCombinedAuthorityName NVARCHAR(200) = 'AEB - Tees Valley Combined Authority'
-	--DECLARE @FutureAchieveWeighting DECIMAL(3,2) = 1 --Future ach weighting factor. If 1 then is 100% of all remaining ach monies
+	--DECLARE @FutureAchieveWeighting DECIMAL(5,2) = 1 --Future ach weighting factor. If 1 then is 100% of all remaining ach monies
 	--DECLARE @Mode NCHAR(1) = 'R' --I=Insert new ILR return data leaving existing data, R=Replace table
 	--DECLARE @FISOutputTableLocation NVARCHAR(200) = 'wlc.dbo.'
 	--DECLARE @ProviderFieldFacLocation NCHAR(1) = 'B'
@@ -115,7 +115,7 @@ BEGIN
 					ILRReturnDate DATETIME NULL,
 					SQLDatabase NVARCHAR(50) NULL,
 					Is1619FundingSplit INT NULL,
-					ALS1619FundingPercent DECIMAL(3, 2) NULL,
+					ALS1619FundingPercent DECIMAL(5, 2) NULL,
 					InvalidLearners INT NULL,
 
 					LearnerRef NVARCHAR(12) NULL,
@@ -296,7 +296,7 @@ BEGIN
 					TotFundYrEnd FLOAT NULL,
 
 					FutureAchievePayment FLOAT NULL,
-					FutureAchieveWeighting DECIMAL(3, 2) NULL,
+					FutureAchieveWeighting DECIMAL(5, 2) NULL,
 					FutureAchievePaymentWeighted FLOAT NULL,
 
 					EmployerContibutionPMRTot FLOAT NULL,
@@ -493,11 +493,11 @@ BEGIN
     	@ILRReturn INT,
     	@IsFinalReturn BIT,
     	@Split1619Funding BIT,
-        @1619ALSFundingPercent DECIMAL(3,2),
+        @1619ALSFundingPercent DECIMAL(5,2),
 		@IncludeHEAdvLoanPossIncome BIT,
 		@IncludeAdvLoanBursaryIncome BIT,
 		@AEBCombinedAuthorityName NVARCHAR(200),
-    	@FutureAchieveWeighting DECIMAL(3,2),
+    	@FutureAchieveWeighting DECIMAL(5,2),
         @FISOutputTableLocation NVARCHAR(200),
     	@ProviderFieldFacLocation CHAR(1),
 		@ProviderFieldTeamLocation CHAR(1),

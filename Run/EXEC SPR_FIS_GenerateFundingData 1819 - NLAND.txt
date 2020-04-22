@@ -3,11 +3,11 @@ DECLARE @AcademicYear NVARCHAR(5) = '18/19'
 DECLARE @ILRReturn int = 14
 DECLARE @IsFinalReturn BIT = 1
 DECLARE @Split1619Funding BIT = 1 --Split the funding into the 12 periods
-DECLARE @1619ALSFundingPercent DECIMAL(3,2) = 0.07 --Deduct this percent from Tot Funding and assign to ALS column
+DECLARE @1619ALSFundingPercent DECIMAL(5,2) = 7 --Deduct this percent from Tot Funding and assign to ALS column
 DECLARE @IncludeHEAdvLoanPossIncome BIT = 0 --HE gross fee is only achieved if at all 3 SLC census points learners remain current
 DECLARE @IncludeAdvLoanBursaryIncome BIT = 0 --Adv loan bursary income is not income as goes to learners so may want to exclude
 DECLARE @AEBCombinedAuthorityName NVARCHAR(200) = 'AEB - Tees Valley Combined Authority'
-DECLARE @FutureAchieveWeighting DECIMAL(3,2) = 1 --Future ach weighting factor. If 1 then is 100% of all remaining ach monies
+DECLARE @FutureAchieveWeighting DECIMAL(5,2) = 1 --Future ach weighting factor. If 1 then is 100% of all remaining ach monies
 DECLARE @Mode NCHAR(1) = 'I' --I=Insert new ILR return data leaving existing data, R=Replace table
 DECLARE @FISOutputTableLocation NVARCHAR(200) = 'EPNE.dbo.'
 DECLARE @ProviderFieldFacLocation NCHAR(1) = 'D'
@@ -61,11 +61,11 @@ SET @SQLParams =
         @ILRReturn int,
         @IsFinalReturn BIT,
         @Split1619Funding BIT,
-        @1619ALSFundingPercent DECIMAL(3,2),
+        @1619ALSFundingPercent DECIMAL(5,2),
 		@IncludeHEAdvLoanPossIncome BIT,
 		@IncludeAdvLoanBursaryIncome BIT,
 		@AEBCombinedAuthorityName NVARCHAR(200),
-        @FutureAchieveWeighting DECIMAL(3,2),
+        @FutureAchieveWeighting DECIMAL(5,2),
         @Mode NCHAR(1),
         @FISOutputTableLocation NVARCHAR(200),
 		@ProviderFieldFacLocation NCHAR(1),

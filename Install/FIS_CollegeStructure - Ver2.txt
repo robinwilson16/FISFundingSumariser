@@ -32,23 +32,23 @@ AS
 	LEFT JOIN ProSolution.dbo.OfferingGroup GRP
         ON GRP.OfferingID = CRS.OfferingID
 
-	UNION ALL
+	--UNION ALL
 	
-	SELECT
-		AcademicYear = YR.AcademicYearID,
-		CollegeCode = NULL,
-		CollegeName = NULL,
-		SiteCode = NULL,
-		SiteName = NULL,
-        FacCode = NULL,
-        FacName = NULL,
-        TeamCode = 'T00',
-        TeamName = 'Subcontractors',
-        CostCentreCode = '9800',
-		CourseCode = NULL,
-		CourseTitle = NULL,
-        ProvSpecField = NULL
-	FROM ProSolution.dbo.AcademicYear YR
+	--SELECT
+	--	AcademicYear = YR.AcademicYearID,
+	--	CollegeCode = 'SCO',
+	--	CollegeName = 'Sunderland College',
+	--	SiteCode = NULL,
+	--	SiteName = NULL,
+ --       FacCode = 'F00',
+ --       FacName = 'Subcontractors',
+ --       TeamCode = 'T00',
+ --       TeamName = 'Subcontractors',
+ --       CostCentreCode = '9800',
+	--	CourseCode = NULL,
+	--	CourseTitle = NULL,
+ --       ProvSpecField = NULL
+	--FROM ProSolution.dbo.AcademicYear YR
 
 	UNION ALL
 	
@@ -166,3 +166,6 @@ AS
 	GROUP BY
 		NC.CourseCode,
 		NC.AcademicYear
+GO
+
+

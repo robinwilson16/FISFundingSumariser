@@ -13,8 +13,14 @@ INNER JOIN (
 		CS.FacName,
 		CS.TeamCode,
 		CS.TeamName,
-		CS.CostCentreCode
+		CostCentreCode = MAX ( CS.CostCentreCode )
 	FROM FIS_CollegeStructure CS
+	GROUP BY
+		CS.AcademicYear,
+		CS.FacCode,
+		CS.FacName,
+		CS.TeamCode,
+		CS.TeamName
 ) TEAMME
 	ON TEAMME.AcademicYear = FD.AcademicYear
 	AND TEAMME.TeamCode = 

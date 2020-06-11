@@ -276,6 +276,7 @@ BEGIN
 			DestinationProgressionEndDate = OC.DPOutcomeEndDate,
 			DestinationProgressionCollectionDate = OC.DPOutcomeCollectionDate,
 
+			SoftwareSupplierAimID = LD.SWSupAimId,
 			FundLine = 
 				COALESCE ( 
 					CASE WHEN LD.FundModel = ''25'' THEN HRS.FundLine END,
@@ -1050,8 +1051,10 @@ BEGIN
 			Grade = LD.OutGrade,
 			AwardBody = AIM.AwardBodyCode,
 
+			StandardCode = LD.StdCode,
+			StandardName = COALESCE ( STD.StandardName, CASE WHEN LD.StdCode IS NULL THEN NULL ELSE ''-- Unknown --'' END ),
 			FrameworkCode = LD.FworkCode,
-			FrameworkName = COALESCE ( FW.FrameworkName, ''-- Unknown --'' ),
+			FrameworkName = COALESCE ( FW.FrameworkName, CASE WHEN LD.FworkCode IS NULL THEN NULL ELSE ''-- Unknown --'' END ),
 			EmployerID = EMP.EmployerID,
 			EmployerName = EMPN.EmployerName,
 			PartnerCode = 
@@ -3450,6 +3453,8 @@ BEGIN
 		) INV
 			ON 1 = 1
 
+		LEFT JOIN #Standards STD
+			ON STD.StandardCode = LD.StdCode
 		LEFT JOIN #Frameworks FW
 			ON FW.FrameworkCode = LD.FworkCode
 		LEFT JOIN #PostCodes PC

@@ -168,6 +168,7 @@ BEGIN
 					DestinationProgressionEndDate DATETIME NULL,
 					DestinationProgressionCollectionDate DATETIME NULL,
 
+					SoftwareSupplierAimID NVARCHAR(36) NULL,
 					FundLine NVARCHAR(100) NULL,
 					FundLineSummary NVARCHAR(100) NULL,
                     FundLineDetail NVARCHAR(100) NULL,
@@ -233,15 +234,17 @@ BEGIN
 					FM25PLHAllAims FLOAT NULL,
 					FM25EEPAllAims FLOAT NULL,
 
-					CompletionCode FLOAT NULL,
+					CompletionCode INT NULL,
 					CompletionDesc NVARCHAR(20) NULL,
-					OutcomeCode FLOAT NULL,
+					OutcomeCode INT NULL,
 					OutcomeDesc NVARCHAR(20) NULL,
 					WithdrawReason NVARCHAR(2) NULL,
 					Grade NVARCHAR(6) NULL,
 					AwardBody NVARCHAR(20) NULL,
 
-					FrameworkCode FLOAT NULL,
+					StandardCode INT NULL,
+					StandardName NVARCHAR(750) NULL,
+					FrameworkCode INT NULL,
 					FrameworkName NVARCHAR(150) NULL,
 					EmployerID INT NULL,
 					EmployerName NVARCHAR(100) NULL,

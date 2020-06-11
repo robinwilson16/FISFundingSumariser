@@ -302,8 +302,11 @@ BEGIN
 					FutureAchieveWeighting DECIMAL(5, 2) NULL,
 					FutureAchievePaymentWeighted FLOAT NULL,
 
-					EmployerContibutionPMRTot FLOAT NULL,
-					EmployerContibutionPMRCum FLOAT NULL,
+					AppStandardPriceEpisodeStartDate DATE NULL,
+					AppStandardPriceEpisodeCompletionElement DECIMAL (12, 5) NULL,
+					AppStandardTotalNegotiatedPriceTNP DECIMAL (12, 5) NULL,
+					EmployerContibutionPMRTot DECIMAL (12, 5) NULL,
+					EmployerContibutionPMRCum DECIMAL (12, 5) NULL,
 
 					OnProgPaymentP01 FLOAT NULL,
 					LearnSuppPaymentP01 FLOAT NULL,

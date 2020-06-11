@@ -1247,6 +1247,9 @@ BEGIN
 					ELSE COALESCE ( FM35.AchieveElement - FM35P.AchCompPaymentYrEnd, FM36PE.PriceEpisodeCompletionElement - FM36P.AchCompPaymentYrEnd ) * @FutureAchieveWeighting
 				END,
 
+			AppStandardPriceEpisodeStartDate = FM36PE.EpisodeStartDate,
+			AppStandardPriceEpisodeCompletionElement = COALESCE ( FM36PE.PriceEpisodeCompletionElement, 0 ),
+			AppStandardTotalNegotiatedPriceTNP = COALESCE ( FM36PE.PriceEpisodeTotalTNPPrice, 0 ),
 			EmployerContibutionPMRTot = COALESCE ( FM36PE.PriceEpisodeTotalPMRs, 0 ),
 			EmployerContibutionPMRCum = COALESCE ( FM36PE.PriceEpisodeCumulativePMRs, 0 ),
 		'

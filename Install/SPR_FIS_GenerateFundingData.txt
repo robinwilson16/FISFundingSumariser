@@ -242,10 +242,13 @@ BEGIN
 					Grade NVARCHAR(6) NULL,
 					AwardBody NVARCHAR(20) NULL,
 
+					ProgType INT NULL,
 					StandardCode INT NULL,
 					StandardName NVARCHAR(750) NULL,
 					FrameworkCode INT NULL,
 					FrameworkName NVARCHAR(150) NULL,
+					PathwayCode INT NULL,
+					PathwayName NVARCHAR(150) NULL,
 					EmployerID INT NULL,
 					EmployerName NVARCHAR(100) NULL,
 					PartnerCode FLOAT NULL,
@@ -302,11 +305,12 @@ BEGIN
 					FutureAchieveWeighting DECIMAL(5, 2) NULL,
 					FutureAchievePaymentWeighted FLOAT NULL,
 
+					AppStandardPriceEpisodeContractType NVARCHAR(50) NULL,
 					AppStandardPriceEpisodeStartDate DATE NULL,
 					AppStandardPriceEpisodeCompletionElement DECIMAL (12, 5) NULL,
 					AppStandardTotalNegotiatedPriceTNP DECIMAL (12, 5) NULL,
-					EmployerContibutionPMRTot DECIMAL (12, 5) NULL,
-					EmployerContibutionPMRCum DECIMAL (12, 5) NULL,
+					AppStandardEmployerContibutionPMRTot DECIMAL (12, 5) NULL,
+					AppStandardEmployerContibutionPMRCum DECIMAL (12, 5) NULL,
 
 					OnProgPaymentP01 FLOAT NULL,
 					LearnSuppPaymentP01 FLOAT NULL,

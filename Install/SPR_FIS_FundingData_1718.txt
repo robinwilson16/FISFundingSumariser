@@ -57,38 +57,18 @@ BEGIN
 
 	SET @SQLString = 
         N'
-		IF OBJECT_ID(''tempdb.dbo.#LearningAims'', ''U'') IS NOT NULL
-			DROP TABLE #LearningAims; 
-
-		IF OBJECT_ID(''tempdb.dbo.#CollegeStructure'', ''U'') IS NOT NULL
-			DROP TABLE #CollegeStructure; 
-
-		IF OBJECT_ID(''tempdb.dbo.#CourseHours'', ''U'') IS NOT NULL
-			DROP TABLE #CourseHours; 
-
-		IF OBJECT_ID(''tempdb.dbo.#Employers'', ''U'') IS NOT NULL
-			DROP TABLE #Employers; 
-
-		IF OBJECT_ID(''tempdb.dbo.#Partners'', ''U'') IS NOT NULL
-			DROP TABLE #Partners; 
-
-		IF OBJECT_ID(''tempdb.dbo.#Frameworks'', ''U'') IS NOT NULL
-			DROP TABLE #Frameworks; 
-
-		IF OBJECT_ID(''tempdb.dbo.#Standards'', ''U'') IS NOT NULL
-			DROP TABLE #Standards; 
-
-		IF OBJECT_ID(''tempdb.dbo.#PostCodes'', ''U'') IS NOT NULL
-			DROP TABLE #PostCodes; 
-
-		IF OBJECT_ID(''tempdb.dbo.#Ethnicities'', ''U'') IS NOT NULL
-			DROP TABLE #Ethnicities; 
-
-		IF OBJECT_ID(''tempdb.dbo.#Disabilities'', ''U'') IS NOT NULL
-			DROP TABLE #Disabilities; 
-
-		IF OBJECT_ID(''tempdb.dbo.#DestinationProgressionOutcomes'', ''U'') IS NOT NULL
-			DROP TABLE #DestinationProgressionOutcomes; 
+		DROP TABLE IF EXISTS #LearningAims;
+		DROP TABLE IF EXISTS #CollegeStructure;
+		DROP TABLE IF EXISTS #CourseHours;
+		DROP TABLE IF EXISTS #Employers;
+		DROP TABLE IF EXISTS #Partners;
+		DROP TABLE IF EXISTS #Standards;
+		DROP TABLE IF EXISTS #Frameworks;
+		DROP TABLE IF EXISTS #Pathways;
+		DROP TABLE IF EXISTS #PostCodes;
+		DROP TABLE IF EXISTS #Ethnicities;
+		DROP TABLE IF EXISTS #Disabilities;
+		DROP TABLE IF EXISTS #DestinationProgressionOutcomes;
 
 		SELECT
 			AIM.SSA1Code,
@@ -146,16 +126,24 @@ BEGIN
 		FROM FIS_Partners PAR
 
 		SELECT
+			STD.StandardCode,
+			STD.StandardName
+		INTO #Standards
+		FROM FIS_Standards STD
+
+		SELECT
 			FW.FrameworkCode,
 			FW.FrameworkName
 		INTO #Frameworks
 		FROM FIS_Frameworks FW
 
 		SELECT
-			STD.StandardCode,
-			STD.StandardName
-		INTO #Standards
-		FROM FIS_Standards STD
+			PWAY.FrameworkCode,
+			PWAY.ProgType,
+			PWAY.PathwayCode,
+			PWAY.PathwayName
+		INTO #Pathways
+		FROM FIS_Pathways PWAY
 
 		SELECT
 			PC.PostCode,
@@ -1041,10 +1029,13 @@ BEGIN
 			Grade = LD.OutGrade,
 			AwardBody = AIM.AwardBodyCode,
 
+			ProgType = LD.ProgType,
 			StandardCode = LD.StdCode,
 			StandardName = COALESCE ( STD.StandardName, CASE WHEN LD.StdCode IS NULL THEN NULL ELSE ''-- Unknown --'' END ),
 			FrameworkCode = LD.FworkCode,
 			FrameworkName = COALESCE ( FW.FrameworkName, ''-- Unknown --'' ),
+			PathwayCode = LD.PwayCode,
+			PathwayName = COALESCE ( PWAY.PathwayName, CASE WHEN LD.PwayCode IS NULL THEN NULL ELSE ''-- Unknown --'' END ),
 			EmployerID = 
 				CASE
 					WHEN LDR.LearnDel_EmpID = -1 THEN NULL
@@ -1240,11 +1231,12 @@ BEGIN
 					ELSE COALESCE ( FM35.AchieveElement - FM35P.AchCompPaymentYrEnd, FM36PE.PriceEpisodeCompletionElement - FM36P.AchCompPaymentYrEnd ) * @FutureAchieveWeighting
 				END,
 
+			AppStandardPriceEpisodeContractType = FM36PE.PriceEpisodeContractType,
 			AppStandardPriceEpisodeStartDate = FM36PE.EpisodeStartDate,
 			AppStandardPriceEpisodeCompletionElement = COALESCE ( FM36PE.PriceEpisodeCompletionElement, 0 ),
 			AppStandardTotalNegotiatedPriceTNP = COALESCE ( FM36PE.PriceEpisodeTotalTNPPrice, 0 ),
-			EmployerContibutionPMRTot = COALESCE ( FM36PE.PriceEpisodeTotalPMRs, 0 ),
-			EmployerContibutionPMRCum = COALESCE ( FM36PE.PriceEpisodeCumulativePMRs, 0 ),
+			AppStandardEmployerContibutionPMRTot = COALESCE ( FM36PE.PriceEpisodeTotalPMRs, 0 ),
+			AppStandardEmployerContibutionPMRCum = COALESCE ( FM36PE.PriceEpisodeCumulativePMRs, 0 ),
 		'
 
     SET @SQLString += 
@@ -2411,6 +2403,7 @@ BEGIN
 			SELECT
 				FM36PE.LearnRefNumber,
 				AimSeqNumber = FM36PE.PriceEpisodeAimSeqNumber,
+				FM36PE.PriceEpisodeContractType,
 				FM36PE.EpisodeStartDate,
 				FM36PE.PriceEpisodeTotalTNPPrice,
 				FM36PE.PriceEpisodeCompletionElement,
@@ -3427,6 +3420,10 @@ BEGIN
 			ON STD.StandardCode = LD.StdCode
 		LEFT JOIN #Frameworks FW
 			ON FW.FrameworkCode = LD.FworkCode
+		LEFT JOIN #Pathways PWAY
+			ON PWAY.FrameworkCode = LD.FworkCode
+			AND PWAY.ProgType = LD.ProgType
+			AND PWAY.PathwayCode = LD.PwayCode
 		LEFT JOIN #PostCodes PC
 			ON PC.PostCode = L.Postcode
 	'

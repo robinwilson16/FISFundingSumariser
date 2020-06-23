@@ -1,14 +1,14 @@
 DECLARE @FISDatabase NVARCHAR(100) = 'ILR1920'
 DECLARE @AcademicYear NVARCHAR(5) = '19/20'
-DECLARE @ILRReturn int = 10
+DECLARE @ILRReturn int = 11
 DECLARE @IsFinalReturn BIT = 0
-DECLARE @Split1619Funding BIT = 1 --Split the funding into the 12 periods
+DECLARE @Split1619Funding BIT = 0 --Split the funding into the 12 periods
 DECLARE @1619ALSFundingPercent DECIMAL(5,2) = 10.58 --Deduct this percent from Tot Funding for FM25 and assign to ALS column
 DECLARE @IncludeHEAdvLoanPossIncome BIT = 0 --HE gross fee is only achieved if at all 3 SLC census points learners remain current
 DECLARE @IncludeAdvLoanBursaryIncome BIT = 0 --Adv loan bursary income is not income as goes to learners so may want to exclude
 DECLARE @AEBCombinedAuthorityName NVARCHAR(200) = 'AEB - Tees Valley Combined Authority'
 DECLARE @FutureAchieveWeighting DECIMAL(5,2) = 1 --Future ach weighting factor. If 1 then is 100% of all remaining ach monies
-DECLARE @Mode NCHAR(1) = 'I' --I=Insert new ILR return data leaving existing data, R=Replace table
+DECLARE @Mode NCHAR(1) = 'R' --I=Insert new ILR return data leaving existing data, R=Replace table
 DECLARE @FISOutputTableLocation NVARCHAR(200) = 'EPNE.dbo.'
 DECLARE @ProviderFieldFacLocation NCHAR(1) = 'B'
 DECLARE @ProviderFieldTeamLocation NCHAR(1) = 'C'

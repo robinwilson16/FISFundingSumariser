@@ -300,6 +300,7 @@ BEGIN
 					EmpOutcomePayYrEnd FLOAT NULL,
 					OtherPaymentYrEnd FLOAT NULL,
 					TotFundYrEnd FLOAT NULL,
+					TotFundYrEndNotApportioned FLOAT NULL,
 
 					FutureAchievePayment FLOAT NULL,
 					FutureAchieveWeighting DECIMAL(5, 2) NULL,

@@ -1223,6 +1223,8 @@ BEGIN
 							( COALESCE ( HRS.TotFund, 0 ) / COALESCE ( HRS.PLH, 0 ) ) * COALESCE ( CASE WHEN COALESCE ( LD.WithdrawReason, ''0'' ) <> ''40'' OR HRS.TFerOnly = 1 THEN CH.PLH END, 0 )
 					END
 				ELSE FM25.OnProgPayment END END, CASE WHEN ALB.AdvLoan = 1 AND @IncludeAdvLoanBursaryIncome = 1 THEN ALBP.TotFundYrEnd END, FM35P.TotFundYrEnd, FM36P.TotFundYrEnd, CASE WHEN @IncludeHEAdvLoanPossIncome = 1 THEN HE.GROSSFEE ELSE 0 END, 0 ),
+			TotFundYrEndNotApportioned = COALESCE ( CASE WHEN LD.FundModel = ''25'' THEN FM25.OnProgPayment END, 
+				CASE WHEN ALB.AdvLoan = 1 AND @IncludeAdvLoanBursaryIncome = 1 THEN ALBP.TotFundYrEnd END, FM35P.TotFundYrEnd, FM36P.TotFundYrEnd, CASE WHEN @IncludeHEAdvLoanPossIncome = 1 THEN HE.GROSSFEE ELSE 0 END, 0 ),
 
 			FutureAchCompPayment = 
 				CASE

@@ -167,7 +167,10 @@ BEGIN
 					DestinationProgressionStartDate DATETIME NULL,
 					DestinationProgressionEndDate DATETIME NULL,
 					DestinationProgressionCollectionDate DATETIME NULL,
-
+	'
+    
+    SET @SQLString += 
+        N'
 					SoftwareSupplierAimID NVARCHAR(36) NULL,
 					FundLine NVARCHAR(100) NULL,
 					FundLineSummary NVARCHAR(100) NULL,
@@ -176,6 +179,20 @@ BEGIN
 					HEFullPartTime NVARCHAR(50) NULL,
 					SortOrder INT NULL,
 					IsFunded INT NULL,
+					IsPre42DayWdrAllYr INT NULL,
+					IsXfrAllYr INT NULL,
+					IsStartAllYr INT NULL,
+					IsPost42DayWdrAllYr INT NULL,
+					IsCompAllYr INT NULL,
+					IsAchAllYr INT NULL,
+					IsPre42DayWdrCurYr INT NULL,
+					IsXfrCurYr INT NULL,
+					IsStartCurYr INT NULL,
+					IsPost42DayWdrCurYr INT NULL,
+					IsCompCurYr INT NULL,
+					IsAchCurYr INT NULL,
+					IsHighGrade INT NULL,
+
 					IsMainAim INT NULL,
 					IsMainAimInFundModel INT NULL,
 					IsAdvLearnLoan INT NULL,
@@ -222,7 +239,7 @@ BEGIN
 					AimSequence INT NULL,
 					AimType FLOAT NULL,
 					AimCode NVARCHAR(8) NULL,
-					AimTitle NVARCHAR(150) NULL,
+					AimTitle NVARCHAR(254) NULL,
 					AimTypeCode NVARCHAR(4) NULL,
 					StartDate DATETIME NULL,
 					ExpEndDate DATETIME NULL,

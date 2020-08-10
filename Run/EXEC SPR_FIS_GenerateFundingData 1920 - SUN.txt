@@ -8,18 +8,18 @@ DECLARE @IncludeHEAdvLoanPossIncome BIT = 0 --HE gross fee is only achieved if a
 DECLARE @IncludeAdvLoanBursaryIncome BIT = 0 --Adv loan bursary income is not income as goes to learners so may want to exclude
 DECLARE @AEBCombinedAuthorityName NVARCHAR(200) = 'AEB - Tees Valley Combined Authority'
 DECLARE @FutureAchieveWeighting DECIMAL(5,2) = 1 --Future ach weighting factor. If 1 then is 100% of all remaining ach monies
-DECLARE @Mode NCHAR(1) = 'R' --I=Insert new ILR return data leaving existing data, R=Replace table
+DECLARE @Mode NCHAR(1) = 'I' --I=Insert new ILR return data leaving existing data, R=Replace table
 DECLARE @FISOutputTableLocation NVARCHAR(200) = 'EPNE.dbo.'
 DECLARE @ProviderFieldFacLocation NCHAR(1) = 'B'
 DECLARE @ProviderFieldTeamLocation NCHAR(1) = 'C'
 DECLARE @ProviderFieldCostCentreLocation NCHAR(1) = 'D'
 DECLARE @ProviderFieldCourseLocation NCHAR(1) = 'A'
-DECLARE @OverrideEngFac NVARCHAR(50) = 'F01'
-DECLARE @OverrideMatFac NVARCHAR(50) = 'F01'
-DECLARE @OverrideEngTeam NVARCHAR(50) = 'T01'
-DECLARE @OverrideMatTeam NVARCHAR(50) = 'T02'
-DECLARE @OverrideEngCostCentre NVARCHAR(50) = '4461'
-DECLARE @OverrideMatCostCentre NVARCHAR(50) = '4462'
+DECLARE @OverrideEngFac NVARCHAR(50) = NULL
+DECLARE @OverrideMatFac NVARCHAR(50) = NULL
+DECLARE @OverrideEngTeam NVARCHAR(50) = NULL
+DECLARE @OverrideMatTeam NVARCHAR(50) = NULL
+DECLARE @OverrideEngCostCentre NVARCHAR(50) = NULL
+DECLARE @OverrideMatCostCentre NVARCHAR(50) = NULL
 DECLARE @OverridePartnerFac NVARCHAR(50) = 'F00'
 DECLARE @OverridePartnerTeam NVARCHAR(50) = 'T00'
 DECLARE @OverridePartnerCostCentre NVARCHAR(50) = '9800'

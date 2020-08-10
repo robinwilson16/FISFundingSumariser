@@ -1,6 +1,7 @@
 CREATE TABLE FIS_Allocations (
-	AcademicYear VARCHAR(5),
-	AllocationID VARCHAR(50),
-	Amount DECIMAL(12, 2 ),
-	CONSTRAINT PK_FIS_Allocations PRIMARY KEY (AcademicYear, AllocationID)
+	ProviderNumber int NOT NULL,
+	AcademicYear nvarchar(50) NOT NULL,
+	Measure nvarchar(50) NOT NULL,
+	Allocation decimal(18, 2) NOT NULL,
+	CONSTRAINT FIS_Allocations_PK PRIMARY KEY (ProviderNumber, AcademicYear, Measure)
 )

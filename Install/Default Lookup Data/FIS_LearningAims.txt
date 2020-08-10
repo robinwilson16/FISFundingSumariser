@@ -1,0 +1,23 @@
+CREATE VIEW FIS_LearningAims
+AS
+	SELECT
+		AimCode = AIM.LearnAimRef,
+		AimTitle = AIM.LearnAimRefTitle,
+		AimTypeCode = AIM.LearnAimRefType,
+		AimTypeName = AIMT.LearnAimRefTypeDesc,
+		AimLevel = AIM.NotionalNVQLevelv2,
+		AwardBodyCode = AIM.AwardOrgCode,
+		AwardBodyName = AB.AwardOrgName,
+		SSA1Code = AIM.SectorSubjectAreaTier1,
+		SSA1Name = SSA1.SectorSubjectAreaTier1Desc,
+		SSA2Code = AIM.SectorSubjectAreaTier2,
+		SSA2Name = SSA2.SectorSubjectAreaTier2Desc
+	FROM LARS.dbo.Core_LARS_LearningDelivery AIM
+	INNER JOIN LARS.dbo.CoreReference_LARS_SectorSubjectAreaTier1_Lookup SSA1
+		ON SSA1.SectorSubjectAreaTier1 = AIM.SectorSubjectAreaTier1
+	INNER JOIN LARS.dbo.CoreReference_LARS_SectorSubjectAreaTier2_Lookup SSA2
+		ON SSA2.SectorSubjectAreaTier2 = AIM.SectorSubjectAreaTier2
+	INNER JOIN LARS.dbo.CoreReference_LARS_LearnAimRefType_Lookup AIMT
+		ON AIMT.LearnAimRefType = AIM.LearnAimRefType
+	INNER JOIN LARS.dbo.CoreReference_LARS_AwardOrgCode_Lookup AB
+		ON AB.AwardOrgCode = AIM.AwardOrgCode

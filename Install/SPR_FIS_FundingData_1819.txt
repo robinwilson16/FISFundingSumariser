@@ -16,7 +16,7 @@ CREATE PROCEDURE SPR_FIS_FundingData_1819
 	@IncludeAdvLoanBursaryIncome BIT,
 	@AEBCombinedAuthorityName NVARCHAR(200),
 	@FutureAchieveWeighting DECIMAL(5,2),
-    @FISOutputTableLocation NVARCHAR(200),
+	@FISOutputTableLocation NVARCHAR(200),
 	@ProviderFieldFacLocation CHAR(1),
 	@ProviderFieldTeamLocation CHAR(1),
 	@ProviderFieldCostCentreLocation CHAR(1),
@@ -186,6 +186,180 @@ BEGIN
 			OC.Description
 		INTO #DestinationProgressionOutcomes
 		FROM FIS_DestinationProgressionOutcomes OC
+	'
+
+	SET @SQLString += 
+        N'
+		DROP TABLE IF EXISTS #CarryInMonths
+		SELECT
+			ILRReturn = RN.ILRReturn,
+			ReturnYear = RN.ReturnYear,
+			YearNum = RN.YearNum,
+			DateFrom = RN.ReturnFrom,
+			DateTo = DATEADD ( DAY, -1, LEAD ( RN.ReturnFrom ) OVER ( ORDER BY RN.ReturnFrom ) )
+			INTO #CarryInMonths
+		FROM (
+			SELECT
+				ILRReturn = 
+					''R'' + CASE
+						WHEN RN.RowNum >= 20 THEN FORMAT ( RN.RowNum - 19, ''#00'' )
+						ELSE FORMAT ( RN.RowNum - 7, ''#00'' )
+					END,
+				ReturnYear = 
+					CASE
+						WHEN RN.RowNum >= 20 THEN CAST ( CAST ( RIGHT ( @AcademicYear, 2 ) AS INT ) + 1 AS VARCHAR(2) )
+						ELSE CAST ( CAST ( RIGHT ( @AcademicYear, 2 ) AS INT ) AS VARCHAR(2) )
+					END
+					+ ''/''
+					+ CASE
+						WHEN RN.RowNum >= 20 THEN CAST ( CAST ( RIGHT ( @AcademicYear, 2 ) AS INT ) + 2 AS VARCHAR(2) )
+						ELSE CAST ( CAST ( RIGHT ( @AcademicYear, 2 ) AS INT ) + 1 AS VARCHAR(2) )
+					END,
+				YearNum = 
+					CASE
+						WHEN RN.RowNum >= 20 THEN 2
+						ELSE 1
+					END,
+				ReturnFrom = 
+					CAST ( 
+						CASE
+							WHEN RN.RowNum >= 25 THEN ''20'' + CAST ( CAST ( RIGHT ( @AcademicYear, 2 ) AS INT ) + 2 AS VARCHAR(2) )
+							WHEN RN.RowNum >= 13 THEN ''20'' + CAST ( CAST ( RIGHT ( @AcademicYear, 2 ) AS INT ) + 1 AS VARCHAR(2) )
+							ELSE ''20'' + CAST ( CAST ( RIGHT ( @AcademicYear, 2 ) AS INT ) AS VARCHAR(2) )
+						END
+						+ ''-''
+						+ CASE
+							WHEN RN.RowNum >= 25 THEN FORMAT ( RN.RowNum - 24, ''#00'' )
+							WHEN RN.RowNum >= 13 THEN FORMAT ( RN.RowNum - 12, ''#00'' )
+							ELSE FORMAT ( RN.RowNum, ''#00'' )
+						END
+						+ ''-01''
+					AS DATE )
+			FROM (
+				SELECT
+					RowNum =
+						ROW_NUMBER () OVER (
+							ORDER BY
+								NEWID()
+						)
+				FROM sys.all_objects
+			) RN
+			WHERE
+				RN.RowNum >= 8
+				AND RN.RowNum <= 32
+		) RN
+	'
+
+	SET @SQLString += 
+        N'
+		DROP TABLE IF EXISTS #CarryIn
+		SELECT
+			CI.LearnRefNumber,
+			CI.AimSeqNumber,
+			CI.CarryInOnProgTotal,
+			CI.CarryInOnProgMonthly,
+			CI.AchieveElement,
+			CarryInYr1R01 = MAX ( CASE WHEN CI.YearNum = 1 AND CI.ILRReturn = ''R01'' THEN CI.CarryInAmount ELSE 0 END ),
+			CarryInYr1R02 = MAX ( CASE WHEN CI.YearNum = 1 AND CI.ILRReturn = ''R02'' THEN CI.CarryInAmount ELSE 0 END ),
+			CarryInYr1R03 = MAX ( CASE WHEN CI.YearNum = 1 AND CI.ILRReturn = ''R03'' THEN CI.CarryInAmount ELSE 0 END ),
+			CarryInYr1R04 = MAX ( CASE WHEN CI.YearNum = 1 AND CI.ILRReturn = ''R04'' THEN CI.CarryInAmount ELSE 0 END ),
+			CarryInYr1R05 = MAX ( CASE WHEN CI.YearNum = 1 AND CI.ILRReturn = ''R05'' THEN CI.CarryInAmount ELSE 0 END ),
+			CarryInYr1R06 = MAX ( CASE WHEN CI.YearNum = 1 AND CI.ILRReturn = ''R06'' THEN CI.CarryInAmount ELSE 0 END ),
+			CarryInYr1R07 = MAX ( CASE WHEN CI.YearNum = 1 AND CI.ILRReturn = ''R07'' THEN CI.CarryInAmount ELSE 0 END ),
+			CarryInYr1R08 = MAX ( CASE WHEN CI.YearNum = 1 AND CI.ILRReturn = ''R08'' THEN CI.CarryInAmount ELSE 0 END ),
+			CarryInYr1R09 = MAX ( CASE WHEN CI.YearNum = 1 AND CI.ILRReturn = ''R09'' THEN CI.CarryInAmount ELSE 0 END ),
+			CarryInYr1R10 = MAX ( CASE WHEN CI.YearNum = 1 AND CI.ILRReturn = ''R10'' THEN CI.CarryInAmount ELSE 0 END ),
+			CarryInYr1R11 = MAX ( CASE WHEN CI.YearNum = 1 AND CI.ILRReturn = ''R11'' THEN CI.CarryInAmount ELSE 0 END ),
+			CarryInYr1R12 = MAX ( CASE WHEN CI.YearNum = 1 AND CI.ILRReturn = ''R12'' THEN CI.CarryInAmount ELSE 0 END ),
+			CarryInYr2R01 = MAX ( CASE WHEN CI.YearNum = 2 AND CI.ILRReturn = ''R01'' THEN CI.CarryInAmount ELSE 0 END ),
+			CarryInYr2R02 = MAX ( CASE WHEN CI.YearNum = 2 AND CI.ILRReturn = ''R02'' THEN CI.CarryInAmount ELSE 0 END ),
+			CarryInYr2R03 = MAX ( CASE WHEN CI.YearNum = 2 AND CI.ILRReturn = ''R03'' THEN CI.CarryInAmount ELSE 0 END ),
+			CarryInYr2R04 = MAX ( CASE WHEN CI.YearNum = 2 AND CI.ILRReturn = ''R04'' THEN CI.CarryInAmount ELSE 0 END ),
+			CarryInYr2R05 = MAX ( CASE WHEN CI.YearNum = 2 AND CI.ILRReturn = ''R05'' THEN CI.CarryInAmount ELSE 0 END ),
+			CarryInYr2R06 = MAX ( CASE WHEN CI.YearNum = 2 AND CI.ILRReturn = ''R06'' THEN CI.CarryInAmount ELSE 0 END ),
+			CarryInYr2R07 = MAX ( CASE WHEN CI.YearNum = 2 AND CI.ILRReturn = ''R07'' THEN CI.CarryInAmount ELSE 0 END ),
+			CarryInYr2R08 = MAX ( CASE WHEN CI.YearNum = 2 AND CI.ILRReturn = ''R08'' THEN CI.CarryInAmount ELSE 0 END ),
+			CarryInYr2R09 = MAX ( CASE WHEN CI.YearNum = 2 AND CI.ILRReturn = ''R09'' THEN CI.CarryInAmount ELSE 0 END ),
+			CarryInYr2R10 = MAX ( CASE WHEN CI.YearNum = 2 AND CI.ILRReturn = ''R10'' THEN CI.CarryInAmount ELSE 0 END ),
+			CarryInYr2R11 = MAX ( CASE WHEN CI.YearNum = 2 AND CI.ILRReturn = ''R11'' THEN CI.CarryInAmount ELSE 0 END ),
+			CarryInYr2R12 = MAX ( CASE WHEN CI.YearNum = 2 AND CI.ILRReturn = ''R12'' THEN CI.CarryInAmount ELSE 0 END )
+			INTO #CarryIn
+		FROM (
+			SELECT
+				FMC.LearnRefNumber,
+				FMC.AimSeqNumber,
+				FMC.CarryInOnProgTotal,
+				FMC.CarryInOnProgMonthly,
+				FMC.AchieveElement,
+				CI.ReturnYear,
+				CI.YearNum,
+				CI.ILRReturn,
+				CarryInAmount = 
+					(
+						CASE --Dates span the month so need a payment
+							WHEN FMC.LearnPlanEndDate >= CI.DateTo
+							AND FMC.LearnStartDate <= CI.DateTo THEN
+								FMC.CarryInOnProgMonthly
+							ELSE 0
+						END
+						*
+						CASE --Started in the month so need double payment
+							WHEN FMC.LearnStartDate >= CI.DateFrom
+							AND FMC.LearnStartDate <= CI.DateTo THEN 2
+							ELSE 1
+						END
+					)
+					+
+					CASE --Finished in the month so add achievement element
+						WHEN FMC.LearnPlanEndDate >= CI.DateFrom
+						AND FMC.LearnPlanEndDate <= CI.DateTo THEN FMC.AchieveElement
+						ELSE 0
+					END
+			FROM (
+				SELECT
+					LD.LearnRefNumber,
+					LD.AimSeqNumber,
+					LD.PartnerUKPRN,
+					LD.LearnStartDate,
+					LD.LearnPlanEndDate,
+					NumPlannedOnProgPayments = FM35.PlannedNumOnProgInstalm,
+					FM35.AchieveElement,
+					CarryInOnProgTotal = 
+						CASE
+							WHEN COALESCE ( FM35.PropFundRemain, 0 ) = 0 THEN 0
+							ELSE 
+								( FM35.AimValue - FM35.NonGovCont - FM35.AchieveElement ) * FM35.PropFundRemain
+						END,
+					CarryInOnProgMonthly = 
+						CASE
+							WHEN FM35.PlannedNumOnProgInstalm = 0 THEN 0
+							ELSE
+								CASE
+									WHEN COALESCE ( FM35.PropFundRemain, 0 ) = 0 THEN 0
+									ELSE 
+										( FM35.AimValue - FM35.NonGovCont - FM35.AchieveElement ) * FM35.PropFundRemain
+								END
+								/ 
+								FM35.PlannedNumOnProgInstalm
+						END
+				FROM ' + @FISDatabase + '.dbo.Valid_LearningDelivery LD
+				INNER JOIN ' + @FISDatabase + '.dbo.Rulebase_FM35_LearningDelivery FM35
+					ON FM35.LearnRefNumber = LD.LearnRefNumber
+					AND FM35.AimSeqNumber = LD.AimSeqNumber
+				WHERE
+					LD.CompStatus = 1
+					AND LD.LearnPlanEndDate >= ''20'' + RIGHT ( @AcademicYear, 2 ) + ''-08-01''
+					AND FM35.FundStart = 1
+			) FMC
+			INNER JOIN #CarryInMonths CI
+				ON CI.DateTo IS NOT NULL
+		) CI
+		GROUP BY
+			CI.LearnRefNumber,
+			CI.AimSeqNumber,
+			CI.CarryInOnProgTotal,
+			CI.CarryInOnProgMonthly,
+			CI.AchieveElement
 	'
 
 	SET @SQLString += 
@@ -1194,6 +1368,50 @@ BEGIN
 			HEYearStu = HE.YEARSTU,
 			EnrolmentID = PSDMC.ProvSpecDelMon,
 			FM25TotFund = COALESCE ( HRS.OnProgPayment, 0 ),
+'
+
+    SET @SQLString += 
+        N'
+			NumPlannedOnProgPayments = COALESCE ( ALB.PlannedNumOnProgInstalm, FM36.PlannedNumOnProgInstalm, FM35.PlannedNumOnProgInstalm ),
+			NumOutstandingOnProgPayments = COALESCE ( ALB.OutstndNumOnProgInstalm, FM36.OutstandNumOnProgInstalm, FM35.OutstndNumOnProgInstalm ),
+			AchieveElement = FM35.AchieveElement,
+			NonGovCont = FM35.NonGovCont,
+			PropFundRemain = FM35.PropFundRemain,
+			PropFundRemainAch = FM35.PropFundRemainAch,
+			CarryInOnProg = 
+				CASE
+					WHEN COALESCE ( FM35.PropFundRemain, 0 ) = 0 THEN 0
+					ELSE 
+						( FM35.AimValue - FM35.NonGovCont - FM35.AchieveElement ) * FM35.PropFundRemain
+				END,
+	'
+
+    SET @SQLString += 
+        N'
+			CI.CarryInYr1R01,
+			CI.CarryInYr1R02,
+			CI.CarryInYr1R03,
+			CI.CarryInYr1R04,
+			CI.CarryInYr1R05,
+			CI.CarryInYr1R06,
+			CI.CarryInYr1R07,
+			CI.CarryInYr1R08,
+			CI.CarryInYr1R09,
+			CI.CarryInYr1R10,
+			CI.CarryInYr1R11,
+			CI.CarryInYr1R12,
+			CI.CarryInYr2R01,
+			CI.CarryInYr2R02,
+			CI.CarryInYr2R03,
+			CI.CarryInYr2R04,
+			CI.CarryInYr2R05,
+			CI.CarryInYr2R06,
+			CI.CarryInYr2R07,
+			CI.CarryInYr2R08,
+			CI.CarryInYr2R09,
+			CI.CarryInYr2R10,
+			CI.CarryInYr2R11,
+			CI.CarryInYr2R12,
 	'
 
     SET @SQLString += 
@@ -4088,6 +4306,9 @@ BEGIN
 		LEFT JOIN #DestinationProgressionOutcomes DES
 			ON DES.OutcomeType = OC.DPOutcomeType
 			AND DES.OutcomeCode = OC.DPOutcomeCode
+		LEFT JOIN #CarryIn CI
+			ON CI.LearnRefNumber = LD.LearnRefNumber
+			AND CI.AimSeqNumber = LD.AimSeqNumber
 
 		--WHERE
 			--L.LearnRefNumber = ''11024003''
@@ -4096,54 +4317,54 @@ BEGIN
 	--SELECT @SQLString AS [processing-instruction(x)] FOR XML PATH('')
 
 	SET @SQLParams = 
-        N'@AcademicYear NVARCHAR(5),
-    	@ILRReturn INT,
-    	@IsFinalReturn BIT,
-    	@Split1619Funding BIT,
+		N'@AcademicYear NVARCHAR(5),
+		@ILRReturn INT,
+		@IsFinalReturn BIT,
+		@Split1619Funding BIT,
 		@1619ALSFundingPercent DECIMAL(5,2),
 		@IncludeHEAdvLoanPossIncome BIT,
 		@IncludeAdvLoanBursaryIncome BIT,
 		@AEBCombinedAuthorityName NVARCHAR(200),
-    	@FutureAchieveWeighting DECIMAL(5,2),
-        @FISOutputTableLocation NVARCHAR(200),
-    	@ProviderFieldFacLocation CHAR(1),
+		@FutureAchieveWeighting DECIMAL(5,2),
+		@FISOutputTableLocation NVARCHAR(200),
+		@ProviderFieldFacLocation CHAR(1),
 		@ProviderFieldTeamLocation CHAR(1),
 		@ProviderFieldCostCentreLocation CHAR(1),
 		@ProviderFieldCourseLocation CHAR(1),
-    	@OverrideEngFac NVARCHAR(50),
-    	@OverrideMatFac NVARCHAR(50),
-    	@OverrideEngTeam NVARCHAR(50),
-    	@OverrideMatTeam NVARCHAR(50),
-    	@OverrideEngCostCentre NVARCHAR(50),
-    	@OverrideMatCostCentre NVARCHAR(50),
-    	@OverridePartnerFac NVARCHAR(50),
-    	@OverridePartnerTeam NVARCHAR(50),
-    	@OverridePartnerCostCentre NVARCHAR(50)';
+		@OverrideEngFac NVARCHAR(50),
+		@OverrideMatFac NVARCHAR(50),
+		@OverrideEngTeam NVARCHAR(50),
+		@OverrideMatTeam NVARCHAR(50),
+		@OverrideEngCostCentre NVARCHAR(50),
+		@OverrideMatCostCentre NVARCHAR(50),
+		@OverridePartnerFac NVARCHAR(50),
+		@OverridePartnerTeam NVARCHAR(50),
+		@OverridePartnerCostCentre NVARCHAR(50)';
     
     EXECUTE sp_executesql 
-        @SQLString, 
-        @SQLParams, 
-        @AcademicYear = @AcademicYear,
-    	@ILRReturn = @ILRReturn,
-    	@IsFinalReturn = @IsFinalReturn,
-    	@Split1619Funding = @Split1619Funding,
+		@SQLString, 
+		@SQLParams, 
+		@AcademicYear = @AcademicYear,
+		@ILRReturn = @ILRReturn,
+		@IsFinalReturn = @IsFinalReturn,
+		@Split1619Funding = @Split1619Funding,
 		@1619ALSFundingPercent = @1619ALSFundingPercent,
 		@IncludeHEAdvLoanPossIncome = @IncludeHEAdvLoanPossIncome,
 		@IncludeAdvLoanBursaryIncome = @IncludeAdvLoanBursaryIncome,
 		@AEBCombinedAuthorityName = @AEBCombinedAuthorityName,
-    	@FutureAchieveWeighting = @FutureAchieveWeighting,
-        @FISOutputTableLocation = @FISOutputTableLocation,
-    	@ProviderFieldFacLocation = @ProviderFieldFacLocation,
+		@FutureAchieveWeighting = @FutureAchieveWeighting,
+		@FISOutputTableLocation = @FISOutputTableLocation,
+		@ProviderFieldFacLocation = @ProviderFieldFacLocation,
 		@ProviderFieldTeamLocation = @ProviderFieldTeamLocation,
 		@ProviderFieldCostCentreLocation = @ProviderFieldCostCentreLocation,
 		@ProviderFieldCourseLocation = @ProviderFieldCourseLocation,
-    	@OverrideEngFac = @OverrideEngFac,
-    	@OverrideMatFac = @OverrideMatFac,
-    	@OverrideEngTeam = @OverrideEngTeam,
-    	@OverrideMatTeam = @OverrideMatTeam,
-    	@OverrideEngCostCentre = @OverrideEngCostCentre,
-    	@OverrideMatCostCentre = @OverrideMatCostCentre,
-    	@OverridePartnerFac = @OverridePartnerFac,
-    	@OverridePartnerTeam = @OverridePartnerTeam,
-    	@OverridePartnerCostCentre = @OverridePartnerCostCentre;
+		@OverrideEngFac = @OverrideEngFac,
+		@OverrideMatFac = @OverrideMatFac,
+		@OverrideEngTeam = @OverrideEngTeam,
+		@OverrideMatTeam = @OverrideMatTeam,
+		@OverrideEngCostCentre = @OverrideEngCostCentre,
+		@OverrideMatCostCentre = @OverrideMatCostCentre,
+		@OverridePartnerFac = @OverridePartnerFac,
+		@OverridePartnerTeam = @OverridePartnerTeam,
+		@OverridePartnerCostCentre = @OverridePartnerCostCentre;
 END

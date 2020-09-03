@@ -271,7 +271,7 @@ BEGIN
 					PartnerCode FLOAT NULL,
 					PartnerName NVARCHAR(100) NULL,
 					
-					AimValue FLOAT NULL,
+					AimValue DECIMAL(10, 5) NULL,
 					ProgWeightFactor NCHAR(1) NULL,
 					UnweightFundRate FLOAT NULL,
 					WeightFundRate FLOAT NULL,
@@ -290,6 +290,41 @@ BEGIN
 					HEYearStu FLOAT NULL,
 					EnrolmentID NVARCHAR(20) NULL,
 					FM25TotFund FLOAT NULL,
+	'
+    
+    SET @SQLString += 
+        N'
+					NumPlannedOnProgPayments INT NULL,
+					NumOutstandingOnProgPayments INT NULL,
+					AchieveElement DECIMAL(10, 5) NULL,
+					NonGovCont DECIMAL(10, 5) NULL,
+					PropFundRemain DECIMAL(10, 5) NULL,
+					PropFundRemainAch DECIMAL(10, 5) NULL,
+					CarryInOnProg DECIMAL(10, 5) NULL,
+					CarryInYr1R01 DECIMAL(10, 5) NULL,
+					CarryInYr1R02 DECIMAL(10, 5) NULL,
+					CarryInYr1R03 DECIMAL(10, 5) NULL,
+					CarryInYr1R04 DECIMAL(10, 5) NULL,
+					CarryInYr1R05 DECIMAL(10, 5) NULL,
+					CarryInYr1R06 DECIMAL(10, 5) NULL,
+					CarryInYr1R07 DECIMAL(10, 5) NULL,
+					CarryInYr1R08 DECIMAL(10, 5) NULL,
+					CarryInYr1R09 DECIMAL(10, 5) NULL,
+					CarryInYr1R10 DECIMAL(10, 5) NULL,
+					CarryInYr1R11 DECIMAL(10, 5) NULL,
+					CarryInYr1R12 DECIMAL(10, 5) NULL,
+					CarryInYr2R01 DECIMAL(10, 5) NULL,
+					CarryInYr2R02 DECIMAL(10, 5) NULL,
+					CarryInYr2R03 DECIMAL(10, 5) NULL,
+					CarryInYr2R04 DECIMAL(10, 5) NULL,
+					CarryInYr2R05 DECIMAL(10, 5) NULL,
+					CarryInYr2R06 DECIMAL(10, 5) NULL,
+					CarryInYr2R07 DECIMAL(10, 5) NULL,
+					CarryInYr2R08 DECIMAL(10, 5) NULL,
+					CarryInYr2R09 DECIMAL(10, 5) NULL,
+					CarryInYr2R10 DECIMAL(10, 5) NULL,
+					CarryInYr2R11 DECIMAL(10, 5) NULL,
+					CarryInYr2R12 DECIMAL(10, 5) NULL,
     '
     
     SET @SQLString += 

@@ -1,7 +1,0 @@
-CREATE TABLE FIS_TeamTitles (
-	AcademicYear nvarchar(50) NOT NULL,
-	ProviderNumber int NOT NULL,
-	TeamCode nvarchar(50) NOT NULL,
-	TeamName nvarchar(255) NOT NULL,
-	CONSTRAINT FIS_TeamTitles_PK PRIMARY KEY (AcademicYear, ProviderNumber, TeamCode)
-)

@@ -4,7 +4,6 @@ CREATE PROCEDURE SPR_FIS_GenerateFundingData
 	@ILRReturn INT,
 	@IsFinalReturn BIT,
 	@Split1619Funding BIT,
-	@Reapportion1619FundingByAimWeighting BIT,
 	@1619ALSFundingPercent DECIMAL(5,2),
 	@IncludeHEAdvLoanPossIncome BIT,
 	@IncludeAdvLoanBursaryIncome BIT,
@@ -16,7 +15,6 @@ CREATE PROCEDURE SPR_FIS_GenerateFundingData
 	@ProviderFieldTeamLocation NCHAR(1),
 	@ProviderFieldCostCentreLocation NCHAR(1),
 	@ProviderFieldCourseLocation NCHAR(1),
-	@ProviderFieldParentCourseLocation NCHAR(1),
 	@OverrideEngFac NVARCHAR(50),
 	@OverrideMatFac NVARCHAR(50),
 	@OverrideEngTeam NVARCHAR(50),
@@ -41,7 +39,6 @@ BEGIN
 	--DECLARE @ILRReturn int = 11
 	--DECLARE @IsFinalReturn BIT = 1
 	--DECLARE @Split1619Funding BIT = 0 --Split the funding into the 12 periods
-	--DECLARE @Reapportion1619FundingByAimWeighting BIT = 0 --Reapportion the 16-19 funding by the aim prog weighting factor
 	--DECLARE @1619ALSFundingPercent DECIMAL(5,2) = 0.07 --Deduct this percent from Tot Funding and assign to ALS column
 	--DECLARE @IncludeHEAdvLoanPossIncome BIT = 1 --HE gross fee is only achieved if at all 3 SLC census points learners remain current
 	--DECLARE @IncludeAdvLoanBursaryIncome BIT = 0 --Adv loan bursary income is not income as goes to learners so may want to exclude
@@ -53,7 +50,6 @@ BEGIN
 	--DECLARE @ProviderFieldTeamLocation NCHAR(1) = 'C'
 	--DECLARE @ProviderFieldCostCentreLocation NCHAR(1) = 'D'
 	--DECLARE @ProviderFieldCourseLocation NCHAR(1) = 'A'
-	--DECLARE @ProviderFieldParentCourseLocation NCHAR(1) = 'B'
 	--DECLARE @OverrideEngFac NVARCHAR(50) = '14'
 	--DECLARE @OverrideMatFac NVARCHAR(50) = '14'
 	--DECLARE @OverrideEngTeam NVARCHAR(50) = '1410'
@@ -215,28 +211,19 @@ BEGIN
         N'
 					PostCodeDelivery NVARCHAR(10) NULL,
 					CampusID NVARCHAR(20) NULL,
-					ParentCollegeCode NVARCHAR(20) NULL,
-					ParentCollegeName NVARCHAR(150) NULL,
-					ParentSiteCode NVARCHAR(20) NULL,
-					ParentSiteName NVARCHAR(100) NULL,
-					ParentFacCode NVARCHAR(20) NULL,
-					ParentFacName NVARCHAR(150) NULL,
-					ParentTeamCode NVARCHAR(20) NULL,
-					ParentTeamName NVARCHAR(150) NULL,
-					ParentCostCentre NVARCHAR(20) NULL,
 					CollegeCode NVARCHAR(20) NULL,
 					CollegeName NVARCHAR(150) NULL,
 					SiteCode NVARCHAR(20) NULL,
 					SiteName NVARCHAR(100) NULL,
 					FacCode NVARCHAR(20) NULL,
 					FacName NVARCHAR(150) NULL,
-					TeamCode NVARCHAR(20) NULL,
-					TeamName NVARCHAR(150) NULL,
-					CostCentre NVARCHAR(20) NULL,
 					MainFacCode NVARCHAR(20) NULL,
 					MainFacName NVARCHAR(150) NULL,
 					MainTeamCode NVARCHAR(20) NULL,
 					MainTeamName NVARCHAR(150) NULL,
+					TeamCode NVARCHAR(20) NULL,
+					TeamName NVARCHAR(150) NULL,
+					CostCentre NVARCHAR(20) NULL,
 					FacCodeOrig NVARCHAR(20) NULL,
 					FacNameOrig NVARCHAR(150) NULL,
 					TeamCodeOrig NVARCHAR(20) NULL,
@@ -544,7 +531,6 @@ BEGIN
 			@ILRReturn,
 			@IsFinalReturn,
 			@Split1619Funding,
-			@Reapportion1619FundingByAimWeighting,
             @1619ALSFundingPercent,
 			@IncludeHEAdvLoanPossIncome,
 			@IncludeAdvLoanBursaryIncome,
@@ -555,7 +541,6 @@ BEGIN
 			@ProviderFieldTeamLocation,
 			@ProviderFieldCostCentreLocation,
 			@ProviderFieldCourseLocation,
-			@ProviderFieldParentCourseLocation,
 			@OverrideEngFac,
 			@OverrideMatFac,
 			@OverrideEngTeam,
@@ -572,7 +557,6 @@ BEGIN
     	@ILRReturn INT,
     	@IsFinalReturn BIT,
     	@Split1619Funding BIT,
-		@Reapportion1619FundingByAimWeighting BIT,
         @1619ALSFundingPercent DECIMAL(5,2),
 		@IncludeHEAdvLoanPossIncome BIT,
 		@IncludeAdvLoanBursaryIncome BIT,
@@ -583,7 +567,6 @@ BEGIN
 		@ProviderFieldTeamLocation CHAR(1),
 		@ProviderFieldCostCentreLocation CHAR(1),
 		@ProviderFieldCourseLocation CHAR(1),
-		@ProviderFieldParentCourseLocation CHAR(1),
     	@OverrideEngFac NVARCHAR(50),
     	@OverrideMatFac NVARCHAR(50),
     	@OverrideEngTeam NVARCHAR(50),
@@ -604,7 +587,6 @@ BEGIN
     	@ILRReturn = @ILRReturn,
     	@IsFinalReturn = @IsFinalReturn,
     	@Split1619Funding = @Split1619Funding,
-		@Reapportion1619FundingByAimWeighting = @Reapportion1619FundingByAimWeighting,
         @1619ALSFundingPercent = @1619ALSFundingPercent,
 		@IncludeHEAdvLoanPossIncome = @IncludeHEAdvLoanPossIncome,
 		@IncludeAdvLoanBursaryIncome = @IncludeAdvLoanBursaryIncome,
@@ -615,7 +597,6 @@ BEGIN
 		@ProviderFieldTeamLocation = @ProviderFieldTeamLocation,
 		@ProviderFieldCostCentreLocation = @ProviderFieldCostCentreLocation,
 		@ProviderFieldCourseLocation = @ProviderFieldCourseLocation,
-		@ProviderFieldParentCourseLocation = @ProviderFieldParentCourseLocation,
     	@OverrideEngFac = @OverrideEngFac,
     	@OverrideMatFac = @OverrideMatFac,
     	@OverrideEngTeam = @OverrideEngTeam,

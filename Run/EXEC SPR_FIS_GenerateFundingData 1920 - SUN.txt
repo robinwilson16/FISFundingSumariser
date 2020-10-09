@@ -1,6 +1,6 @@
 DECLARE @FISDatabase NVARCHAR(100) = 'ILR1920'
 DECLARE @AcademicYear NVARCHAR(5) = '19/20'
-DECLARE @ILRReturn int = 13
+DECLARE @ILRReturn int = 14
 DECLARE @IsFinalReturn BIT = 0
 DECLARE @Split1619Funding BIT = 0 --Split the funding into the 12 periods
 DECLARE @1619ALSFundingPercent DECIMAL(5,2) = 10.58 --Deduct this percent from Tot Funding for FM25 and assign to ALS column
@@ -10,10 +10,11 @@ DECLARE @AEBCombinedAuthorityName NVARCHAR(200) = 'AEB - Tees Valley Combined Au
 DECLARE @FutureAchieveWeighting DECIMAL(5,2) = 1 --Future ach weighting factor. If 1 then is 100% of all remaining ach monies
 DECLARE @Mode NCHAR(1) = 'I' --I=Insert new ILR return data leaving existing data, R=Replace table
 DECLARE @FISOutputTableLocation NVARCHAR(200) = 'EPNE.dbo.'
-DECLARE @ProviderFieldFacLocation NCHAR(1) = 'B'
+DECLARE @ProviderFieldFacLocation NCHAR(1) = NULL
 DECLARE @ProviderFieldTeamLocation NCHAR(1) = 'C'
 DECLARE @ProviderFieldCostCentreLocation NCHAR(1) = 'D'
 DECLARE @ProviderFieldCourseLocation NCHAR(1) = 'A'
+DECLARE @ProviderFieldParentCourseLocation NCHAR(1) = 'B'
 DECLARE @OverrideEngFac NVARCHAR(50) = NULL
 DECLARE @OverrideMatFac NVARCHAR(50) = NULL
 DECLARE @OverrideEngTeam NVARCHAR(50) = NULL
@@ -45,6 +46,7 @@ SET @SQLString = N'
 		@ProviderFieldTeamLocation,
 		@ProviderFieldCostCentreLocation,
 		@ProviderFieldCourseLocation,
+		@ProviderFieldParentCourseLocation,
 		@OverrideEngFac,
 		@OverrideMatFac,
 		@OverrideEngTeam,
@@ -72,6 +74,7 @@ SET @SQLParams =
 		@ProviderFieldTeamLocation NCHAR(1),
 		@ProviderFieldCostCentreLocation NCHAR(1),
 		@ProviderFieldCourseLocation NCHAR(1),
+		@ProviderFieldParentCourseLocation NCHAR(1),
         @OverrideEngFac NVARCHAR(50),
         @OverrideMatFac NVARCHAR(50),
         @OverrideEngTeam NVARCHAR(50),
@@ -101,6 +104,7 @@ EXECUTE sp_executesql
 	@ProviderFieldTeamLocation = @ProviderFieldTeamLocation,
 	@ProviderFieldCostCentreLocation = @ProviderFieldCostCentreLocation,
 	@ProviderFieldCourseLocation = @ProviderFieldCourseLocation,
+	@ProviderFieldParentCourseLocation = @ProviderFieldParentCourseLocation,
     @OverrideEngFac = @OverrideEngFac,
     @OverrideMatFac = @OverrideMatFac,
     @OverrideEngTeam = @OverrideEngTeam,

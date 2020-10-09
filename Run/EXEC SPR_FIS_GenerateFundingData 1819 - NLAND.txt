@@ -14,6 +14,7 @@ DECLARE @ProviderFieldFacLocation NCHAR(1) = 'D'
 DECLARE @ProviderFieldTeamLocation NCHAR(1) = 'C'
 DECLARE @ProviderFieldCostCentreLocation NCHAR(1) = 'B'
 DECLARE @ProviderFieldCourseLocation NCHAR(1) = 'A'
+DECLARE @ProviderFieldParentCourseLocation NCHAR(1) = NULL
 DECLARE @OverrideEngFac NVARCHAR(50) = NULL
 DECLARE @OverrideMatFac NVARCHAR(50) = NULL
 DECLARE @OverrideEngTeam NVARCHAR(50) = NULL
@@ -45,6 +46,7 @@ SET @SQLString = N'
 		@ProviderFieldTeamLocation,
 		@ProviderFieldCostCentreLocation,
 		@ProviderFieldCourseLocation,
+		@ProviderFieldParentCourseLocation,
 		@OverrideEngFac,
 		@OverrideMatFac,
 		@OverrideEngTeam,
@@ -72,6 +74,7 @@ SET @SQLParams =
 		@ProviderFieldTeamLocation NCHAR(1),
 		@ProviderFieldCostCentreLocation NCHAR(1),
 		@ProviderFieldCourseLocation NCHAR(1),
+		@ProviderFieldParentCourseLocation NCHAR(1),
         @OverrideEngFac NVARCHAR(50),
         @OverrideMatFac NVARCHAR(50),
         @OverrideEngTeam NVARCHAR(50),
@@ -101,6 +104,7 @@ EXECUTE sp_executesql
 	@ProviderFieldTeamLocation = @ProviderFieldTeamLocation,
 	@ProviderFieldCostCentreLocation = @ProviderFieldCostCentreLocation,
 	@ProviderFieldCourseLocation = @ProviderFieldCourseLocation,
+	@ProviderFieldParentCourseLocation = @ProviderFieldParentCourseLocation,
     @OverrideEngFac = @OverrideEngFac,
     @OverrideMatFac = @OverrideMatFac,
     @OverrideEngTeam = @OverrideEngTeam,

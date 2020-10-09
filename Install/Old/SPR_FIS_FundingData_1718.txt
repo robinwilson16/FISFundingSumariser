@@ -1,11 +1,4 @@
-/*
-Changes since 17/18
-EFA_ and SFA_ tables renamed to FM25_ and FM_35
-LearnDelLearnAddPayment added in FM36 table (Rulebase_AEC_LearningDelivery_Period)
-Campus ID added
-*/
-
-CREATE PROCEDURE SPR_FIS_FundingData_1819
+CREATE PROCEDURE SPR_FIS_FundingData_1718
 	@FISDatabase NVARCHAR(50),
 	@AcademicYear NVARCHAR(5),
 	@ILRReturn INT,
@@ -21,7 +14,6 @@ CREATE PROCEDURE SPR_FIS_FundingData_1819
 	@ProviderFieldTeamLocation CHAR(1),
 	@ProviderFieldCostCentreLocation CHAR(1),
 	@ProviderFieldCourseLocation CHAR(1),
-	@ProviderFieldParentCourseLocation CHAR(1),
 	@OverrideEngFac NVARCHAR(50),
 	@OverrideMatFac NVARCHAR(50),
 	@OverrideEngTeam NVARCHAR(50),
@@ -51,7 +43,6 @@ BEGIN
 	--DECLARE @ProviderFieldTeamLocation NCHAR(1) = 'C'
 	--DECLARE @ProviderFieldCostCentreLocation NCHAR(1) = 'D'
 	--DECLARE @ProviderFieldCourseLocation NCHAR(1) = 'A'
-	--DECLARE @ProviderFieldParentCourseLocation NCHAR(1) = 'B'
 	--DECLARE @OverrideEngFac NVARCHAR(50) = NULL
 	--DECLARE @OverrideMatFac NVARCHAR(50) = NULL
 	--DECLARE @OverrideEngTeam NVARCHAR(50) = NULL
@@ -345,7 +336,7 @@ BEGIN
 								FM35.PlannedNumOnProgInstalm
 						END
 				FROM ' + @FISDatabase + '.dbo.Valid_LearningDelivery LD
-				INNER JOIN ' + @FISDatabase + '.dbo.Rulebase_FM35_LearningDelivery FM35
+				INNER JOIN ' + @FISDatabase + '.dbo.Rulebase_SFA_LearningDelivery FM35
 					ON FM35.LearnRefNumber = LD.LearnRefNumber
 					AND FM35.AimSeqNumber = LD.AimSeqNumber
 				WHERE
@@ -1161,22 +1152,9 @@ BEGIN
 						THEN 0
 					ELSE 1
 				END,
-			
-			PostCodeDelivery = LD.DelLocPostCode,
-	'
 
-    SET @SQLString += 
-        N'
-			CampusID = L.CampId,
-			ParentCollegeCode = PCS.CollegeCode,
-			ParentCollegeName = PCS.CollegeName,
-			ParentSiteCode = PCS.SiteCode,
-			ParentSiteName = PCS.SiteName,
-			ParentFacCode = PCS.FacCode,
-			ParentFacName = PCS.FacName,
-			ParentTeamCode = PCS.TeamCode,
-			ParentTeamName = PCS.TeamName,
-			ParentCostCentre = PCS.CostCentreCode,
+			PostCodeDelivery = LD.DelLocPostCode,
+			CampusID = NULL,
 			CollegeCode = COALESCE ( CS.CollegeCode, ''-'' ),
 			CollegeName = COALESCE ( CS.CollegeName, ''-- Unknown --'' ),
 			SiteCode = COALESCE ( CS.SiteCode, ''-'' ),
@@ -1191,6 +1169,7 @@ BEGIN
 					CASE WHEN AIM.AimTypeCode IN (''0003'', ''2999'', ''1439'') AND  AIM.AimTitle LIKE ''%Math%'' THEN @OverrideMatFac END,
 					CASE WHEN LD.PartnerUKPRN IS NOT NULL AND LD.FundModel IN ( ''25'', ''35'' ) THEN @OverridePartnerFac END,
 					CS.FacCode,
+					FAC.FacCode,
 					''-''
 				),
 			FacName = 
@@ -1199,14 +1178,20 @@ BEGIN
 					CASE WHEN AIM.AimTypeCode IN (''0003'', ''2999'', ''1439'') AND  AIM.AimTitle LIKE ''%Math%'' THEN FMAT.FacName END,
 					CASE WHEN LD.PartnerUKPRN IS NOT NULL AND LD.FundModel IN ( ''25'', ''35'' ) THEN FPAR.FacName END,
 					CS.FacName,
+					FAC.FacName,
 					''-- Unknown --''
 				),
+			MainFacCode = COALESCE ( CSM.FacCode, MA.FacCode, ''-'' ),
+			MainFacName = COALESCE ( CSM.FacName, ''-- Unknown --'' ),
+			MainTeamCode = COALESCE ( CSM.TeamCode, MA.TeamCode, ''-'' ),
+			MainTeamName = COALESCE ( CSM.TeamName, ''-- Unknown --'' ),
 			TeamCode = 
 				COALESCE (
 					CASE WHEN AIM.AimTypeCode IN (''0003'', ''2999'', ''1439'') AND  AIM.AimTitle LIKE ''%English%'' THEN @OverrideEngTeam END,
 					CASE WHEN AIM.AimTypeCode IN (''0003'', ''2999'', ''1439'') AND  AIM.AimTitle LIKE ''%Math%'' THEN @OverrideMatTeam END,
 					CASE WHEN LD.PartnerUKPRN IS NOT NULL AND LD.FundModel IN ( ''25'', ''35'' ) THEN @OverridePartnerTeam END,
 					CS.TeamCode,
+					TEAM.TeamCode,
 					''-''
 				),
 			TeamName = 
@@ -1215,8 +1200,13 @@ BEGIN
 					CASE WHEN AIM.AimTypeCode IN (''0003'', ''2999'', ''1439'') AND  AIM.AimTitle LIKE ''%Math%'' THEN TMAT.TeamName END,
 					CASE WHEN LD.PartnerUKPRN IS NOT NULL AND LD.FundModel IN ( ''25'', ''35'' ) THEN TPAR.TeamName END,
 					CS.TeamName,
+					TEAM.TeamName,
 					''-- Unknown --''
 				),
+	'
+
+    SET @SQLString += 
+        N'
 			CostCentre = 
 				COALESCE (
 					CASE WHEN AIM.AimTypeCode IN (''0003'', ''2999'', ''1439'') AND  AIM.AimTitle LIKE ''%English%'' THEN @OverrideEngCostCentre END,
@@ -1225,14 +1215,6 @@ BEGIN
 					CS.CostCentreCode,
 					''-''
 				),
-	'
-
-    SET @SQLString += 
-        N'
-			MainFacCode = COALESCE ( MCS.FacCode, MA.FacCode, ''-'' ),
-			MainFacName = COALESCE ( MCS.FacName, ''-- Unknown --'' ),
-			MainTeamCode = COALESCE ( MCS.TeamCode, MA.TeamCode, ''-'' ),
-			MainTeamName = COALESCE ( MCS.TeamName, ''-- Unknown --'' ),
 			FacCodeOrig = 
 				CASE
 					WHEN @ProviderFieldFacLocation = ''A'' THEN
@@ -1380,7 +1362,7 @@ BEGIN
 			HEYearStu = HE.YEARSTU,
 			EnrolmentID = PSDMC.ProvSpecDelMon,
 			FM25TotFund = COALESCE ( HRS.OnProgPayment, 0 ),
-'
+	'
 
     SET @SQLString += 
         N'
@@ -2258,13 +2240,13 @@ BEGIN
 				AND PSDMD.ProvSpecDelMonOccur = ''D''
 
 			--16-19
-			LEFT JOIN ' + @FISDatabase + '.dbo.Rulebase_FM25_Learner FM25
+			LEFT JOIN ' + @FISDatabase + '.dbo.Rulebase_EFA_Learner FM25
 				ON FM25.LearnRefNumber = LD.LearnRefNumber
 				AND FM25.CoreAimSeqNumber = LD.AimSeqNumber
 				--AND FM25.StartFund = 1
 
 			--AEB and Apps (Legacy)
-			LEFT JOIN ' + @FISDatabase + '.dbo.Rulebase_FM35_LearningDelivery FM35
+			LEFT JOIN ' + @FISDatabase + '.dbo.Rulebase_SFA_LearningDelivery FM35
 				ON FM35.LearnRefNumber = LD.LearnRefNumber
 				AND FM35.AimSeqNumber = LD.AimSeqNumber
 				--AND FM35.FundStart = 1
@@ -2434,13 +2416,13 @@ BEGIN
     SET @SQLString += 
         N'
 		--16-19
-		LEFT JOIN ' + @FISDatabase + '.dbo.Rulebase_FM25_Learner FM25
+		LEFT JOIN ' + @FISDatabase + '.dbo.Rulebase_EFA_Learner FM25
 			ON FM25.LearnRefNumber = LD.LearnRefNumber
 			AND FM25.CoreAimSeqNumber = LD.AimSeqNumber
 			--AND FM25.StartFund = 1
 
 		--AEB and Apps (Legacy)
-		LEFT JOIN ' + @FISDatabase + '.dbo.Rulebase_FM35_LearningDelivery FM35
+		LEFT JOIN ' + @FISDatabase + '.dbo.Rulebase_SFA_LearningDelivery FM35
 			ON FM35.LearnRefNumber = LD.LearnRefNumber
 			AND FM35.AimSeqNumber = LD.AimSeqNumber
 			--AND FM35.FundStart = 1
@@ -2461,8 +2443,7 @@ BEGIN
 			AND HE.AimSeqNumber = LD.AimSeqNumber
 	'
 
-
-    SET @SQLString += 
+	SET @SQLString += 
 		N'
 		LEFT JOIN (
 			SELECT
@@ -2737,7 +2718,7 @@ BEGIN
 					+ FM35P.BalancePayment
 					+ FM35P.EmpOutcomePay
 				ELSE 0 END )
-			FROM ' + @FISDatabase + '.dbo.Rulebase_FM35_LearningDelivery_Period FM35P
+			FROM ' + @FISDatabase + '.dbo.Rulebase_SFA_LearningDelivery_Period FM35P
 			GROUP BY
 				FM35P.LearnRefNumber,
 				FM35P.AimSeqNumber
@@ -2821,7 +2802,6 @@ BEGIN
 					SUM ( CASE WHEN FM36P.Period <= @ILRReturn THEN 
 						FM36P.LearnDelFirstEmp1618Pay 
 						+ FM36P.LearnDelSecondEmp1618Pay
-						+ FM36P.LearnDelLearnAddPayment
 						ELSE 0 END
 					),
 				TotFundToPeriod = 
@@ -2845,7 +2825,6 @@ BEGIN
 						+ FM36P.LDApplic1618FrameworkUpliftBalancingPayment 
 						+ FM36P.LearnDelFirstEmp1618Pay 
 						+ FM36P.LearnDelSecondEmp1618Pay
-						+ FM36P.LearnDelLearnAddPayment
 						ELSE 0 END
 					),
 	'
@@ -2889,7 +2868,6 @@ BEGIN
 					SUM ( CASE WHEN FM36P.Period <= 6 THEN 
 						FM36P.LearnDelFirstEmp1618Pay 
 						+ FM36P.LearnDelSecondEmp1618Pay
-						+ FM36P.LearnDelLearnAddPayment
 						ELSE 0 END
 					),
 				TotFund6Mon = 
@@ -2913,7 +2891,6 @@ BEGIN
 						+ FM36P.LDApplic1618FrameworkUpliftBalancingPayment 
 						+ FM36P.LearnDelFirstEmp1618Pay 
 						+ FM36P.LearnDelSecondEmp1618Pay
-						+ FM36P.LearnDelLearnAddPayment
 						ELSE 0 END
 					),
 
@@ -2950,7 +2927,6 @@ BEGIN
 					SUM ( 
 						FM36P.LearnDelFirstEmp1618Pay 
 						+ FM36P.LearnDelSecondEmp1618Pay
-						+ FM36P.LearnDelLearnAddPayment
 					),
 				TotFundYrEnd = 
 					SUM (  
@@ -2973,7 +2949,6 @@ BEGIN
 						+ FM36P.LDApplic1618FrameworkUpliftBalancingPayment 
 						+ FM36P.LearnDelFirstEmp1618Pay 
 						+ FM36P.LearnDelSecondEmp1618Pay
-						+ FM36P.LearnDelLearnAddPayment
 					),
 	'
 
@@ -3016,7 +2991,6 @@ BEGIN
 					SUM ( CASE WHEN FM36P.Period = 1 THEN 
 						FM36P.LearnDelFirstEmp1618Pay 
 						+ FM36P.LearnDelSecondEmp1618Pay
-						+ FM36P.LearnDelLearnAddPayment
 						ELSE 0 END
 					),
 				TotFundP01 = 
@@ -3040,7 +3014,6 @@ BEGIN
 						+ FM36P.LDApplic1618FrameworkUpliftBalancingPayment 
 						+ FM36P.LearnDelFirstEmp1618Pay 
 						+ FM36P.LearnDelSecondEmp1618Pay
-						+ FM36P.LearnDelLearnAddPayment
 						ELSE 0 END
 					),
 
@@ -3081,7 +3054,6 @@ BEGIN
 					SUM ( CASE WHEN FM36P.Period = 2 THEN 
 						FM36P.LearnDelFirstEmp1618Pay 
 						+ FM36P.LearnDelSecondEmp1618Pay
-						+ FM36P.LearnDelLearnAddPayment
 						ELSE 0 END
 					),
 				TotFundP02 = 
@@ -3105,7 +3077,6 @@ BEGIN
 						+ FM36P.LDApplic1618FrameworkUpliftBalancingPayment 
 						+ FM36P.LearnDelFirstEmp1618Pay 
 						+ FM36P.LearnDelSecondEmp1618Pay
-						+ FM36P.LearnDelLearnAddPayment
 						ELSE 0 END
 					),
 	'
@@ -3149,7 +3120,6 @@ BEGIN
 					SUM ( CASE WHEN FM36P.Period = 3 THEN 
 						FM36P.LearnDelFirstEmp1618Pay 
 						+ FM36P.LearnDelSecondEmp1618Pay
-						+ FM36P.LearnDelLearnAddPayment
 						ELSE 0 END
 					),
 				TotFundP03 = 
@@ -3173,7 +3143,6 @@ BEGIN
 						+ FM36P.LDApplic1618FrameworkUpliftBalancingPayment 
 						+ FM36P.LearnDelFirstEmp1618Pay 
 						+ FM36P.LearnDelSecondEmp1618Pay
-						+ FM36P.LearnDelLearnAddPayment
 						ELSE 0 END
 					),
 
@@ -3214,7 +3183,6 @@ BEGIN
 					SUM ( CASE WHEN FM36P.Period = 4 THEN 
 						FM36P.LearnDelFirstEmp1618Pay 
 						+ FM36P.LearnDelSecondEmp1618Pay
-						+ FM36P.LearnDelLearnAddPayment
 						ELSE 0 END
 					),
 				TotFundP04 = 
@@ -3238,7 +3206,6 @@ BEGIN
 						+ FM36P.LDApplic1618FrameworkUpliftBalancingPayment 
 						+ FM36P.LearnDelFirstEmp1618Pay 
 						+ FM36P.LearnDelSecondEmp1618Pay
-						+ FM36P.LearnDelLearnAddPayment
 						ELSE 0 END
 					),
 	'
@@ -3282,7 +3249,6 @@ BEGIN
 					SUM ( CASE WHEN FM36P.Period = 5 THEN 
 						FM36P.LearnDelFirstEmp1618Pay 
 						+ FM36P.LearnDelSecondEmp1618Pay
-						+ FM36P.LearnDelLearnAddPayment
 						ELSE 0 END
 					),
 				TotFundP05 = 
@@ -3306,7 +3272,6 @@ BEGIN
 						+ FM36P.LDApplic1618FrameworkUpliftBalancingPayment 
 						+ FM36P.LearnDelFirstEmp1618Pay 
 						+ FM36P.LearnDelSecondEmp1618Pay
-						+ FM36P.LearnDelLearnAddPayment
 						ELSE 0 END
 					),
 
@@ -3347,7 +3312,6 @@ BEGIN
 					SUM ( CASE WHEN FM36P.Period = 6 THEN 
 						FM36P.LearnDelFirstEmp1618Pay 
 						+ FM36P.LearnDelSecondEmp1618Pay
-						+ FM36P.LearnDelLearnAddPayment
 						ELSE 0 END
 					),
 				TotFundP06 = 
@@ -3371,7 +3335,6 @@ BEGIN
 						+ FM36P.LDApplic1618FrameworkUpliftBalancingPayment 
 						+ FM36P.LearnDelFirstEmp1618Pay 
 						+ FM36P.LearnDelSecondEmp1618Pay
-						+ FM36P.LearnDelLearnAddPayment
 						ELSE 0 END
 					),
 	'
@@ -3415,7 +3378,6 @@ BEGIN
 					SUM ( CASE WHEN FM36P.Period = 7 THEN 
 						FM36P.LearnDelFirstEmp1618Pay 
 						+ FM36P.LearnDelSecondEmp1618Pay
-						+ FM36P.LearnDelLearnAddPayment
 						ELSE 0 END
 					),
 				TotFundP07 = 
@@ -3439,7 +3401,6 @@ BEGIN
 						+ FM36P.LDApplic1618FrameworkUpliftBalancingPayment 
 						+ FM36P.LearnDelFirstEmp1618Pay 
 						+ FM36P.LearnDelSecondEmp1618Pay
-						+ FM36P.LearnDelLearnAddPayment
 						ELSE 0 END
 					),
 
@@ -3480,7 +3441,6 @@ BEGIN
 					SUM ( CASE WHEN FM36P.Period = 8 THEN 
 						FM36P.LearnDelFirstEmp1618Pay 
 						+ FM36P.LearnDelSecondEmp1618Pay
-						+ FM36P.LearnDelLearnAddPayment
 						ELSE 0 END
 					),
 				TotFundP08 = 
@@ -3504,7 +3464,6 @@ BEGIN
 						+ FM36P.LDApplic1618FrameworkUpliftBalancingPayment 
 						+ FM36P.LearnDelFirstEmp1618Pay 
 						+ FM36P.LearnDelSecondEmp1618Pay
-						+ FM36P.LearnDelLearnAddPayment
 						ELSE 0 END
 					),
 	'
@@ -3548,7 +3507,6 @@ BEGIN
 					SUM ( CASE WHEN FM36P.Period = 9 THEN 
 						FM36P.LearnDelFirstEmp1618Pay 
 						+ FM36P.LearnDelSecondEmp1618Pay
-						+ FM36P.LearnDelLearnAddPayment
 						ELSE 0 END
 					),
 				TotFundP09 = 
@@ -3572,7 +3530,6 @@ BEGIN
 						+ FM36P.LDApplic1618FrameworkUpliftBalancingPayment 
 						+ FM36P.LearnDelFirstEmp1618Pay 
 						+ FM36P.LearnDelSecondEmp1618Pay
-						+ FM36P.LearnDelLearnAddPayment
 						ELSE 0 END
 					),
 
@@ -3613,7 +3570,6 @@ BEGIN
 					SUM ( CASE WHEN FM36P.Period = 10 THEN 
 						FM36P.LearnDelFirstEmp1618Pay 
 						+ FM36P.LearnDelSecondEmp1618Pay
-						+ FM36P.LearnDelLearnAddPayment
 						ELSE 0 END
 					),
 				TotFundP10 = 
@@ -3637,7 +3593,6 @@ BEGIN
 						+ FM36P.LDApplic1618FrameworkUpliftBalancingPayment 
 						+ FM36P.LearnDelFirstEmp1618Pay 
 						+ FM36P.LearnDelSecondEmp1618Pay
-						+ FM36P.LearnDelLearnAddPayment
 						ELSE 0 END
 					),
 	'
@@ -3681,7 +3636,6 @@ BEGIN
 					SUM ( CASE WHEN FM36P.Period = 11 THEN 
 						FM36P.LearnDelFirstEmp1618Pay 
 						+ FM36P.LearnDelSecondEmp1618Pay
-						+ FM36P.LearnDelLearnAddPayment
 						ELSE 0 END
 					),
 				TotFundP11 = 
@@ -3705,7 +3659,6 @@ BEGIN
 						+ FM36P.LDApplic1618FrameworkUpliftBalancingPayment 
 						+ FM36P.LearnDelFirstEmp1618Pay 
 						+ FM36P.LearnDelSecondEmp1618Pay
-						+ FM36P.LearnDelLearnAddPayment
 						ELSE 0 END
 					),
 
@@ -3746,7 +3699,6 @@ BEGIN
 					SUM ( CASE WHEN FM36P.Period = 12 THEN 
 						FM36P.LearnDelFirstEmp1618Pay 
 						+ FM36P.LearnDelSecondEmp1618Pay
-						+ FM36P.LearnDelLearnAddPayment
 						ELSE 0 END
 					),
 				TotFundP12 = 
@@ -3770,7 +3722,6 @@ BEGIN
 						+ FM36P.LDApplic1618FrameworkUpliftBalancingPayment 
 						+ FM36P.LearnDelFirstEmp1618Pay 
 						+ FM36P.LearnDelSecondEmp1618Pay
-						+ FM36P.LearnDelLearnAddPayment
 						ELSE 0 END
 					)
 			FROM ' + @FISDatabase + '.dbo.Rulebase_AEC_LearningDelivery_Period FM36P
@@ -3824,22 +3775,9 @@ BEGIN
 					WHEN @ProviderFieldCourseLocation = ''D'' THEN
 						PSDMD.ProvSpecDelMon
 				END
-		LEFT JOIN #CollegeStructure PCS
-			ON PCS.AcademicYear = @AcademicYear
-			AND PCS.ProvSpecField =
-				CASE
-					WHEN @ProviderFieldParentCourseLocation = ''A'' THEN
-						PSDMA.ProvSpecDelMon
-					WHEN @ProviderFieldParentCourseLocation = ''B'' THEN
-						PSDMB.ProvSpecDelMon
-					WHEN @ProviderFieldParentCourseLocation = ''C'' THEN
-						PSDMC.ProvSpecDelMon
-					WHEN @ProviderFieldParentCourseLocation = ''D'' THEN
-						PSDMD.ProvSpecDelMon
-				END
-		LEFT JOIN #CollegeStructure MCS
-			ON MCS.AcademicYear = @AcademicYear
-			AND MCS.ProvSpecField = MA.CourseCode
+		LEFT JOIN #CollegeStructure CSM
+			ON CSM.AcademicYear = @AcademicYear
+			AND CSM.ProvSpecField = MA.CourseCode
 		LEFT JOIN (
 			SELECT
 				FacName = MIN ( CS.FacName )
@@ -3907,6 +3845,36 @@ BEGIN
         N'
         LEFT JOIN ' + @FISOutputTableLocation + 'FIS_Providers PROV
 			ON PROV.ProviderID = SRC.UKPRN
+		LEFT JOIN ' + @FISOutputTableLocation + 'FIS_FacultyTitles FAC
+            ON FAC.FacCode = 
+                CASE
+                    WHEN @ProviderFieldFacLocation = ''A'' THEN
+                        PSDMA.ProvSpecDelMon
+                    WHEN @ProviderFieldFacLocation = ''B'' THEN
+                        PSDMB.ProvSpecDelMon
+                    WHEN @ProviderFieldFacLocation = ''C'' THEN
+                        PSDMC.ProvSpecDelMon
+                    WHEN @ProviderFieldFacLocation = ''D'' THEN
+                        PSDMD.ProvSpecDelMon
+                    ELSE 
+                        PSDMA.ProvSpecDelMon
+                END
+            AND FAC.AcademicYear = @AcademicYear
+        LEFT JOIN ' + @FISOutputTableLocation + 'FIS_TeamTitles TEAM
+            ON TEAM.TeamCode = 
+                CASE
+                    WHEN @ProviderFieldTeamLocation = ''A'' THEN
+                        PSDMA.ProvSpecDelMon
+                    WHEN @ProviderFieldTeamLocation = ''B'' THEN
+                        PSDMB.ProvSpecDelMon
+                    WHEN @ProviderFieldTeamLocation = ''C'' THEN
+                        PSDMC.ProvSpecDelMon
+                    WHEN @ProviderFieldTeamLocation = ''D'' THEN
+                        PSDMD.ProvSpecDelMon
+                    ELSE 
+                        PSDMA.ProvSpecDelMon
+                END
+            AND TEAM.AcademicYear = @AcademicYear
 	'
 
     SET @SQLString += 
@@ -3938,7 +3906,7 @@ BEGIN
 				TotFund = MAX ( FM25.OnProgPayment ),
 				IsFunded = MAX ( CAST ( FM25.StartFund AS INT ) )
 			FROM ' + @FISDatabase + '.dbo.Valid_LearningDelivery LD
-			INNER JOIN ' + @FISDatabase + '.dbo.Rulebase_FM25_Learner FM25
+			INNER JOIN ' + @FISDatabase + '.dbo.Rulebase_EFA_Learner FM25
 				ON FM25.LearnRefNumber = LD.LearnRefNumber
 			LEFT JOIN ' + @FISDatabase + '.dbo.Valid_ProviderSpecDeliveryMonitoring PSDMA
 				ON PSDMA.LearnRefNumber = LD.LearnRefNumber
@@ -4134,13 +4102,13 @@ BEGIN
 				AND PSDMD.ProvSpecDelMonOccur = ''D''
 
 			--16-19
-			LEFT JOIN ' + @FISDatabase + '.dbo.Rulebase_FM25_Learner FM25
+			LEFT JOIN ' + @FISDatabase + '.dbo.Rulebase_EFA_Learner FM25
 				ON FM25.LearnRefNumber = LD.LearnRefNumber
 				AND FM25.CoreAimSeqNumber = LD.AimSeqNumber
 				--AND FM25.StartFund = 1
 
 			--AEB and Apps (Legacy)
-			LEFT JOIN ' + @FISDatabase + '.dbo.Rulebase_FM35_LearningDelivery FM35
+			LEFT JOIN ' + @FISDatabase + '.dbo.Rulebase_SFA_LearningDelivery FM35
 				ON FM35.LearnRefNumber = LD.LearnRefNumber
 				AND FM35.AimSeqNumber = LD.AimSeqNumber
 				--AND FM35.FundStart = 1
@@ -4174,8 +4142,7 @@ BEGIN
 			LEFT JOIN ' + @FISDatabase + '.dbo.Valid_LearningDeliveryHE HE
 				ON HE.LearnRefNumber = LD.LearnRefNumber
 				AND HE.AimSeqNumber = LD.AimSeqNumber
-
-			'
+	'
     
     SET @SQLString += 
         N'
@@ -4206,7 +4173,7 @@ BEGIN
 					TotFund = MAX ( FM25.OnProgPayment ),
 					IsFunded = MAX ( CAST ( FM25.StartFund AS INT ) )
 				FROM ' + @FISDatabase + '.dbo.Valid_LearningDelivery LD
-				INNER JOIN ' + @FISDatabase + '.dbo.Rulebase_FM25_Learner FM25
+				INNER JOIN ' + @FISDatabase + '.dbo.Rulebase_EFA_Learner FM25
 					ON FM25.LearnRefNumber = LD.LearnRefNumber
 				LEFT JOIN ' + @FISDatabase + '.dbo.Valid_ProviderSpecDeliveryMonitoring PSDMA
 					ON PSDMA.LearnRefNumber = LD.LearnRefNumber
@@ -4326,7 +4293,6 @@ BEGIN
 		@ProviderFieldTeamLocation CHAR(1),
 		@ProviderFieldCostCentreLocation CHAR(1),
 		@ProviderFieldCourseLocation CHAR(1),
-		@ProviderFieldParentCourseLocation CHAR(1),
 		@OverrideEngFac NVARCHAR(50),
 		@OverrideMatFac NVARCHAR(50),
 		@OverrideEngTeam NVARCHAR(50),
@@ -4354,7 +4320,6 @@ BEGIN
 		@ProviderFieldTeamLocation = @ProviderFieldTeamLocation,
 		@ProviderFieldCostCentreLocation = @ProviderFieldCostCentreLocation,
 		@ProviderFieldCourseLocation = @ProviderFieldCourseLocation,
-		@ProviderFieldParentCourseLocation = @ProviderFieldParentCourseLocation,
 		@OverrideEngFac = @OverrideEngFac,
 		@OverrideMatFac = @OverrideMatFac,
 		@OverrideEngTeam = @OverrideEngTeam,

@@ -8,7 +8,6 @@ CREATE PROCEDURE SPR_FIS_GenerateFundingData
 	@1619ALSFundingPercent DECIMAL(5,2),
 	@IncludeHEAdvLoanPossIncome BIT,
 	@IncludeAdvLoanBursaryIncome BIT,
-	@AEBCombinedAuthorityName NVARCHAR(200),
 	@FutureAchieveWeighting DECIMAL(5,2),
 	@Mode NCHAR(1),
 	@FISOutputTableLocation NVARCHAR(200),
@@ -45,7 +44,6 @@ BEGIN
 	--DECLARE @1619ALSFundingPercent DECIMAL(5,2) = 0.07 --Deduct this percent from Tot Funding and assign to ALS column
 	--DECLARE @IncludeHEAdvLoanPossIncome BIT = 1 --HE gross fee is only achieved if at all 3 SLC census points learners remain current
 	--DECLARE @IncludeAdvLoanBursaryIncome BIT = 0 --Adv loan bursary income is not income as goes to learners so may want to exclude
-	--DECLARE @AEBCombinedAuthorityName NVARCHAR(200) = 'AEB - Tees Valley Combined Authority'
 	--DECLARE @FutureAchieveWeighting DECIMAL(5,2) = 1 --Future ach weighting factor. If 1 then is 100% of all remaining ach monies
 	--DECLARE @Mode NCHAR(1) = 'R' --I=Insert new ILR return data leaving existing data, R=Replace table
 	--DECLARE @FISOutputTableLocation NVARCHAR(200) = 'wlc.dbo.'
@@ -120,6 +118,7 @@ BEGIN
 					SQLDatabase NVARCHAR(50) NULL,
 					Is1619FundingSplit INT NULL,
 					ALS1619FundingPercent DECIMAL(5, 2) NULL,
+					Is1619FundingReapportionedByAim INT NULL,
 					InvalidLearners INT NULL,
 
 					LearnerRef NVARCHAR(12) NULL,
@@ -548,7 +547,6 @@ BEGIN
             @1619ALSFundingPercent,
 			@IncludeHEAdvLoanPossIncome,
 			@IncludeAdvLoanBursaryIncome,
-			@AEBCombinedAuthorityName,
 			@FutureAchieveWeighting,
             @FISOutputTableLocation,
 			@ProviderFieldFacLocation,
@@ -576,7 +574,6 @@ BEGIN
         @1619ALSFundingPercent DECIMAL(5,2),
 		@IncludeHEAdvLoanPossIncome BIT,
 		@IncludeAdvLoanBursaryIncome BIT,
-		@AEBCombinedAuthorityName NVARCHAR(200),
     	@FutureAchieveWeighting DECIMAL(5,2),
         @FISOutputTableLocation NVARCHAR(200),
     	@ProviderFieldFacLocation CHAR(1),
@@ -608,7 +605,6 @@ BEGIN
         @1619ALSFundingPercent = @1619ALSFundingPercent,
 		@IncludeHEAdvLoanPossIncome = @IncludeHEAdvLoanPossIncome,
 		@IncludeAdvLoanBursaryIncome = @IncludeAdvLoanBursaryIncome,
-		@AEBCombinedAuthorityName = @AEBCombinedAuthorityName,
     	@FutureAchieveWeighting = @FutureAchieveWeighting,
         @FISOutputTableLocation = @FISOutputTableLocation,
     	@ProviderFieldFacLocation = @ProviderFieldFacLocation,

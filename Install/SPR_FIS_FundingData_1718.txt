@@ -4,10 +4,10 @@ CREATE PROCEDURE SPR_FIS_FundingData_1718
 	@ILRReturn INT,
 	@IsFinalReturn BIT,
 	@Split1619Funding BIT,
+	@Reapportion1619FundingByAimWeighting BIT,
 	@1619ALSFundingPercent DECIMAL(5,2),
 	@IncludeHEAdvLoanPossIncome BIT,
 	@IncludeAdvLoanBursaryIncome BIT,
-	@AEBCombinedAuthorityName NVARCHAR(200),
 	@FutureAchieveWeighting DECIMAL(5,2),
 	@FISOutputTableLocation NVARCHAR(200),
 	@ProviderFieldFacLocation CHAR(1),
@@ -33,10 +33,10 @@ BEGIN
 	--DECLARE @ILRReturn int = 10
 	--DECLARE @IsFinalReturn BIT = 1
 	--DECLARE @Split1619Funding BIT = 0 --Split the funding into the 12 periods
+	--DECLARE @Reapportion1619FundingByAimWeighting BIT = 1 --Reapportion the 16-19 funding by the aim prog weighting factor
 	--DECLARE @1619ALSFundingPercent DECIMAL(5,2) = 0 --Deduct this percent from Tot Funding for FM25 and assign to ALS column
 	--DECLARE @IncludeHEAdvLoanPossIncome BIT = 0 --HE gross fee is only achieved if at all 3 SLC census points learners remain current
 	--DECLARE @IncludeAdvLoanBursaryIncome BIT = 0 --Adv loan bursary income is not income as goes to learners so may want to exclude
-	--DECLARE @AEBCombinedAuthorityName NVARCHAR(200) = NULL
 	--DECLARE @FutureAchieveWeighting DECIMAL(5,2) = 1 --Future ach weighting factor. If 1 then is 100% of all remaining ach monies
 	--DECLARE @Mode NCHAR(1) = 'R' --I=Insert new ILR return data leaving existing data, R=Replace table
 	--DECLARE @FISOutputTableLocation NVARCHAR(200) = 'FISFundingSummariser.dbo.'
@@ -701,7 +701,7 @@ BEGIN
 							FM35.FundLine,
 							CASE WHEN HE.LearnRefNumber IS NOT NULL THEN ''Higher Education'' END,
 							CASE WHEN LD.FundModel = ''99'' THEN ''Full Cost'' END 
-						) LIKE ''%Adult Education%''
+						) LIKE ''%Eligible for MCA/GLA funding%''
                             THEN ''Adult - Devolved''
 
                     WHEN 
@@ -949,8 +949,8 @@ BEGIN
 							FM35.FundLine,
 							CASE WHEN HE.LearnRefNumber IS NOT NULL THEN ''Higher Education'' END,
 							CASE WHEN LD.FundModel = ''99'' THEN ''Full Cost'' END 
-						) LIKE ''%Adult Education%''
-                            THEN COALESCE ( @AEBCombinedAuthorityName, REPLACE ( REPLACE ( COALESCE ( FM36P.FundLineType, FM35.FundLine ), '' (non-procured)'', ''''), ''Adult Education'', ''AEB'') )
+						) LIKE ''%Eligible for MCA/GLA funding%''
+                            THEN ''AEB - '' + FM35.LearnDelFundOrgCode
 
 					ELSE 
 						COALESCE ( 
@@ -1429,14 +1429,32 @@ BEGIN
 							( COALESCE ( HRS.OnProgPayment, 0 ) / COALESCE ( HRS.PLH, 0 ) ) * COALESCE ( CASE WHEN COALESCE ( LD.WithdrawReason, ''0'' ) <> ''40'' OR HRS.TFerOnly = 1 THEN CH.PLH END, 0 )
 					END
 				ELSE 
-					FM25.OnProgPayment
+					CASE
+						WHEN @Reapportion1619FundingByAimWeighting = 1 AND FM25.StartFund = 1 THEN
+							( FM25.NatRate * FM25.PrvRetentFactHist * FM25.ProgWeightNew ) 
+							+ ( 
+								FM25.OnProgPayment 
+								- ( FM25.NatRate * FM25.PrvRetentFactHist * FM25.ProgWeightHist ) 
+							)
+						ELSE FM25.OnProgPayment
+					END
 					- CASE 
 						WHEN @1619ALSFundingPercent > 0 THEN
-							( FM25.OnProgPayment / 100 ) * @1619ALSFundingPercent
+							( 
+								CASE
+									WHEN @Reapportion1619FundingByAimWeighting = 1 AND FM25.StartFund = 1 THEN
+										( FM25.NatRate * FM25.PrvRetentFactHist * FM25.ProgWeightNew ) 
+										+ ( 
+											FM25.OnProgPayment 
+											- ( FM25.NatRate * FM25.PrvRetentFactHist * FM25.ProgWeightHist ) 
+										)
+									ELSE FM25.OnProgPayment
+								END
+								/ 100 ) * @1619ALSFundingPercent
 						ELSE
 							0
 					END
-				END / 12 ) * @ILRReturn END, CASE WHEN ALB.AdvLoan = 1 AND @IncludeAdvLoanBursaryIncome = 1 THEN ALBP.TotFundToPeriod END, FM35P.OnProgPaymentToPeriod, FM36P.OnProgPaymentToPeriod, ( CASE WHEN @IncludeHEAdvLoanPossIncome = 1 THEN HE.GROSSFEE ELSE 0 END / 12 ) * @ILRReturn, 0 ),
+				END / 12 ) * @ILRReturn END, CASE WHEN ALB.AdvLoan = 1 AND @IncludeHEAdvLoanPossIncome = 1 THEN ALBP.TotFundToPeriod END, FM35P.OnProgPaymentToPeriod, FM36P.OnProgPaymentToPeriod, ( CASE WHEN @IncludeHEAdvLoanPossIncome = 1 THEN HE.GROSSFEE ELSE 0 END / 12 ) * @ILRReturn, 0 ),
 			LearnSuppPaymentToPeriod = COALESCE ( CASE WHEN LD.FundModel = ''25'' THEN ( CASE WHEN @Split1619Funding = 1 
 				THEN
 					CASE
@@ -1447,7 +1465,17 @@ BEGIN
 				ELSE 
 					CASE 
 						WHEN @1619ALSFundingPercent > 0 THEN
-							( FM25.OnProgPayment / 100 ) * @1619ALSFundingPercent
+							( 
+								CASE
+									WHEN @Reapportion1619FundingByAimWeighting = 1 AND FM25.StartFund = 1 THEN
+										( FM25.NatRate * FM25.PrvRetentFactHist * FM25.ProgWeightNew ) 
+										+ ( 
+											FM25.OnProgPayment 
+											- ( FM25.NatRate * FM25.PrvRetentFactHist * FM25.ProgWeightHist ) 
+										)
+									ELSE FM25.OnProgPayment
+								END
+								/ 100 ) * @1619ALSFundingPercent
 						ELSE
 							0
 					END
@@ -1463,8 +1491,21 @@ BEGIN
 						ELSE
 							( COALESCE ( HRS.TotFund, 0 ) / COALESCE ( HRS.PLH, 0 ) ) * COALESCE ( CASE WHEN COALESCE ( LD.WithdrawReason, ''0'' ) <> ''40'' OR HRS.TFerOnly = 1 THEN CH.PLH END, 0 )
 					END
-				ELSE FM25.OnProgPayment END / 12 ) * @ILRReturn END, CASE WHEN ALB.AdvLoan = 1 AND @IncludeAdvLoanBursaryIncome = 1 THEN ALBP.TotFundToPeriod END, FM35P.TotFundToPeriod, FM36P.TotFundToPeriod, ( CASE WHEN @IncludeHEAdvLoanPossIncome = 1 THEN HE.GROSSFEE ELSE 0 END / 12 ) * @ILRReturn, 0 ),
+				ELSE 
+					CASE
+						WHEN @Reapportion1619FundingByAimWeighting = 1 AND FM25.StartFund = 1 THEN
+							( FM25.NatRate * FM25.PrvRetentFactHist * FM25.ProgWeightNew ) 
+							+ ( 
+								FM25.OnProgPayment 
+								- ( FM25.NatRate * FM25.PrvRetentFactHist * FM25.ProgWeightHist ) 
+							)
+						ELSE FM25.OnProgPayment
+					END
+				END / 12 ) * @ILRReturn END, CASE WHEN ALB.AdvLoan = 1 AND @IncludeAdvLoanBursaryIncome = 1 THEN ALBP.TotFundToPeriod END, FM35P.TotFundToPeriod, FM36P.TotFundToPeriod, ( CASE WHEN @IncludeHEAdvLoanPossIncome = 1 THEN HE.GROSSFEE ELSE 0 END / 12 ) * @ILRReturn, 0 ),
+	'
 
+    SET @SQLString += 
+        N'
 			OnProgPayment6Mon = COALESCE ( CASE WHEN LD.FundModel = ''25'' THEN ( CASE WHEN @Split1619Funding = 1 
 				THEN
 					CASE
@@ -1473,10 +1514,28 @@ BEGIN
 							( COALESCE ( HRS.OnProgPayment, 0 ) / COALESCE ( HRS.PLH, 0 ) ) * COALESCE ( CASE WHEN COALESCE ( LD.WithdrawReason, ''0'' ) <> ''40'' OR HRS.TFerOnly = 1 THEN CH.PLH END, 0 )
 					END
 				ELSE 
-					FM25.OnProgPayment
+					CASE
+						WHEN @Reapportion1619FundingByAimWeighting = 1 AND FM25.StartFund = 1 THEN
+							( FM25.NatRate * FM25.PrvRetentFactHist * FM25.ProgWeightNew ) 
+							+ ( 
+								FM25.OnProgPayment 
+								- ( FM25.NatRate * FM25.PrvRetentFactHist * FM25.ProgWeightHist ) 
+							)
+						ELSE FM25.OnProgPayment
+					END
 					- CASE 
 						WHEN @1619ALSFundingPercent > 0 THEN
-							( FM25.OnProgPayment / 100 ) * @1619ALSFundingPercent
+							( 
+								CASE
+									WHEN @Reapportion1619FundingByAimWeighting = 1 AND FM25.StartFund = 1 THEN
+										( FM25.NatRate * FM25.PrvRetentFactHist * FM25.ProgWeightNew ) 
+										+ ( 
+											FM25.OnProgPayment 
+											- ( FM25.NatRate * FM25.PrvRetentFactHist * FM25.ProgWeightHist ) 
+										)
+									ELSE FM25.OnProgPayment
+								END
+								/ 100 ) * @1619ALSFundingPercent
 						ELSE
 							0
 					END
@@ -1491,7 +1550,17 @@ BEGIN
 				ELSE 
 					CASE 
 						WHEN @1619ALSFundingPercent > 0 THEN
-							( FM25.OnProgPayment / 100 ) * @1619ALSFundingPercent
+							( 
+								CASE
+									WHEN @Reapportion1619FundingByAimWeighting = 1 AND FM25.StartFund = 1 THEN
+										( FM25.NatRate * FM25.PrvRetentFactHist * FM25.ProgWeightNew ) 
+										+ ( 
+											FM25.OnProgPayment 
+											- ( FM25.NatRate * FM25.PrvRetentFactHist * FM25.ProgWeightHist ) 
+										)
+									ELSE FM25.OnProgPayment
+								END
+								/ 100 ) * @1619ALSFundingPercent
 						ELSE
 							0
 					END
@@ -1507,8 +1576,18 @@ BEGIN
 						ELSE
 							( COALESCE ( HRS.TotFund, 0 ) / COALESCE ( HRS.PLH, 0 ) ) * COALESCE ( CASE WHEN COALESCE ( LD.WithdrawReason, ''0'' ) <> ''40'' OR HRS.TFerOnly = 1 THEN CH.PLH END, 0 )
 					END
-				ELSE FM25.OnProgPayment END / 12 ) * 6 END, CASE WHEN ALB.AdvLoan = 1 AND @IncludeAdvLoanBursaryIncome = 1 THEN ALBP.TotFund6Mon END, FM35P.TotFund6Mon, FM36P.TotFund6Mon, ( CASE WHEN @IncludeHEAdvLoanPossIncome = 1 THEN HE.GROSSFEE ELSE 0 END / 12 ) * 6, 0 ),
-		'
+				ELSE 
+					CASE
+						WHEN @Reapportion1619FundingByAimWeighting = 1 AND FM25.StartFund = 1 THEN
+							( FM25.NatRate * FM25.PrvRetentFactHist * FM25.ProgWeightNew ) 
+							+ ( 
+								FM25.OnProgPayment 
+								- ( FM25.NatRate * FM25.PrvRetentFactHist * FM25.ProgWeightHist ) 
+							)
+						ELSE FM25.OnProgPayment
+					END
+				END / 12 ) * 6 END, CASE WHEN ALB.AdvLoan = 1 AND @IncludeAdvLoanBursaryIncome = 1 THEN ALBP.TotFund6Mon END, FM35P.TotFund6Mon, FM36P.TotFund6Mon, ( CASE WHEN @IncludeHEAdvLoanPossIncome = 1 THEN HE.GROSSFEE ELSE 0 END / 12 ) * 6, 0 ),
+	'
 
     SET @SQLString += 
 		N'
@@ -1520,10 +1599,28 @@ BEGIN
 							( COALESCE ( HRS.OnProgPayment, 0 ) / COALESCE ( HRS.PLH, 0 ) ) * COALESCE ( CASE WHEN COALESCE ( LD.WithdrawReason, ''0'' ) <> ''40'' OR HRS.TFerOnly = 1 THEN CH.PLH END, 0 )
 					END
 				ELSE 
-					FM25.OnProgPayment
+					CASE
+						WHEN @Reapportion1619FundingByAimWeighting = 1 AND FM25.StartFund = 1 THEN
+							( FM25.NatRate * FM25.PrvRetentFactHist * FM25.ProgWeightNew ) 
+							+ ( 
+								FM25.OnProgPayment 
+								- ( FM25.NatRate * FM25.PrvRetentFactHist * FM25.ProgWeightHist ) 
+							)
+						ELSE FM25.OnProgPayment
+					END
 					- CASE 
 						WHEN @1619ALSFundingPercent > 0 THEN
-							( FM25.OnProgPayment / 100 ) * @1619ALSFundingPercent
+							( 
+								CASE
+									WHEN @Reapportion1619FundingByAimWeighting = 1 AND FM25.StartFund = 1 THEN
+										( FM25.NatRate * FM25.PrvRetentFactHist * FM25.ProgWeightNew ) 
+										+ ( 
+											FM25.OnProgPayment 
+											- ( FM25.NatRate * FM25.PrvRetentFactHist * FM25.ProgWeightHist ) 
+										)
+									ELSE FM25.OnProgPayment
+								END
+								/ 100 ) * @1619ALSFundingPercent
 						ELSE
 							0
 					END
@@ -1538,7 +1635,17 @@ BEGIN
 				ELSE 
 					CASE 
 						WHEN @1619ALSFundingPercent > 0 THEN
-							( FM25.OnProgPayment / 100 ) * @1619ALSFundingPercent
+							( 
+								CASE
+									WHEN @Reapportion1619FundingByAimWeighting = 1 AND FM25.StartFund = 1 THEN
+										( FM25.NatRate * FM25.PrvRetentFactHist * FM25.ProgWeightNew ) 
+										+ ( 
+											FM25.OnProgPayment 
+											- ( FM25.NatRate * FM25.PrvRetentFactHist * FM25.ProgWeightHist ) 
+										)
+									ELSE FM25.OnProgPayment
+								END
+								/ 100 ) * @1619ALSFundingPercent
 						ELSE
 							0
 					END
@@ -1554,8 +1661,32 @@ BEGIN
 						ELSE
 							( COALESCE ( HRS.TotFund, 0 ) / COALESCE ( HRS.PLH, 0 ) ) * COALESCE ( CASE WHEN COALESCE ( LD.WithdrawReason, ''0'' ) <> ''40'' OR HRS.TFerOnly = 1 THEN CH.PLH END, 0 )
 					END
-				ELSE FM25.OnProgPayment END END, CASE WHEN ALB.AdvLoan = 1 AND @IncludeAdvLoanBursaryIncome = 1 THEN ALBP.TotFundYrEnd END, FM35P.TotFundYrEnd, FM36P.TotFundYrEnd, CASE WHEN @IncludeHEAdvLoanPossIncome = 1 THEN HE.GROSSFEE ELSE 0 END, 0 ),
-			TotFundYrEndNotApportioned = COALESCE ( CASE WHEN LD.FundModel = ''25'' THEN FM25.OnProgPayment END, 
+				ELSE 
+					CASE
+						WHEN @Reapportion1619FundingByAimWeighting = 1 AND FM25.StartFund = 1 THEN
+							( FM25.NatRate * FM25.PrvRetentFactHist * FM25.ProgWeightNew ) 
+							+ ( 
+								FM25.OnProgPayment 
+								- ( FM25.NatRate * FM25.PrvRetentFactHist * FM25.ProgWeightHist ) 
+							)
+						ELSE FM25.OnProgPayment
+					END
+				END END, CASE WHEN ALB.AdvLoan = 1 AND @IncludeAdvLoanBursaryIncome = 1 THEN ALBP.TotFundYrEnd END, FM35P.TotFundYrEnd, FM36P.TotFundYrEnd, CASE WHEN @IncludeHEAdvLoanPossIncome = 1 THEN HE.GROSSFEE ELSE 0 END, 0 ),
+	'
+
+    SET @SQLString += 
+        N'
+			TotFundYrEndNotApportioned = COALESCE ( CASE WHEN LD.FundModel = ''25'' THEN 
+				CASE
+					WHEN @Reapportion1619FundingByAimWeighting = 1 AND FM25.StartFund = 1 THEN
+						( FM25.NatRate * FM25.PrvRetentFactHist * FM25.ProgWeightNew ) 
+						+ ( 
+							FM25.OnProgPayment 
+							- ( FM25.NatRate * FM25.PrvRetentFactHist * FM25.ProgWeightHist ) 
+						)
+					ELSE FM25.OnProgPayment
+				END
+				END, 
 				CASE WHEN ALB.AdvLoan = 1 AND @IncludeAdvLoanBursaryIncome = 1 THEN ALBP.TotFundYrEnd END, FM35P.TotFundYrEnd, FM36P.TotFundYrEnd, CASE WHEN @IncludeHEAdvLoanPossIncome = 1 THEN HE.GROSSFEE ELSE 0 END, 0 ),
 
 			FutureAchCompPayment = 
@@ -1571,14 +1702,14 @@ BEGIN
 					WHEN LD.LearnPlanEndDate NOT BETWEEN ''20'' + LEFT ( @AcademicYear, 2 ) + ''-08-01'' AND ''20'' + RIGHT ( @AcademicYear, 2 ) + ''-07-31'' THEN 0
 					ELSE COALESCE ( FM35.AchieveElement - FM35P.AchCompPaymentYrEnd, FM36PE.PriceEpisodeCompletionElement - FM36P.AchCompPaymentYrEnd ) * @FutureAchieveWeighting
 				END,
-
+			
 			AppStandardPriceEpisodeContractType = FM36PE.PriceEpisodeContractType,
 			AppStandardPriceEpisodeStartDate = FM36PE.EpisodeStartDate,
 			AppStandardPriceEpisodeCompletionElement = COALESCE ( FM36PE.PriceEpisodeCompletionElement, 0 ),
 			AppStandardTotalNegotiatedPriceTNP = COALESCE ( FM36PE.PriceEpisodeTotalTNPPrice, 0 ),
 			AppStandardEmployerContibutionPMRTot = COALESCE ( FM36PE.PriceEpisodeTotalPMRs, 0 ),
 			AppStandardEmployerContibutionPMRCum = COALESCE ( FM36PE.PriceEpisodeCumulativePMRs, 0 ),
-		'
+	'
 
     SET @SQLString += 
 		N'
@@ -1590,10 +1721,28 @@ BEGIN
 							( COALESCE ( HRS.OnProgPayment, 0 ) / COALESCE ( HRS.PLH, 0 ) ) * COALESCE ( CASE WHEN COALESCE ( LD.WithdrawReason, ''0'' ) <> ''40'' OR HRS.TFerOnly = 1 THEN CH.PLH END, 0 )
 					END
 				ELSE 
-					FM25.OnProgPayment
+					CASE
+						WHEN @Reapportion1619FundingByAimWeighting = 1 AND FM25.StartFund = 1 THEN
+							( FM25.NatRate * FM25.PrvRetentFactHist * FM25.ProgWeightNew ) 
+							+ ( 
+								FM25.OnProgPayment 
+								- ( FM25.NatRate * FM25.PrvRetentFactHist * FM25.ProgWeightHist ) 
+							)
+						ELSE FM25.OnProgPayment
+					END
 					- CASE 
 						WHEN @1619ALSFundingPercent > 0 THEN
-							( FM25.OnProgPayment / 100 ) * @1619ALSFundingPercent
+							( 
+								CASE
+									WHEN @Reapportion1619FundingByAimWeighting = 1 AND FM25.StartFund = 1 THEN
+										( FM25.NatRate * FM25.PrvRetentFactHist * FM25.ProgWeightNew ) 
+										+ ( 
+											FM25.OnProgPayment 
+											- ( FM25.NatRate * FM25.PrvRetentFactHist * FM25.ProgWeightHist ) 
+										)
+									ELSE FM25.OnProgPayment
+								END
+								/ 100 ) * @1619ALSFundingPercent
 						ELSE
 							0
 					END
@@ -1608,7 +1757,17 @@ BEGIN
 				ELSE 
 					CASE 
 						WHEN @1619ALSFundingPercent > 0 THEN
-							( FM25.OnProgPayment / 100 ) * @1619ALSFundingPercent
+							( 
+								CASE
+									WHEN @Reapportion1619FundingByAimWeighting = 1 AND FM25.StartFund = 1 THEN
+										( FM25.NatRate * FM25.PrvRetentFactHist * FM25.ProgWeightNew ) 
+										+ ( 
+											FM25.OnProgPayment 
+											- ( FM25.NatRate * FM25.PrvRetentFactHist * FM25.ProgWeightHist ) 
+										)
+									ELSE FM25.OnProgPayment
+								END
+								/ 100 ) * @1619ALSFundingPercent
 						ELSE
 							0
 					END
@@ -1624,8 +1783,21 @@ BEGIN
 						ELSE
 							( COALESCE ( HRS.TotFund, 0 ) / COALESCE ( HRS.PLH, 0 ) ) * COALESCE ( CASE WHEN COALESCE ( LD.WithdrawReason, ''0'' ) <> ''40'' OR HRS.TFerOnly = 1 THEN CH.PLH END, 0 )
 					END
-				ELSE FM25.OnProgPayment END / 12 ) END, CASE WHEN ALB.AdvLoan = 1 AND @IncludeAdvLoanBursaryIncome = 1 THEN ALBP.TotFundP01 END, FM35P.TotFundP01, FM36P.TotFundP01, CASE WHEN @IncludeHEAdvLoanPossIncome = 1 THEN HE.GROSSFEE ELSE 0 END / 12, 0 ),
+				ELSE 
+					CASE
+						WHEN @Reapportion1619FundingByAimWeighting = 1 AND FM25.StartFund = 1 THEN
+							( FM25.NatRate * FM25.PrvRetentFactHist * FM25.ProgWeightNew ) 
+							+ ( 
+								FM25.OnProgPayment 
+								- ( FM25.NatRate * FM25.PrvRetentFactHist * FM25.ProgWeightHist ) 
+							)
+						ELSE FM25.OnProgPayment
+					END
+					END / 12 ) END, CASE WHEN ALB.AdvLoan = 1 AND @IncludeAdvLoanBursaryIncome = 1 THEN ALBP.TotFundP01 END, FM35P.TotFundP01, FM36P.TotFundP01, CASE WHEN @IncludeHEAdvLoanPossIncome = 1 THEN HE.GROSSFEE ELSE 0 END / 12, 0 ),
+	'
 
+    SET @SQLString += 
+        N'
 			OnProgPaymentP02 = COALESCE ( CASE WHEN LD.FundModel = ''25'' THEN ( CASE WHEN @Split1619Funding = 1 
 				THEN
 					CASE
@@ -1634,10 +1806,28 @@ BEGIN
 							( COALESCE ( HRS.OnProgPayment, 0 ) / COALESCE ( HRS.PLH, 0 ) ) * COALESCE ( CASE WHEN COALESCE ( LD.WithdrawReason, ''0'' ) <> ''40'' OR HRS.TFerOnly = 1 THEN CH.PLH END, 0 )
 					END
 				ELSE 
-					FM25.OnProgPayment
+					CASE
+						WHEN @Reapportion1619FundingByAimWeighting = 1 AND FM25.StartFund = 1 THEN
+							( FM25.NatRate * FM25.PrvRetentFactHist * FM25.ProgWeightNew ) 
+							+ ( 
+								FM25.OnProgPayment 
+								- ( FM25.NatRate * FM25.PrvRetentFactHist * FM25.ProgWeightHist ) 
+							)
+						ELSE FM25.OnProgPayment
+					END
 					- CASE 
 						WHEN @1619ALSFundingPercent > 0 THEN
-							( FM25.OnProgPayment / 100 ) * @1619ALSFundingPercent
+							( 
+								CASE
+									WHEN @Reapportion1619FundingByAimWeighting = 1 AND FM25.StartFund = 1 THEN
+										( FM25.NatRate * FM25.PrvRetentFactHist * FM25.ProgWeightNew ) 
+										+ ( 
+											FM25.OnProgPayment 
+											- ( FM25.NatRate * FM25.PrvRetentFactHist * FM25.ProgWeightHist ) 
+										)
+									ELSE FM25.OnProgPayment
+								END
+								/ 100 ) * @1619ALSFundingPercent
 						ELSE
 							0
 					END
@@ -1652,7 +1842,17 @@ BEGIN
 				ELSE 
 					CASE 
 						WHEN @1619ALSFundingPercent > 0 THEN
-							( FM25.OnProgPayment / 100 ) * @1619ALSFundingPercent
+							( 
+								CASE
+									WHEN @Reapportion1619FundingByAimWeighting = 1 AND FM25.StartFund = 1 THEN
+										( FM25.NatRate * FM25.PrvRetentFactHist * FM25.ProgWeightNew ) 
+										+ ( 
+											FM25.OnProgPayment 
+											- ( FM25.NatRate * FM25.PrvRetentFactHist * FM25.ProgWeightHist ) 
+										)
+									ELSE FM25.OnProgPayment
+								END
+								/ 100 ) * @1619ALSFundingPercent
 						ELSE
 							0
 					END
@@ -1668,8 +1868,18 @@ BEGIN
 						ELSE
 							( COALESCE ( HRS.TotFund, 0 ) / COALESCE ( HRS.PLH, 0 ) ) * COALESCE ( CASE WHEN COALESCE ( LD.WithdrawReason, ''0'' ) <> ''40'' OR HRS.TFerOnly = 1 THEN CH.PLH END, 0 )
 					END
-				ELSE FM25.OnProgPayment END / 12 ) END, CASE WHEN ALB.AdvLoan = 1 AND @IncludeAdvLoanBursaryIncome = 1 THEN ALBP.TotFundP02 END, FM35P.TotFundP02, FM36P.TotFundP02, CASE WHEN @IncludeHEAdvLoanPossIncome = 1 THEN HE.GROSSFEE ELSE 0 END / 12, 0 ),
-		'
+				ELSE 
+					CASE
+						WHEN @Reapportion1619FundingByAimWeighting = 1 AND FM25.StartFund = 1 THEN
+							( FM25.NatRate * FM25.PrvRetentFactHist * FM25.ProgWeightNew ) 
+							+ ( 
+								FM25.OnProgPayment 
+								- ( FM25.NatRate * FM25.PrvRetentFactHist * FM25.ProgWeightHist ) 
+							)
+						ELSE FM25.OnProgPayment
+					END
+				END / 12 ) END, CASE WHEN ALB.AdvLoan = 1 AND @IncludeAdvLoanBursaryIncome = 1 THEN ALBP.TotFundP02 END, FM35P.TotFundP02, FM36P.TotFundP02, CASE WHEN @IncludeHEAdvLoanPossIncome = 1 THEN HE.GROSSFEE ELSE 0 END / 12, 0 ),
+	'
 
     SET @SQLString += 
 		N'
@@ -1681,10 +1891,28 @@ BEGIN
 							( COALESCE ( HRS.OnProgPayment, 0 ) / COALESCE ( HRS.PLH, 0 ) ) * COALESCE ( CASE WHEN COALESCE ( LD.WithdrawReason, ''0'' ) <> ''40'' OR HRS.TFerOnly = 1 THEN CH.PLH END, 0 )
 					END
 				ELSE 
-					FM25.OnProgPayment
+					CASE
+						WHEN @Reapportion1619FundingByAimWeighting = 1 AND FM25.StartFund = 1 THEN
+							( FM25.NatRate * FM25.PrvRetentFactHist * FM25.ProgWeightNew ) 
+							+ ( 
+								FM25.OnProgPayment 
+								- ( FM25.NatRate * FM25.PrvRetentFactHist * FM25.ProgWeightHist ) 
+							)
+						ELSE FM25.OnProgPayment
+					END
 					- CASE 
 						WHEN @1619ALSFundingPercent > 0 THEN
-							( FM25.OnProgPayment / 100 ) * @1619ALSFundingPercent
+							( 
+								CASE
+									WHEN @Reapportion1619FundingByAimWeighting = 1 AND FM25.StartFund = 1 THEN
+										( FM25.NatRate * FM25.PrvRetentFactHist * FM25.ProgWeightNew ) 
+										+ ( 
+											FM25.OnProgPayment 
+											- ( FM25.NatRate * FM25.PrvRetentFactHist * FM25.ProgWeightHist ) 
+										)
+									ELSE FM25.OnProgPayment
+								END
+								/ 100 ) * @1619ALSFundingPercent
 						ELSE
 							0
 					END
@@ -1699,7 +1927,17 @@ BEGIN
 				ELSE 
 					CASE 
 						WHEN @1619ALSFundingPercent > 0 THEN
-							( FM25.OnProgPayment / 100 ) * @1619ALSFundingPercent
+							( 
+								CASE
+									WHEN @Reapportion1619FundingByAimWeighting = 1 AND FM25.StartFund = 1 THEN
+										( FM25.NatRate * FM25.PrvRetentFactHist * FM25.ProgWeightNew ) 
+										+ ( 
+											FM25.OnProgPayment 
+											- ( FM25.NatRate * FM25.PrvRetentFactHist * FM25.ProgWeightHist ) 
+										)
+									ELSE FM25.OnProgPayment
+								END
+								/ 100 ) * @1619ALSFundingPercent
 						ELSE
 							0
 					END
@@ -1715,8 +1953,21 @@ BEGIN
 						ELSE
 							( COALESCE ( HRS.TotFund, 0 ) / COALESCE ( HRS.PLH, 0 ) ) * COALESCE ( CASE WHEN COALESCE ( LD.WithdrawReason, ''0'' ) <> ''40'' OR HRS.TFerOnly = 1 THEN CH.PLH END, 0 )
 					END
-				ELSE FM25.OnProgPayment END / 12 ) END, CASE WHEN ALB.AdvLoan = 1 AND @IncludeAdvLoanBursaryIncome = 1 THEN ALBP.TotFundP03 END, FM35P.TotFundP03, FM36P.TotFundP03, CASE WHEN @IncludeHEAdvLoanPossIncome = 1 THEN HE.GROSSFEE ELSE 0 END / 12, 0 ),
+				ELSE 
+					CASE
+						WHEN @Reapportion1619FundingByAimWeighting = 1 AND FM25.StartFund = 1 THEN
+							( FM25.NatRate * FM25.PrvRetentFactHist * FM25.ProgWeightNew ) 
+							+ ( 
+								FM25.OnProgPayment 
+								- ( FM25.NatRate * FM25.PrvRetentFactHist * FM25.ProgWeightHist ) 
+							)
+						ELSE FM25.OnProgPayment
+					END
+				END / 12 ) END, CASE WHEN ALB.AdvLoan = 1 AND @IncludeAdvLoanBursaryIncome = 1 THEN ALBP.TotFundP03 END, FM35P.TotFundP03, FM36P.TotFundP03, CASE WHEN @IncludeHEAdvLoanPossIncome = 1 THEN HE.GROSSFEE ELSE 0 END / 12, 0 ),
+	'
 
+    SET @SQLString += 
+        N'
 			OnProgPaymentP04 = COALESCE ( CASE WHEN LD.FundModel = ''25'' THEN ( CASE WHEN @Split1619Funding = 1 
 				THEN
 					CASE
@@ -1725,10 +1976,28 @@ BEGIN
 							( COALESCE ( HRS.OnProgPayment, 0 ) / COALESCE ( HRS.PLH, 0 ) ) * COALESCE ( CASE WHEN COALESCE ( LD.WithdrawReason, ''0'' ) <> ''40'' OR HRS.TFerOnly = 1 THEN CH.PLH END, 0 )
 					END
 				ELSE 
-					FM25.OnProgPayment
+					CASE
+						WHEN @Reapportion1619FundingByAimWeighting = 1 AND FM25.StartFund = 1 THEN
+							( FM25.NatRate * FM25.PrvRetentFactHist * FM25.ProgWeightNew ) 
+							+ ( 
+								FM25.OnProgPayment 
+								- ( FM25.NatRate * FM25.PrvRetentFactHist * FM25.ProgWeightHist ) 
+							)
+						ELSE FM25.OnProgPayment
+					END
 					- CASE 
 						WHEN @1619ALSFundingPercent > 0 THEN
-							( FM25.OnProgPayment / 100 ) * @1619ALSFundingPercent
+							( 
+								CASE
+									WHEN @Reapportion1619FundingByAimWeighting = 1 AND FM25.StartFund = 1 THEN
+										( FM25.NatRate * FM25.PrvRetentFactHist * FM25.ProgWeightNew ) 
+										+ ( 
+											FM25.OnProgPayment 
+											- ( FM25.NatRate * FM25.PrvRetentFactHist * FM25.ProgWeightHist ) 
+										)
+									ELSE FM25.OnProgPayment
+								END
+								/ 100 ) * @1619ALSFundingPercent
 						ELSE
 							0
 					END
@@ -1743,7 +2012,17 @@ BEGIN
 				ELSE 
 					CASE 
 						WHEN @1619ALSFundingPercent > 0 THEN
-							( FM25.OnProgPayment / 100 ) * @1619ALSFundingPercent
+							( 
+								CASE
+									WHEN @Reapportion1619FundingByAimWeighting = 1 AND FM25.StartFund = 1 THEN
+										( FM25.NatRate * FM25.PrvRetentFactHist * FM25.ProgWeightNew ) 
+										+ ( 
+											FM25.OnProgPayment 
+											- ( FM25.NatRate * FM25.PrvRetentFactHist * FM25.ProgWeightHist ) 
+										)
+									ELSE FM25.OnProgPayment
+								END
+								/ 100 ) * @1619ALSFundingPercent
 						ELSE
 							0
 					END
@@ -1759,8 +2038,18 @@ BEGIN
 						ELSE
 							( COALESCE ( HRS.TotFund, 0 ) / COALESCE ( HRS.PLH, 0 ) ) * COALESCE ( CASE WHEN COALESCE ( LD.WithdrawReason, ''0'' ) <> ''40'' OR HRS.TFerOnly = 1 THEN CH.PLH END, 0 )
 					END
-				ELSE FM25.OnProgPayment END / 12 ) END, CASE WHEN ALB.AdvLoan = 1 AND @IncludeAdvLoanBursaryIncome = 1 THEN ALBP.TotFundP04 END, FM35P.TotFundP04, FM36P.TotFundP04, CASE WHEN @IncludeHEAdvLoanPossIncome = 1 THEN HE.GROSSFEE ELSE 0 END / 12, 0 ),
-		'
+				ELSE 
+					CASE
+						WHEN @Reapportion1619FundingByAimWeighting = 1 AND FM25.StartFund = 1 THEN
+							( FM25.NatRate * FM25.PrvRetentFactHist * FM25.ProgWeightNew ) 
+							+ ( 
+								FM25.OnProgPayment 
+								- ( FM25.NatRate * FM25.PrvRetentFactHist * FM25.ProgWeightHist ) 
+							)
+						ELSE FM25.OnProgPayment
+					END
+				END / 12 ) END, CASE WHEN ALB.AdvLoan = 1 AND @IncludeAdvLoanBursaryIncome = 1 THEN ALBP.TotFundP04 END, FM35P.TotFundP04, FM36P.TotFundP04, CASE WHEN @IncludeHEAdvLoanPossIncome = 1 THEN HE.GROSSFEE ELSE 0 END / 12, 0 ),
+	'
 
     SET @SQLString += 
 		N'
@@ -1772,10 +2061,28 @@ BEGIN
 							( COALESCE ( HRS.OnProgPayment, 0 ) / COALESCE ( HRS.PLH, 0 ) ) * COALESCE ( CASE WHEN COALESCE ( LD.WithdrawReason, ''0'' ) <> ''40'' OR HRS.TFerOnly = 1 THEN CH.PLH END, 0 )
 					END
 				ELSE 
-					FM25.OnProgPayment
+					CASE
+						WHEN @Reapportion1619FundingByAimWeighting = 1 AND FM25.StartFund = 1 THEN
+							( FM25.NatRate * FM25.PrvRetentFactHist * FM25.ProgWeightNew ) 
+							+ ( 
+								FM25.OnProgPayment 
+								- ( FM25.NatRate * FM25.PrvRetentFactHist * FM25.ProgWeightHist ) 
+							)
+						ELSE FM25.OnProgPayment
+					END
 					- CASE 
 						WHEN @1619ALSFundingPercent > 0 THEN
-							( FM25.OnProgPayment / 100 ) * @1619ALSFundingPercent
+							( 
+								CASE
+									WHEN @Reapportion1619FundingByAimWeighting = 1 AND FM25.StartFund = 1 THEN
+										( FM25.NatRate * FM25.PrvRetentFactHist * FM25.ProgWeightNew ) 
+										+ ( 
+											FM25.OnProgPayment 
+											- ( FM25.NatRate * FM25.PrvRetentFactHist * FM25.ProgWeightHist ) 
+										)
+									ELSE FM25.OnProgPayment
+								END
+								/ 100 ) * @1619ALSFundingPercent
 						ELSE
 							0
 					END
@@ -1790,7 +2097,17 @@ BEGIN
 				ELSE 
 					CASE 
 						WHEN @1619ALSFundingPercent > 0 THEN
-							( FM25.OnProgPayment / 100 ) * @1619ALSFundingPercent
+							( 
+								CASE
+									WHEN @Reapportion1619FundingByAimWeighting = 1 AND FM25.StartFund = 1 THEN
+										( FM25.NatRate * FM25.PrvRetentFactHist * FM25.ProgWeightNew ) 
+										+ ( 
+											FM25.OnProgPayment 
+											- ( FM25.NatRate * FM25.PrvRetentFactHist * FM25.ProgWeightHist ) 
+										)
+									ELSE FM25.OnProgPayment
+								END
+								/ 100 ) * @1619ALSFundingPercent
 						ELSE
 							0
 					END
@@ -1806,8 +2123,21 @@ BEGIN
 						ELSE
 							( COALESCE ( HRS.TotFund, 0 ) / COALESCE ( HRS.PLH, 0 ) ) * COALESCE ( CASE WHEN COALESCE ( LD.WithdrawReason, ''0'' ) <> ''40'' OR HRS.TFerOnly = 1 THEN CH.PLH END, 0 )
 					END
-				ELSE FM25.OnProgPayment END / 12 ) END, CASE WHEN ALB.AdvLoan = 1 AND @IncludeAdvLoanBursaryIncome = 1 THEN ALBP.TotFundP05 END, FM35P.TotFundP05, FM36P.TotFundP05, CASE WHEN @IncludeHEAdvLoanPossIncome = 1 THEN HE.GROSSFEE ELSE 0 END / 12, 0 ),
+				ELSE 
+					CASE
+						WHEN @Reapportion1619FundingByAimWeighting = 1 AND FM25.StartFund = 1 THEN
+							( FM25.NatRate * FM25.PrvRetentFactHist * FM25.ProgWeightNew ) 
+							+ ( 
+								FM25.OnProgPayment 
+								- ( FM25.NatRate * FM25.PrvRetentFactHist * FM25.ProgWeightHist ) 
+							)
+						ELSE FM25.OnProgPayment
+					END
+				END / 12 ) END, CASE WHEN ALB.AdvLoan = 1 AND @IncludeAdvLoanBursaryIncome = 1 THEN ALBP.TotFundP05 END, FM35P.TotFundP05, FM36P.TotFundP05, CASE WHEN @IncludeHEAdvLoanPossIncome = 1 THEN HE.GROSSFEE ELSE 0 END / 12, 0 ),
+	'
 
+    SET @SQLString += 
+        N'
 			OnProgPaymentP06 = COALESCE ( CASE WHEN LD.FundModel = ''25'' THEN ( CASE WHEN @Split1619Funding = 1 
 				THEN
 					CASE
@@ -1816,10 +2146,28 @@ BEGIN
 							( COALESCE ( HRS.OnProgPayment, 0 ) / COALESCE ( HRS.PLH, 0 ) ) * COALESCE ( CASE WHEN COALESCE ( LD.WithdrawReason, ''0'' ) <> ''40'' OR HRS.TFerOnly = 1 THEN CH.PLH END, 0 )
 					END
 				ELSE 
-					FM25.OnProgPayment
+					CASE
+						WHEN @Reapportion1619FundingByAimWeighting = 1 AND FM25.StartFund = 1 THEN
+							( FM25.NatRate * FM25.PrvRetentFactHist * FM25.ProgWeightNew ) 
+							+ ( 
+								FM25.OnProgPayment 
+								- ( FM25.NatRate * FM25.PrvRetentFactHist * FM25.ProgWeightHist ) 
+							)
+						ELSE FM25.OnProgPayment
+					END
 					- CASE 
 						WHEN @1619ALSFundingPercent > 0 THEN
-							( FM25.OnProgPayment / 100 ) * @1619ALSFundingPercent
+							( 
+								CASE
+									WHEN @Reapportion1619FundingByAimWeighting = 1 AND FM25.StartFund = 1 THEN
+										( FM25.NatRate * FM25.PrvRetentFactHist * FM25.ProgWeightNew ) 
+										+ ( 
+											FM25.OnProgPayment 
+											- ( FM25.NatRate * FM25.PrvRetentFactHist * FM25.ProgWeightHist ) 
+										)
+									ELSE FM25.OnProgPayment
+								END
+								/ 100 ) * @1619ALSFundingPercent
 						ELSE
 							0
 					END
@@ -1834,7 +2182,17 @@ BEGIN
 				ELSE 
 					CASE 
 						WHEN @1619ALSFundingPercent > 0 THEN
-							( FM25.OnProgPayment / 100 ) * @1619ALSFundingPercent
+							( 
+								CASE
+									WHEN @Reapportion1619FundingByAimWeighting = 1 AND FM25.StartFund = 1 THEN
+										( FM25.NatRate * FM25.PrvRetentFactHist * FM25.ProgWeightNew ) 
+										+ ( 
+											FM25.OnProgPayment 
+											- ( FM25.NatRate * FM25.PrvRetentFactHist * FM25.ProgWeightHist ) 
+										)
+									ELSE FM25.OnProgPayment
+								END
+								/ 100 ) * @1619ALSFundingPercent
 						ELSE
 							0
 					END
@@ -1850,8 +2208,18 @@ BEGIN
 						ELSE
 							( COALESCE ( HRS.TotFund, 0 ) / COALESCE ( HRS.PLH, 0 ) ) * COALESCE ( CASE WHEN COALESCE ( LD.WithdrawReason, ''0'' ) <> ''40'' OR HRS.TFerOnly = 1 THEN CH.PLH END, 0 )
 					END
-				ELSE FM25.OnProgPayment END / 12 ) END, CASE WHEN ALB.AdvLoan = 1 AND @IncludeAdvLoanBursaryIncome = 1 THEN ALBP.TotFundP06 END, FM35P.TotFundP06, FM36P.TotFundP06, CASE WHEN @IncludeHEAdvLoanPossIncome = 1 THEN HE.GROSSFEE ELSE 0 END / 12, 0 ),
-		'
+				ELSE 
+					CASE
+						WHEN @Reapportion1619FundingByAimWeighting = 1 AND FM25.StartFund = 1 THEN
+							( FM25.NatRate * FM25.PrvRetentFactHist * FM25.ProgWeightNew ) 
+							+ ( 
+								FM25.OnProgPayment 
+								- ( FM25.NatRate * FM25.PrvRetentFactHist * FM25.ProgWeightHist ) 
+							)
+						ELSE FM25.OnProgPayment
+					END
+				END / 12 ) END, CASE WHEN ALB.AdvLoan = 1 AND @IncludeAdvLoanBursaryIncome = 1 THEN ALBP.TotFundP06 END, FM35P.TotFundP06, FM36P.TotFundP06, CASE WHEN @IncludeHEAdvLoanPossIncome = 1 THEN HE.GROSSFEE ELSE 0 END / 12, 0 ),
+	'
 
     SET @SQLString += 
 		N'
@@ -1863,10 +2231,28 @@ BEGIN
 							( COALESCE ( HRS.OnProgPayment, 0 ) / COALESCE ( HRS.PLH, 0 ) ) * COALESCE ( CASE WHEN COALESCE ( LD.WithdrawReason, ''0'' ) <> ''40'' OR HRS.TFerOnly = 1 THEN CH.PLH END, 0 )
 					END
 				ELSE 
-					FM25.OnProgPayment
+					CASE
+						WHEN @Reapportion1619FundingByAimWeighting = 1 AND FM25.StartFund = 1 THEN
+							( FM25.NatRate * FM25.PrvRetentFactHist * FM25.ProgWeightNew ) 
+							+ ( 
+								FM25.OnProgPayment 
+								- ( FM25.NatRate * FM25.PrvRetentFactHist * FM25.ProgWeightHist ) 
+							)
+						ELSE FM25.OnProgPayment
+					END
 					- CASE 
 						WHEN @1619ALSFundingPercent > 0 THEN
-							( FM25.OnProgPayment / 100 ) * @1619ALSFundingPercent
+							( 
+								CASE
+									WHEN @Reapportion1619FundingByAimWeighting = 1 AND FM25.StartFund = 1 THEN
+										( FM25.NatRate * FM25.PrvRetentFactHist * FM25.ProgWeightNew ) 
+										+ ( 
+											FM25.OnProgPayment 
+											- ( FM25.NatRate * FM25.PrvRetentFactHist * FM25.ProgWeightHist ) 
+										)
+									ELSE FM25.OnProgPayment
+								END
+								/ 100 ) * @1619ALSFundingPercent
 						ELSE
 							0
 					END
@@ -1881,7 +2267,17 @@ BEGIN
 				ELSE 
 					CASE 
 						WHEN @1619ALSFundingPercent > 0 THEN
-							( FM25.OnProgPayment / 100 ) * @1619ALSFundingPercent
+							( 
+								CASE
+									WHEN @Reapportion1619FundingByAimWeighting = 1 AND FM25.StartFund = 1 THEN
+										( FM25.NatRate * FM25.PrvRetentFactHist * FM25.ProgWeightNew ) 
+										+ ( 
+											FM25.OnProgPayment 
+											- ( FM25.NatRate * FM25.PrvRetentFactHist * FM25.ProgWeightHist ) 
+										)
+									ELSE FM25.OnProgPayment
+								END
+								/ 100 ) * @1619ALSFundingPercent
 						ELSE
 							0
 					END
@@ -1897,8 +2293,21 @@ BEGIN
 						ELSE
 							( COALESCE ( HRS.TotFund, 0 ) / COALESCE ( HRS.PLH, 0 ) ) * COALESCE ( CASE WHEN COALESCE ( LD.WithdrawReason, ''0'' ) <> ''40'' OR HRS.TFerOnly = 1 THEN CH.PLH END, 0 )
 					END
-				ELSE FM25.OnProgPayment END / 12 ) END, CASE WHEN ALB.AdvLoan = 1 AND @IncludeAdvLoanBursaryIncome = 1 THEN ALBP.TotFundP07 END, FM35P.TotFundP07, FM36P.TotFundP07, CASE WHEN @IncludeHEAdvLoanPossIncome = 1 THEN HE.GROSSFEE ELSE 0 END / 12, 0 ),
+				ELSE 
+					CASE
+						WHEN @Reapportion1619FundingByAimWeighting = 1 AND FM25.StartFund = 1 THEN
+							( FM25.NatRate * FM25.PrvRetentFactHist * FM25.ProgWeightNew ) 
+							+ ( 
+								FM25.OnProgPayment 
+								- ( FM25.NatRate * FM25.PrvRetentFactHist * FM25.ProgWeightHist ) 
+							)
+						ELSE FM25.OnProgPayment
+					END
+				END / 12 ) END, CASE WHEN ALB.AdvLoan = 1 AND @IncludeAdvLoanBursaryIncome = 1 THEN ALBP.TotFundP07 END, FM35P.TotFundP07, FM36P.TotFundP07, CASE WHEN @IncludeHEAdvLoanPossIncome = 1 THEN HE.GROSSFEE ELSE 0 END / 12, 0 ),
+	'
 
+    SET @SQLString += 
+        N'
 			OnProgPaymentP08 = COALESCE ( CASE WHEN LD.FundModel = ''25'' THEN ( CASE WHEN @Split1619Funding = 1 
 				THEN
 					CASE
@@ -1907,10 +2316,28 @@ BEGIN
 							( COALESCE ( HRS.OnProgPayment, 0 ) / COALESCE ( HRS.PLH, 0 ) ) * COALESCE ( CASE WHEN COALESCE ( LD.WithdrawReason, ''0'' ) <> ''40'' OR HRS.TFerOnly = 1 THEN CH.PLH END, 0 )
 					END
 				ELSE 
-					FM25.OnProgPayment
+					CASE
+						WHEN @Reapportion1619FundingByAimWeighting = 1 AND FM25.StartFund = 1 THEN
+							( FM25.NatRate * FM25.PrvRetentFactHist * FM25.ProgWeightNew ) 
+							+ ( 
+								FM25.OnProgPayment 
+								- ( FM25.NatRate * FM25.PrvRetentFactHist * FM25.ProgWeightHist ) 
+							)
+						ELSE FM25.OnProgPayment
+					END
 					- CASE 
 						WHEN @1619ALSFundingPercent > 0 THEN
-							( FM25.OnProgPayment / 100 ) * @1619ALSFundingPercent
+							( 
+								CASE
+									WHEN @Reapportion1619FundingByAimWeighting = 1 AND FM25.StartFund = 1 THEN
+										( FM25.NatRate * FM25.PrvRetentFactHist * FM25.ProgWeightNew ) 
+										+ ( 
+											FM25.OnProgPayment 
+											- ( FM25.NatRate * FM25.PrvRetentFactHist * FM25.ProgWeightHist ) 
+										)
+									ELSE FM25.OnProgPayment
+								END
+								/ 100 ) * @1619ALSFundingPercent
 						ELSE
 							0
 					END
@@ -1925,7 +2352,17 @@ BEGIN
 				ELSE 
 					CASE 
 						WHEN @1619ALSFundingPercent > 0 THEN
-							( FM25.OnProgPayment / 100 ) * @1619ALSFundingPercent
+							( 
+								CASE
+									WHEN @Reapportion1619FundingByAimWeighting = 1 AND FM25.StartFund = 1 THEN
+										( FM25.NatRate * FM25.PrvRetentFactHist * FM25.ProgWeightNew ) 
+										+ ( 
+											FM25.OnProgPayment 
+											- ( FM25.NatRate * FM25.PrvRetentFactHist * FM25.ProgWeightHist ) 
+										)
+									ELSE FM25.OnProgPayment
+								END
+								/ 100 ) * @1619ALSFundingPercent
 						ELSE
 							0
 					END
@@ -1941,7 +2378,17 @@ BEGIN
 						ELSE
 							( COALESCE ( HRS.TotFund, 0 ) / COALESCE ( HRS.PLH, 0 ) ) * COALESCE ( CASE WHEN COALESCE ( LD.WithdrawReason, ''0'' ) <> ''40'' OR HRS.TFerOnly = 1 THEN CH.PLH END, 0 )
 					END
-				ELSE FM25.OnProgPayment END / 12 ) END, CASE WHEN ALB.AdvLoan = 1 AND @IncludeAdvLoanBursaryIncome = 1 THEN ALBP.TotFundP08 END, FM35P.TotFundP08, FM36P.TotFundP08, CASE WHEN @IncludeHEAdvLoanPossIncome = 1 THEN HE.GROSSFEE ELSE 0 END / 12, 0 ),
+				ELSE 
+					CASE
+						WHEN @Reapportion1619FundingByAimWeighting = 1 AND FM25.StartFund = 1 THEN
+							( FM25.NatRate * FM25.PrvRetentFactHist * FM25.ProgWeightNew ) 
+							+ ( 
+								FM25.OnProgPayment 
+								- ( FM25.NatRate * FM25.PrvRetentFactHist * FM25.ProgWeightHist ) 
+							)
+						ELSE FM25.OnProgPayment
+					END
+				END / 12 ) END, CASE WHEN ALB.AdvLoan = 1 AND @IncludeAdvLoanBursaryIncome = 1 THEN ALBP.TotFundP08 END, FM35P.TotFundP08, FM36P.TotFundP08, CASE WHEN @IncludeHEAdvLoanPossIncome = 1 THEN HE.GROSSFEE ELSE 0 END / 12, 0 ),
 		'
 
     SET @SQLString += 
@@ -1954,10 +2401,28 @@ BEGIN
 							( COALESCE ( HRS.OnProgPayment, 0 ) / COALESCE ( HRS.PLH, 0 ) ) * COALESCE ( CASE WHEN COALESCE ( LD.WithdrawReason, ''0'' ) <> ''40'' OR HRS.TFerOnly = 1 THEN CH.PLH END, 0 )
 					END
 				ELSE 
-					FM25.OnProgPayment
+					CASE
+						WHEN @Reapportion1619FundingByAimWeighting = 1 AND FM25.StartFund = 1 THEN
+							( FM25.NatRate * FM25.PrvRetentFactHist * FM25.ProgWeightNew ) 
+							+ ( 
+								FM25.OnProgPayment 
+								- ( FM25.NatRate * FM25.PrvRetentFactHist * FM25.ProgWeightHist ) 
+							)
+						ELSE FM25.OnProgPayment
+					END
 					- CASE 
 						WHEN @1619ALSFundingPercent > 0 THEN
-							( FM25.OnProgPayment / 100 ) * @1619ALSFundingPercent
+							( 
+								CASE
+									WHEN @Reapportion1619FundingByAimWeighting = 1 AND FM25.StartFund = 1 THEN
+										( FM25.NatRate * FM25.PrvRetentFactHist * FM25.ProgWeightNew ) 
+										+ ( 
+											FM25.OnProgPayment 
+											- ( FM25.NatRate * FM25.PrvRetentFactHist * FM25.ProgWeightHist ) 
+										)
+									ELSE FM25.OnProgPayment
+								END
+								/ 100 ) * @1619ALSFundingPercent
 						ELSE
 							0
 					END
@@ -1972,7 +2437,17 @@ BEGIN
 				ELSE 
 					CASE 
 						WHEN @1619ALSFundingPercent > 0 THEN
-							( FM25.OnProgPayment / 100 ) * @1619ALSFundingPercent
+							( 
+								CASE
+									WHEN @Reapportion1619FundingByAimWeighting = 1 AND FM25.StartFund = 1 THEN
+										( FM25.NatRate * FM25.PrvRetentFactHist * FM25.ProgWeightNew ) 
+										+ ( 
+											FM25.OnProgPayment 
+											- ( FM25.NatRate * FM25.PrvRetentFactHist * FM25.ProgWeightHist ) 
+										)
+									ELSE FM25.OnProgPayment
+								END
+								/ 100 ) * @1619ALSFundingPercent
 						ELSE
 							0
 					END
@@ -1988,8 +2463,21 @@ BEGIN
 						ELSE
 							( COALESCE ( HRS.TotFund, 0 ) / COALESCE ( HRS.PLH, 0 ) ) * COALESCE ( CASE WHEN COALESCE ( LD.WithdrawReason, ''0'' ) <> ''40'' OR HRS.TFerOnly = 1 THEN CH.PLH END, 0 )
 					END
-				ELSE FM25.OnProgPayment END / 12 ) END, CASE WHEN ALB.AdvLoan = 1 AND @IncludeAdvLoanBursaryIncome = 1 THEN ALBP.TotFundP09 END, FM35P.TotFundP09, FM36P.TotFundP09, CASE WHEN @IncludeHEAdvLoanPossIncome = 1 THEN HE.GROSSFEE ELSE 0 END / 12, 0 ),
+				ELSE 
+					CASE
+						WHEN @Reapportion1619FundingByAimWeighting = 1 AND FM25.StartFund = 1 THEN
+							( FM25.NatRate * FM25.PrvRetentFactHist * FM25.ProgWeightNew ) 
+							+ ( 
+								FM25.OnProgPayment 
+								- ( FM25.NatRate * FM25.PrvRetentFactHist * FM25.ProgWeightHist ) 
+							)
+						ELSE FM25.OnProgPayment
+					END
+				END / 12 ) END, CASE WHEN ALB.AdvLoan = 1 AND @IncludeAdvLoanBursaryIncome = 1 THEN ALBP.TotFundP09 END, FM35P.TotFundP09, FM36P.TotFundP09, CASE WHEN @IncludeHEAdvLoanPossIncome = 1 THEN HE.GROSSFEE ELSE 0 END / 12, 0 ),
+	'
 
+    SET @SQLString += 
+        N'
 			OnProgPaymentP10 = COALESCE ( CASE WHEN LD.FundModel = ''25'' THEN ( CASE WHEN @Split1619Funding = 1 
 				THEN
 					CASE
@@ -1998,10 +2486,28 @@ BEGIN
 							( COALESCE ( HRS.OnProgPayment, 0 ) / COALESCE ( HRS.PLH, 0 ) ) * COALESCE ( CASE WHEN COALESCE ( LD.WithdrawReason, ''0'' ) <> ''40'' OR HRS.TFerOnly = 1 THEN CH.PLH END, 0 )
 					END
 				ELSE
-					FM25.OnProgPayment
+					CASE
+						WHEN @Reapportion1619FundingByAimWeighting = 1 AND FM25.StartFund = 1 THEN
+							( FM25.NatRate * FM25.PrvRetentFactHist * FM25.ProgWeightNew ) 
+							+ ( 
+								FM25.OnProgPayment 
+								- ( FM25.NatRate * FM25.PrvRetentFactHist * FM25.ProgWeightHist ) 
+							)
+						ELSE FM25.OnProgPayment
+					END
 					- CASE 
 						WHEN @1619ALSFundingPercent > 0 THEN
-							( FM25.OnProgPayment / 100 ) * @1619ALSFundingPercent
+							( 
+								CASE
+									WHEN @Reapportion1619FundingByAimWeighting = 1 AND FM25.StartFund = 1 THEN
+										( FM25.NatRate * FM25.PrvRetentFactHist * FM25.ProgWeightNew ) 
+										+ ( 
+											FM25.OnProgPayment 
+											- ( FM25.NatRate * FM25.PrvRetentFactHist * FM25.ProgWeightHist ) 
+										)
+									ELSE FM25.OnProgPayment
+								END
+								/ 100 ) * @1619ALSFundingPercent
 						ELSE
 							0
 					END
@@ -2016,7 +2522,17 @@ BEGIN
 				ELSE 
 					CASE 
 						WHEN @1619ALSFundingPercent > 0 THEN
-							( FM25.OnProgPayment / 100 ) * @1619ALSFundingPercent
+							( 
+								CASE
+									WHEN @Reapportion1619FundingByAimWeighting = 1 AND FM25.StartFund = 1 THEN
+										( FM25.NatRate * FM25.PrvRetentFactHist * FM25.ProgWeightNew ) 
+										+ ( 
+											FM25.OnProgPayment 
+											- ( FM25.NatRate * FM25.PrvRetentFactHist * FM25.ProgWeightHist ) 
+										)
+									ELSE FM25.OnProgPayment
+								END
+								/ 100 ) * @1619ALSFundingPercent
 						ELSE
 							0
 					END
@@ -2032,7 +2548,17 @@ BEGIN
 						ELSE
 							( COALESCE ( HRS.TotFund, 0 ) / COALESCE ( HRS.PLH, 0 ) ) * COALESCE ( CASE WHEN COALESCE ( LD.WithdrawReason, ''0'' ) <> ''40'' OR HRS.TFerOnly = 1 THEN CH.PLH END, 0 )
 					END
-				ELSE FM25.OnProgPayment END / 12 ) END, CASE WHEN ALB.AdvLoan = 1 AND @IncludeAdvLoanBursaryIncome = 1 THEN ALBP.TotFundP10 END, FM35P.TotFundP10, FM36P.TotFundP10, CASE WHEN @IncludeHEAdvLoanPossIncome = 1 THEN HE.GROSSFEE ELSE 0 END / 12, 0 ),
+				ELSE 
+					CASE
+						WHEN @Reapportion1619FundingByAimWeighting = 1 AND FM25.StartFund = 1 THEN
+							( FM25.NatRate * FM25.PrvRetentFactHist * FM25.ProgWeightNew ) 
+							+ ( 
+								FM25.OnProgPayment 
+								- ( FM25.NatRate * FM25.PrvRetentFactHist * FM25.ProgWeightHist ) 
+							)
+						ELSE FM25.OnProgPayment
+					END
+				END / 12 ) END, CASE WHEN ALB.AdvLoan = 1 AND @IncludeAdvLoanBursaryIncome = 1 THEN ALBP.TotFundP10 END, FM35P.TotFundP10, FM36P.TotFundP10, CASE WHEN @IncludeHEAdvLoanPossIncome = 1 THEN HE.GROSSFEE ELSE 0 END / 12, 0 ),
 		'
 
     SET @SQLString += 
@@ -2045,10 +2571,28 @@ BEGIN
 							( COALESCE ( HRS.OnProgPayment, 0 ) / COALESCE ( HRS.PLH, 0 ) ) * COALESCE ( CASE WHEN COALESCE ( LD.WithdrawReason, ''0'' ) <> ''40'' OR HRS.TFerOnly = 1 THEN CH.PLH END, 0 )
 					END
 				ELSE
-					FM25.OnProgPayment
+					CASE
+						WHEN @Reapportion1619FundingByAimWeighting = 1 AND FM25.StartFund = 1 THEN
+							( FM25.NatRate * FM25.PrvRetentFactHist * FM25.ProgWeightNew ) 
+							+ ( 
+								FM25.OnProgPayment 
+								- ( FM25.NatRate * FM25.PrvRetentFactHist * FM25.ProgWeightHist ) 
+							)
+						ELSE FM25.OnProgPayment
+					END
 					- CASE 
 						WHEN @1619ALSFundingPercent > 0 THEN
-							( FM25.OnProgPayment / 100 ) * @1619ALSFundingPercent
+							( 
+								CASE
+									WHEN @Reapportion1619FundingByAimWeighting = 1 AND FM25.StartFund = 1 THEN
+										( FM25.NatRate * FM25.PrvRetentFactHist * FM25.ProgWeightNew ) 
+										+ ( 
+											FM25.OnProgPayment 
+											- ( FM25.NatRate * FM25.PrvRetentFactHist * FM25.ProgWeightHist ) 
+										)
+									ELSE FM25.OnProgPayment
+								END
+								/ 100 ) * @1619ALSFundingPercent
 						ELSE
 							0
 					END
@@ -2063,7 +2607,17 @@ BEGIN
 				ELSE 
 					CASE 
 						WHEN @1619ALSFundingPercent > 0 THEN
-							( FM25.OnProgPayment / 100 ) * @1619ALSFundingPercent
+							( 
+								CASE
+									WHEN @Reapportion1619FundingByAimWeighting = 1 AND FM25.StartFund = 1 THEN
+										( FM25.NatRate * FM25.PrvRetentFactHist * FM25.ProgWeightNew ) 
+										+ ( 
+											FM25.OnProgPayment 
+											- ( FM25.NatRate * FM25.PrvRetentFactHist * FM25.ProgWeightHist ) 
+										)
+									ELSE FM25.OnProgPayment
+								END
+								/ 100 ) * @1619ALSFundingPercent
 						ELSE
 							0
 					END
@@ -2079,8 +2633,21 @@ BEGIN
 						ELSE
 							( COALESCE ( HRS.TotFund, 0 ) / COALESCE ( HRS.PLH, 0 ) ) * COALESCE ( CASE WHEN COALESCE ( LD.WithdrawReason, ''0'' ) <> ''40'' OR HRS.TFerOnly = 1 THEN CH.PLH END, 0 )
 					END
-				ELSE FM25.OnProgPayment END / 12 ) END, CASE WHEN ALB.AdvLoan = 1 AND @IncludeAdvLoanBursaryIncome = 1 THEN ALBP.TotFundP11 END, FM35P.TotFundP11, FM36P.TotFundP11, CASE WHEN @IncludeHEAdvLoanPossIncome = 1 THEN HE.GROSSFEE ELSE 0 END / 12, 0 ),
+				ELSE 
+					CASE
+						WHEN @Reapportion1619FundingByAimWeighting = 1 AND FM25.StartFund = 1 THEN
+							( FM25.NatRate * FM25.PrvRetentFactHist * FM25.ProgWeightNew ) 
+							+ ( 
+								FM25.OnProgPayment 
+								- ( FM25.NatRate * FM25.PrvRetentFactHist * FM25.ProgWeightHist ) 
+							)
+						ELSE FM25.OnProgPayment
+					END
+				END / 12 ) END, CASE WHEN ALB.AdvLoan = 1 AND @IncludeAdvLoanBursaryIncome = 1 THEN ALBP.TotFundP11 END, FM35P.TotFundP11, FM36P.TotFundP11, CASE WHEN @IncludeHEAdvLoanPossIncome = 1 THEN HE.GROSSFEE ELSE 0 END / 12, 0 ),
+	'
 
+    SET @SQLString += 
+        N'
 			OnProgPaymentP12 = COALESCE ( CASE WHEN LD.FundModel = ''25'' THEN ( CASE WHEN @Split1619Funding = 1 
 				THEN
 					CASE
@@ -2089,10 +2656,28 @@ BEGIN
 							( COALESCE ( HRS.OnProgPayment, 0 ) / COALESCE ( HRS.PLH, 0 ) ) * COALESCE ( CASE WHEN COALESCE ( LD.WithdrawReason, ''0'' ) <> ''40'' OR HRS.TFerOnly = 1 THEN CH.PLH END, 0 )
 					END
 				ELSE 
-					FM25.OnProgPayment
+					CASE
+						WHEN @Reapportion1619FundingByAimWeighting = 1 AND FM25.StartFund = 1 THEN
+							( FM25.NatRate * FM25.PrvRetentFactHist * FM25.ProgWeightNew ) 
+							+ ( 
+								FM25.OnProgPayment 
+								- ( FM25.NatRate * FM25.PrvRetentFactHist * FM25.ProgWeightHist ) 
+							)
+						ELSE FM25.OnProgPayment
+					END
 					- CASE 
 						WHEN @1619ALSFundingPercent > 0 THEN
-							( FM25.OnProgPayment / 100 ) * @1619ALSFundingPercent
+							( 
+								CASE
+									WHEN @Reapportion1619FundingByAimWeighting = 1 AND FM25.StartFund = 1 THEN
+										( FM25.NatRate * FM25.PrvRetentFactHist * FM25.ProgWeightNew ) 
+										+ ( 
+											FM25.OnProgPayment 
+											- ( FM25.NatRate * FM25.PrvRetentFactHist * FM25.ProgWeightHist ) 
+										)
+									ELSE FM25.OnProgPayment
+								END
+								/ 100 ) * @1619ALSFundingPercent
 						ELSE
 							0
 					END
@@ -2107,7 +2692,17 @@ BEGIN
 				ELSE 
 					CASE 
 						WHEN @1619ALSFundingPercent > 0 THEN
-							( FM25.OnProgPayment / 100 ) * @1619ALSFundingPercent
+							( 
+								CASE
+									WHEN @Reapportion1619FundingByAimWeighting = 1 AND FM25.StartFund = 1 THEN
+										( FM25.NatRate * FM25.PrvRetentFactHist * FM25.ProgWeightNew ) 
+										+ ( 
+											FM25.OnProgPayment 
+											- ( FM25.NatRate * FM25.PrvRetentFactHist * FM25.ProgWeightHist ) 
+										)
+									ELSE FM25.OnProgPayment
+								END
+								/ 100 ) * @1619ALSFundingPercent
 						ELSE
 							0
 					END
@@ -2123,7 +2718,17 @@ BEGIN
 						ELSE
 							( COALESCE ( HRS.TotFund, 0 ) / COALESCE ( HRS.PLH, 0 ) ) * COALESCE ( CASE WHEN COALESCE ( LD.WithdrawReason, ''0'' ) <> ''40'' OR HRS.TFerOnly = 1 THEN CH.PLH END, 0 )
 					END
-				ELSE FM25.OnProgPayment END / 12 ) END, CASE WHEN ALB.AdvLoan = 1 AND @IncludeAdvLoanBursaryIncome = 1 THEN ALBP.TotFundP12 END, FM35P.TotFundP12, FM36P.TotFundP12, CASE WHEN @IncludeHEAdvLoanPossIncome = 1 THEN HE.GROSSFEE ELSE 0 END / 12, 0 )
+				ELSE 
+					CASE
+						WHEN @Reapportion1619FundingByAimWeighting = 1 AND FM25.StartFund = 1 THEN
+							( FM25.NatRate * FM25.PrvRetentFactHist * FM25.ProgWeightNew ) 
+							+ ( 
+								FM25.OnProgPayment 
+								- ( FM25.NatRate * FM25.PrvRetentFactHist * FM25.ProgWeightHist ) 
+							)
+						ELSE FM25.OnProgPayment
+					END
+				END / 12 ) END, CASE WHEN ALB.AdvLoan = 1 AND @IncludeAdvLoanBursaryIncome = 1 THEN ALBP.TotFundP12 END, FM35P.TotFundP12, FM36P.TotFundP12, CASE WHEN @IncludeHEAdvLoanPossIncome = 1 THEN HE.GROSSFEE ELSE 0 END / 12, 0 )
 
 			--INTO FundingDataTemp
 	'
@@ -4277,10 +4882,10 @@ BEGIN
 		@ILRReturn INT,
 		@IsFinalReturn BIT,
 		@Split1619Funding BIT,
+		@Reapportion1619FundingByAimWeighting BIT,
 		@1619ALSFundingPercent DECIMAL(5,2),
 		@IncludeHEAdvLoanPossIncome BIT,
 		@IncludeAdvLoanBursaryIncome BIT,
-		@AEBCombinedAuthorityName NVARCHAR(200),
 		@FutureAchieveWeighting DECIMAL(5,2),
 		@FISOutputTableLocation NVARCHAR(200),
 		@ProviderFieldFacLocation CHAR(1),
@@ -4305,10 +4910,10 @@ BEGIN
 		@ILRReturn = @ILRReturn,
 		@IsFinalReturn = @IsFinalReturn,
 		@Split1619Funding = @Split1619Funding,
+		@Reapportion1619FundingByAimWeighting = @Reapportion1619FundingByAimWeighting,
 		@1619ALSFundingPercent = @1619ALSFundingPercent,
 		@IncludeHEAdvLoanPossIncome = @IncludeHEAdvLoanPossIncome,
 		@IncludeAdvLoanBursaryIncome = @IncludeAdvLoanBursaryIncome,
-		@AEBCombinedAuthorityName = @AEBCombinedAuthorityName,
 		@FutureAchieveWeighting = @FutureAchieveWeighting,
 		@FISOutputTableLocation = @FISOutputTableLocation,
 		@ProviderFieldFacLocation = @ProviderFieldFacLocation,

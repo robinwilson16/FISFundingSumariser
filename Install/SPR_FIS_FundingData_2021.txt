@@ -14,7 +14,6 @@ CREATE PROCEDURE SPR_FIS_FundingData_2021
 	@1619ALSFundingPercent DECIMAL(5,2),
 	@IncludeHEAdvLoanPossIncome BIT,
 	@IncludeAdvLoanBursaryIncome BIT,
-	@AEBCombinedAuthorityName NVARCHAR(200),
 	@FutureAchieveWeighting DECIMAL(5,2),
 	@FISOutputTableLocation NVARCHAR(200),
 	@ProviderFieldFacLocation CHAR(1),
@@ -44,7 +43,6 @@ BEGIN
 	--DECLARE @1619ALSFundingPercent DECIMAL(5,2) = 10.58 --Deduct this percent from Tot Funding for FM25 and assign to ALS column
 	--DECLARE @IncludeHEAdvLoanPossIncome BIT = 0 --HE gross fee is only achieved if at all 3 SLC census points learners remain current
 	--DECLARE @IncludeAdvLoanBursaryIncome BIT = 0 --Adv loan bursary income is not income as goes to learners so may want to exclude
-	--DECLARE @AEBCombinedAuthorityName NVARCHAR(200) = NULL
 	--DECLARE @FutureAchieveWeighting DECIMAL(5,2) = 1 --Future ach weighting factor. If 1 then is 100% of all remaining ach monies
 	--DECLARE @Mode NCHAR(1) = 'I' --I=Insert new ILR return data leaving existing data, R=Replace table
 	--DECLARE @FISOutputTableLocation NVARCHAR(200) = 'EPNE.dbo.'
@@ -378,6 +376,7 @@ BEGIN
 			SQLDatabase = ''' + @FISDatabase + ''',
 			Is1619FundingSplit = CASE WHEN LD.FundModel = ''25'' AND @Split1619Funding = 1 AND COALESCE ( HRS.PLH, 0 ) > 0 THEN 1 ELSE 0 END,
 			ALS1619FundingPercent = @1619ALSFundingPercent,
+			Is1619FundingReapportionedByAim = @Reapportion1619FundingByAimWeighting,
 			InvalidLearners = INV.InvalidLearners,
 
 			LearnerRef = L.LearnRefNumber,
@@ -713,7 +712,7 @@ BEGIN
 							FM35.FundLine,
 							CASE WHEN HE.LearnRefNumber IS NOT NULL THEN ''Higher Education'' END,
 							CASE WHEN LD.FundModel = ''99'' THEN ''Full Cost'' END 
-						) LIKE ''%Adult Education%''
+						) LIKE ''%Eligible for MCA/GLA funding%''
                             THEN ''Adult - Devolved''
 
                     WHEN 
@@ -961,8 +960,8 @@ BEGIN
 							FM35.FundLine,
 							CASE WHEN HE.LearnRefNumber IS NOT NULL THEN ''Higher Education'' END,
 							CASE WHEN LD.FundModel = ''99'' THEN ''Full Cost'' END 
-						) LIKE ''%Adult Education%''
-                            THEN COALESCE ( @AEBCombinedAuthorityName, REPLACE ( REPLACE ( COALESCE ( FM36P.FundLineType, FM35.FundLine ), '' (non-procured)'', ''''), ''Adult Education'', ''AEB'') )
+						) LIKE ''%Eligible for MCA/GLA funding%''
+                            THEN ''AEB - '' + FM35.LearnDelFundOrgCode
 
 					ELSE 
 						COALESCE ( 
@@ -4920,7 +4919,6 @@ BEGIN
 		@1619ALSFundingPercent DECIMAL(5,2),
 		@IncludeHEAdvLoanPossIncome BIT,
 		@IncludeAdvLoanBursaryIncome BIT,
-		@AEBCombinedAuthorityName NVARCHAR(200),
 		@FutureAchieveWeighting DECIMAL(5,2),
 		@FISOutputTableLocation NVARCHAR(200),
 		@ProviderFieldFacLocation CHAR(1),
@@ -4949,7 +4947,6 @@ BEGIN
 		@1619ALSFundingPercent = @1619ALSFundingPercent,
 		@IncludeHEAdvLoanPossIncome = @IncludeHEAdvLoanPossIncome,
 		@IncludeAdvLoanBursaryIncome = @IncludeAdvLoanBursaryIncome,
-		@AEBCombinedAuthorityName = @AEBCombinedAuthorityName,
 		@FutureAchieveWeighting = @FutureAchieveWeighting,
 		@FISOutputTableLocation = @FISOutputTableLocation,
 		@ProviderFieldFacLocation = @ProviderFieldFacLocation,

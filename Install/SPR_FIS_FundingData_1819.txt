@@ -377,6 +377,7 @@ BEGIN
 			SQLDatabase = ''' + @FISDatabase + ''',
 			Is1619FundingSplit = CASE WHEN LD.FundModel = ''25'' AND @Split1619Funding = 1 AND COALESCE ( HRS.PLH, 0 ) > 0 THEN 1 ELSE 0 END,
 			ALS1619FundingPercent = @1619ALSFundingPercent,
+			Is1619FundingReapportionedByAim = @Reapportion1619FundingByAimWeighting,
 			InvalidLearners = INV.InvalidLearners,
 
 			LearnerRef = L.LearnRefNumber,
@@ -957,7 +958,7 @@ BEGIN
 							CASE WHEN HE.LearnRefNumber IS NOT NULL THEN ''Higher Education'' END,
 							CASE WHEN LD.FundModel = ''99'' THEN ''Full Cost'' END 
 						) LIKE ''%Eligible for MCA/GLA funding%''
-                            THEN ''AEB - '' + FM35.LearnDelFundOrgCode
+                            THEN ''AEB - Devolved''
 
 					ELSE 
 						COALESCE ( 

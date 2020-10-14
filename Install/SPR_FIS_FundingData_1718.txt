@@ -1161,7 +1161,7 @@ BEGIN
 
     SET @SQLString += 
         N'
-			CampusID = L.CampId,
+			CampusID = NULL,
 			ParentCollegeCode = PCS.CollegeCode,
 			ParentCollegeName = PCS.CollegeName,
 			ParentSiteCode = PCS.SiteCode,
